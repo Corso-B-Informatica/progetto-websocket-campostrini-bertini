@@ -2,13 +2,27 @@
 
 var socket = io();
 
-socket.on("welcome", (msg) => {
-  let paragrafo = document.getElementById("paragrafo");
-  paragrafo.innerText = msg;
-});
+
+(async () => {
+  const { privateKey, publicKey, revocationCertificate } = await openpgp.generateKey({
+      type: 'ecc', 
+      curve: 'curve25519',
+      userIDs: [{ name: '', email: '' }], 
+      passphrase: '', 
+      format: 'armored' 
+  });
+
+  console.log(privateKey);
+  console.log(publicKey);      
+  console.log(revocationCertificate);
+})();
+
 
 function register() {
-  let nick = document.getElementById("nome").value;
+  let nickname = document.getElementById("nickname").value;
+  let email = document.getElementById("email").value;
+  let password = document.getElementById("password").value;
+  
   socket.emit("register", nick);
 }
 
