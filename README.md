@@ -1,1 +1,3 @@
-[![Open in Codespaces](https://classroom.github.com/assets/launch-codespace-f4981d0f882b2a3f0472912d15f9806d57e124e0fc890972558857b51b24a6f9.svg)](https://classroom.github.com/open-in-codespaces?assignment_repo_id=10051896)
+# ChatMe
+Chat web innovativa che offre una comunicazione istantanea e personalizzata tra utenti con un design intuitivo e facile da usare, con funzionalità avanzate come la possibilità di inviare file, condividere immagini e video, e utilizzare emoticon per esprimere emozioni. Inoltre, la chat è sicura e protetta per garantire la privacy degli utenti.
+# Autori
