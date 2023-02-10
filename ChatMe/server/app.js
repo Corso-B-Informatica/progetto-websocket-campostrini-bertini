@@ -4,7 +4,7 @@ const socketio = require("socket.io");
 
 
 const app = express();
-app.use(express.static("chat"));
+app.use(express.static("../client"));
 
 const server = app.listen(config.port, () => {
   console.log("Server in ascolto sulla porta " + config.port);

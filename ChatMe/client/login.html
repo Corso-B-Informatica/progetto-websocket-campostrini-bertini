@@ -11,142 +11,362 @@
     <script src="https://kit.fontawesome.com/bbf7a86a8c.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
     <style>
-        @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600');
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #fafafa;
+        .container-login100 {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
         }
 
-        .container {
-            height: 100vh;
-            align-content: center;
+        .wrap-login100 {
+            width: 500px;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
         }
 
-        .card {
-            height: 370px;
-            margin-top: auto;
-            margin-bottom: auto;
-            width: 400px;
-            background-color: rgba(0, 0, 0, 0.5);
+
+        @media (max-width: 576px) {
+            .wrap-login100 {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
         }
 
-        .social_icon span {
-            font-size: 60px;
-            margin-left: 10px;
-            color: #FFC312;
+        .p-l-55 {
+            padding-left: 55px;
         }
 
-        .social_icon span:hover {
-            color: white;
+        .p-r-55 {
+            padding-right: 55px;
+        }
+
+        .p-t-65 {
+            padding-top: 65px;
+        }
+
+        .p-b-54 {
+            padding-bottom: 54px;
+        }
+
+        .login100-form {
+            width: 100%;
+        }
+
+        .login100-form-title {
+            display: block;
+            font-family: Poppins-Bold;
+            font-size: 39px;
+            color: #333333;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+
+        .p-b-49 {
+            padding-bottom: 49px;
+        }
+
+
+        .wrap-input100 {
+            width: 100%;
+            position: relative;
+            border-bottom: 2px solid #d9d9d9;
+        }
+
+        .label-input100 {
+            font-family: Poppins-Regular;
+            font-size: 14px;
+            color: #333333;
+            line-height: 1.5;
+            padding-left: 7px;
+        }
+
+        .input100 {
+            font-family: Poppins-Medium;
+            font-size: 16px;
+            color: #333333;
+            line-height: 1.2;
+
+            display: block;
+            width: 100%;
+            height: 55px;
+            background: transparent;
+            padding: 0 7px 0 43px;
+        }
+
+
+        /*---------------------------------------------*/
+        .focus-input100 {
+            position: absolute;
+            display: block;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .focus-input100::after {
+            content: attr(data-symbol);
+            font-family: Material-Design-Iconic-Font;
+            color: #adadad;
+            font-size: 22px;
+
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -moz-box;
+            display: -ms-flexbox;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            height: calc(100% - 20px);
+            bottom: 0;
+            left: 0;
+            padding-left: 13px;
+            padding-top: 3px;
+        }
+
+        .focus-input100::before {
+            content: "";
+            display: block;
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #7f7f7f;
+            -webkit-transition: all 0.4s;
+            -o-transition: all 0.4s;
+            -moz-transition: all 0.4s;
+            transition: all 0.4s;
+        }
+
+
+        .input100:focus+.focus-input100::before {
+            width: 100%;
+        }
+
+        .has-val.input100+.focus-input100::before {
+            width: 100%;
+        }
+
+        .input100:focus+.focus-input100::after {
+            color: #a64bf4;
+        }
+
+        .has-val.input100+.focus-input100::after {
+            color: #a64bf4;
+        }
+
+        input {
+            outline: none;
+            border: none;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .p-t-8 {
+            padding-top: 8px;
+        }
+
+        .p-b-31 {
+            padding-bottom: 31px;
+        }
+
+        a {
+            font-family: Poppins-Regular;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #666666;
+            margin: 0px;
+            transition: all 0.4s;
+            -webkit-transition: all 0.4s;
+            -o-transition: all 0.4s;
+            -moz-transition: all 0.4s;
+        }
+
+        a:focus {
+            outline: none !important;
+        }
+
+        a:hover {
+            text-decoration: none;
+            color: #a64bf4;
+        }
+
+        .container-login100-form-btn {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -moz-box;
+            display: -ms-flexbox;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .wrap-login100-form-btn {
+            width: 100%;
+            display: block;
+            position: relative;
+            z-index: 1;
+            border-radius: 25px;
+            overflow: hidden;
+            margin: 0 auto;
+
+            box-shadow: 0 5px 30px 0px rgba(3, 216, 222, 0.2);
+            -moz-box-shadow: 0 5px 30px 0px rgba(3, 216, 222, 0.2);
+            -webkit-box-shadow: 0 5px 30px 0px rgba(3, 216, 222, 0.2);
+            -o-box-shadow: 0 5px 30px 0px rgba(3, 216, 222, 0.2);
+            -ms-box-shadow: 0 5px 30px 0px rgba(3, 216, 222, 0.2);
+        }
+
+        .login100-form-bgbtn {
+            position: absolute;
+            z-index: -1;
+            width: 300%;
+            height: 100%;
+            background: #a64bf4;
+            background: -webkit-linear-gradient(right, #00dbde, #fc00ff, #00dbde, #fc00ff);
+            background: -o-linear-gradient(right, #00dbde, #fc00ff, #00dbde, #fc00ff);
+            background: -moz-linear-gradient(right, #00dbde, #fc00ff, #00dbde, #fc00ff);
+            background: linear-gradient(right, #00dbde, #fc00ff, #00dbde, #fc00ff);
+            top: 0;
+            left: -100%;
+
+            -webkit-transition: all 0.4s;
+            -o-transition: all 0.4s;
+            -moz-transition: all 0.4s;
+            transition: all 0.4s;
+        }
+
+        .login100-form-btn {
+            font-family: Poppins-Medium;
+            font-size: 16px;
+            color: #fff;
+            line-height: 1.2;
+            text-transform: uppercase;
+
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -moz-box;
+            display: -ms-flexbox;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 20px;
+            width: 100%;
+            height: 50px;
+        }
+
+        .wrap-login100-form-btn:hover .login100-form-bgbtn {
+            left: 0;
+        }
+
+        button {
+            outline: none !important;
+            border: none;
+            background: transparent;
+        }
+
+        button:hover {
             cursor: pointer;
         }
 
-        .card-header h3 {
-            color: white;
+        .flex-col-c {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -moz-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-flex-direction: column;
+            -moz-flex-direction: column;
+            -ms-flex-direction: column;
+            -o-flex-direction: column;
+            flex-direction: column;
+            -ms-align-items: center;
+            align-items: center;
         }
 
-        .social_icon {
-            position: absolute;
-            right: 20px;
-            top: -45px;
+        .p-t-155 {
+            padding-top: 155px;
         }
 
-        .input-group-prepend span {
-            width: 50px;
-            background-color: #FFC312;
-            color: black;
-            border: 0 !important;
+        .txt1 {
+            font-family: Poppins-Regular;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #666666;
         }
 
-        input:focus {
-            outline: 0 0 0 0 !important;
-            box-shadow: 0 0 0 0 !important;
-
+        .p-b-17 {
+            padding-bottom: 17px;
         }
 
-        .remember {
-            color: white;
-        }
-
-        .remember input {
-            width: 20px;
-            height: 20px;
-            margin-left: 15px;
-            margin-right: 5px;
-        }
-
-        .login_btn {
-            color: black;
-            background-color: #FFC312;
-            width: 100px;
-        }
-
-        .login_btn:hover {
-            color: black;
-            background-color: white;
-        }
-
-        .links {
-            color: white;
-        }
-
-        .links a {
-            margin-left: 4px;
+        .txt2 {
+            font-family: Poppins-Regular;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333333;
+            text-transform: uppercase;
         }
     </style>
-    <script>
-        $(document).ready(function () {
-            $("#login").click(function () {
-                var username = $("#username").val();
-                var password = $("#password").val();
-                // Use your own logic to verify the username and password
-            });
-        });
-    </script>
     <script src="/socket.io/socket.io.js"></script>
 </head>
 
 <body>
-    <div class="container h-100">
-        <div class="d-flex justify-content-center h-100">
-            <div class="user_card">
-                <div class="d-flex justify-content-center form_container">
-                    <form>
-                        <div class="input-group mb-3">
-                            <div class="input-group-append">
-                                <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            </div>
-                            <input type="text" name="username" class="form-control input_user" value=""
-                                placeholder="username">
-                        </div>
-                        <div class="input-group mb-2">
-                            <div class="input-group-append">
-                                <span class="input-group-text"><i class="fas fa-key"></i></span>
-                            </div>
-                            <input type="password" name="password" class="form-control input_pass" value=""
-                                placeholder="password">
-                        </div>
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="customControlInline">
-                                <label class="custom-control-label" for="customControlInline">Remember me</label>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-center mt-3 login_container">
-                            <button type="button" name="button" class="btn login_btn">Login</button>
-                        </div>
-                    </form>
+    <div class="container-login100" style="background-image: url('images/bg-01.jpg');">
+        <div class="wrap-login100 p-l-55 p-r-55 p-t-65 p-b-54">
+            <form class="login100-form validate-form">
+                <span class="login100-form-title p-b-49">
+                    Login
+                </span>
+
+                <div class="wrap-input100 validate-input m-b-23" data-validate="Username is required">
+                    <span class="label-input100">Username</span>
+                    <input class="input100" type="text" name="username" placeholder="Type your username">
+                    <span class="focus-input100" data-symbol="&#xf206;"></span>
                 </div>
-                <div class="mt-4">
-                    <div class="d-flex justify-content-center links">
-                        Don't have an account? <a href="#" class="ml-2">Sign Up</a>
-                    </div>
-                    <div class="d-flex justify-content-center links">
-                        <a href="#">Forgot your password?</a>
+
+                <div class="wrap-input100 validate-input" data-validate="Password is required">
+                    <span class="label-input100">Password</span>
+                    <input class="input100" type="password" name="pass" placeholder="Type your password">
+                    <span class="focus-input100" data-symbol="&#xf190;"></span>
+                </div>
+
+                <div class="text-right p-t-8 p-b-31">
+                    <a href="#">
+                        Forgot password?
+                    </a>
+                </div>
+
+                <div class="container-login100-form-btn">
+                    <div class="wrap-login100-form-btn">
+                        <div class="login100-form-bgbtn"></div>
+                        <button class="login100-form-btn">
+                            Login
+                        </button>
                     </div>
                 </div>
-            </div>
+
+                <div class="flex-col-c p-t-155">
+                    <span class="txt1 p-b-17">
+                        Or Sign Up Using
+                    </span>
+
+                    <a href="#" class="txt2">
+                        Sign Up
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
     <script src="./script.js"></script>
