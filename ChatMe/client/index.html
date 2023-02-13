@@ -1,237 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ChatMe</title>
-  <link rel="shortcut icon" href="./images/logo.png" type="image/x-icon" />
-  <link rel="stylesheet" href="./style.css" />
-  <script src="https://kit.fontawesome.com/bbf7a86a8c.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-  <style>
-    body {
-      background-size: cover;
-      height: 100vh;
-      background-image: linear-gradient(to bottom, #ffd89b, #ff9b9b);
-      animation: slideDown 5s linear infinite;
-    }
-
-    @keyframes slideDown {
-      0% {
-        background-image: linear-gradient(to bottom, #ffd89b, #ff9b9b);
-      }
-
-      5% {
-        background-image: linear-gradient(to bottom, #ffd29b, #ffa19b);
-      }
-
-      10% {
-        background-image: linear-gradient(to bottom, #ffcc9b, #ffa79b);
-      }
-
-      15% {
-        background-image: linear-gradient(to bottom, #ffc69b, #ffad9b);
-      }
-
-      20% {
-        background-image: linear-gradient(to bottom, #ffc09b, #ffb39b);
-      }
-
-      25% {
-        background-image: linear-gradient(to bottom, #ffba9b, #ffba9b);
-      }
-
-      30% {
-        background-image: linear-gradient(to bottom, #ffb39b, #ffc09b);
-      }
-
-      35% {
-        background-image: linear-gradient(to bottom, #ffad9b, #ffc69b);
-      }
-
-      40% {
-        background-image: linear-gradient(to bottom, #ffa79b, #ffcc9b);
-      }
-
-      45% {
-        background-image: linear-gradient(to bottom, #ffa19b, #ffd29b);
-      }
-
-      50% {
-        background-image: linear-gradient(to bottom, #ff9b9b, #ffd89b);
-      }
-
-      55% {
-        background-image: linear-gradient(to bottom, #ffa19b, #ffd29b);
-      }
-
-      60% {
-        background-image: linear-gradient(to bottom, #ffa79b, #ffcc9b);
-      }
-
-      65% {
-        background-image: linear-gradient(to bottom, #ffad9b, #ffc69b);
-      }
-
-      70% {
-        background-image: linear-gradient(to bottom, #ffb39b, #ffc09b);
-      }
-
-      75% {
-        background-image: linear-gradient(to bottom, #ffba9b, #ffba9b);
-      }
-
-      80% {
-        background-image: linear-gradient(to bottom, #ffc09b, #ffb39b);
-      }
-
-      85% {
-        background-image: linear-gradient(to bottom, #ffc69b, #ffad9b);
-      }
-
-      90% {
-        background-image: linear-gradient(to bottom, #ffcc9b, #ffa79b);
-      }
-
-      95% {
-        background-image: linear-gradient(to bottom, #ffd29b, #ffa19b);
-      }
-
-      100% {
-        background-image: linear-gradient(to bottom, #ffd89b, #ff9b9b);
-      }
-    }
-
-    .container {
-      padding-top: 15vh;
-      text-align: center;
-      color: #fff;
-    }
-
-    #name {
-      font-size: 72px;
-      font-weight: bold;
-      margin-bottom: 30px;
-    }
-
-    #slogan {
-      font-size: 24px;
-      margin-bottom: 50px;
-    }
-
-    .btn {
-      border-radius: 50px;
-      padding: 20px 50px;
-      font-size: 24px;
-      font-weight: bold;
-      transition: all 0.2s ease-in-out;
-    }
-
-    #login {
-      background-color: #343a40;
-      border-color: #343a40;
-      color: #fff;
-      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-    }
-
-    #login:hover {
-      background-color: #fff;
-      color: #343a40;
-      border-color: #fff;
-      transform: translateY(-2px);
-      box-shadow: 0px 6px 6px rgba(0, 0, 0, 0.25);
-    }
-
-    #signup {
-      background-color: #fff;
-      border-color: #fff;
-      color: #343a40;
-      box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-    }
-
-    #signup:hover {
-      background-color: #343a40;
-      color: #fff;
-      border-color: #343a40;
-      transform: translateY(-2px);
-      box-shadow: 0px 6px 6px rgba(0, 0, 0, 0.25);
-    }
-
-    @media (max-width: 991px) {
-      .btn {
-        padding: 10px 30px;
-        font-size: 18px;
-      }
-
-      #name {
-        font-size: 48px;
-      }
-
-      #slogan {
-        font-size: 18px;
-      }
-    }
-
-    .fa-github-square:hover {
-      transform: scale(1.2);
-      transition: all 0.2s ease-in-out;
-    }
-
-    .copyright {
-      font-size: 20px;
-    }
-
-    @media (max-width: 576px) {
-      .copyright {
-        font-size: 14px;
-      }
-
-      .fa-github-square {
-        font-size: 1rem;
-      }
-    }
-  </style>
-  <script src="/socket.io/socket.io.js"></script>
+	<title>Login V3</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
 </head>
-
 <body>
-  <div class="container container-fluid cod-flex flex-column align-items-center">
-    <div class="row">
-      <div class="col-lg-12 text-center">
-        <h1 id="name">ChatMe</h1>
-        <p id="slogan">
-          The perfect place to relax with friends and new people!
-        </p>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-12 text-center">
-        <div class="d-flex justify-content-center login-signup">
-          <a href="./login.html" target="_self">
-            <button class="btn mr-3" id="login">Login</button>
-          </a>
-          <a href="./signup.html" target="_self">
-            <button class="btn" id="signup">Sign Up</button>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
+		<div class="container-login100" style="background-image: url('images/bg-01.jpg');">
+			<div class="wrap-login100">
+				<form class="login100-form validate-form">
+					<span class="login100-form-logo">
+						<i class="zmdi zmdi-landscape"></i>
+					</span>
 
-  <footer class="footer fixed-bottom p-3">
-    <div class="text-center d-flex justify-content-between align-items-center">
-      <span class="text-white h5 copyright">Copyright &copy; ChatMe 2023</span>
-      <div class="d-flex">
-        <a href="https://github.com/AndreaCampostrini/ChatMe" target="_blank">
-          <i class="fab fa-github-square fa-2x mx-3 text-dark"></i>
-        </a>
-      </div>
-    </div>
-  </footer>
-  <script src="./script.js"></script>
+					<span class="login100-form-title p-b-34 p-t-27">
+						Log in
+					</span>
+
+					<div class="wrap-input100 validate-input" data-validate = "Enter username">
+						<input class="input100" type="text" name="username" placeholder="Username">
+						<span class="focus-input100" data-placeholder="&#xf207;"></span>
+					</div>
+
+					<div class="wrap-input100 validate-input" data-validate="Enter password">
+						<input class="input100" type="password" name="pass" placeholder="Password">
+						<span class="focus-input100" data-placeholder="&#xf191;"></span>
+					</div>
+
+					<div class="contact100-form-checkbox">
+						<input class="input-checkbox100" id="ckb1" type="checkbox" name="remember-me">
+						<label class="label-checkbox100" for="ckb1">
+							Remember me
+						</label>
+					</div>
+
+					<div class="container-login100-form-btn">
+						<button class="login100-form-btn">
+							Login
+						</button>
+					</div>
+
+					<div class="text-center p-t-90">
+						<a class="txt1" href="#">
+							Forgot Password?
+						</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	<script src="js/main.js"></script>
 
 </body>
-
 </html>
