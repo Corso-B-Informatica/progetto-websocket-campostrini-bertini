@@ -2,7 +2,7 @@ a {
 
   font-size: 14px;
   line-height: 1.7;
-  color: #666666;
+  color: #adadad!important;
   margin: 0px;
   transition: all 0.4s;
   -webkit-transition: all 0.4s;
@@ -13,7 +13,7 @@ a {
 
 a:hover {
   text-decoration: none;
-  color: #fff;
+  color: #a64bf4!important;
 }
 
 /*---------------------------------------------*/
@@ -25,7 +25,9 @@ h5,
 h6 {
   margin: 0px;
 }
-
+span {
+  color: #adadad;
+}
 p {
   font-size: 14px;
   line-height: 1.7;
@@ -98,22 +100,15 @@ iframe {
 }
 
 .container-input {
-  border-bottom: 2px solid rgba(255, 255, 255, 0.24);
+  border-bottom: 2px solid rgba(173, 173, 173, 0.5);
   margin-bottom: 30px;
 }
 
 .input100 {
-  font-size: 16px;
-  line-height: 1.2;
-
-  display: block;
-  width: 100%;
   height: 45px;
-  background: transparent;
   padding: 0 5px 0 38px;
 }
 
-/*---------------------------------------------*/
 .focus-input100 {
   position: absolute;
   display: block;
@@ -132,19 +127,17 @@ iframe {
   left: 0;
   width: 0;
   height: 2px;
-
+  background: #212529;
   -webkit-transition: all 0.4s;
   -o-transition: all 0.4s;
   -moz-transition: all 0.4s;
   transition: all 0.4s;
-
-  background: #fff;
 }
 
 .focus-input100::after {
   font-family: Material-Design-Iconic-Font;
   font-size: 22px;
-  color: #fff;
+  color: #adadad;
 
   content: attr(data-placeholder);
   display: block;
