@@ -159,7 +159,7 @@
         }
 
         .label-checkbox {
-            font-size: 13px;
+            font-size: 12px;
             line-height: 1.2;
             color: #333;
             padding-left: 26px;
@@ -198,9 +198,43 @@
             color: #a64bf4;
         }
 
-        @media (max-width: 576px) {
+        @media (max-width: 440px) {
             .login {
                 padding: 55px 15px 37px 15px;
+            }
+
+            .input {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            #signIn {
+                font-size: 15px;
+                padding: 20px 80px;
+            }
+        }
+
+        @media (max-width: 276px) {
+            #signIn {
+                font-size: 14px;
+                padding: 20px 60px;
+            }
+        }
+
+        @media (max-height: 905px) {
+            #footer {
+                display: none !important;
+            }
+        }
+
+        @media (max-height: 800px) {
+            .login {
+                border-radius: 0px !important;
+            }
+
+            body {
+                background: #fff !important;
             }
         }
 
@@ -249,7 +283,12 @@
             transition: all 0.2s ease-in-out;
             color: #fff
         }
+
+        .forgotpassword {
+            font-size: 12px;
+        }
     </style>
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 
 <body>
@@ -272,15 +311,19 @@
                     <input class="input" type="password" placeholder="Password">
                     <span class="focus-input position-absolute d-block w-100 h-100" data-placeholder="&#xf191;"></span>
                 </div>
-
-                <div class="container-checkbox">
-                    <input class="input-checkbox d-none" id="checkbox" type="checkbox">
-                    <label class="label-checkbox d-block position-relative user-select-none" for="checkbox">Remember
-                        me</label>
+                <div class="container-checkbox flex-wrap d-flex align-items-center justify-content-center">
+                    <div  class="w-50 d-flex align-items-center justify-content-start">
+                        <input class="input-checkbox d-none" id="checkbox" type="checkbox">
+                        <label class="label-checkbox d-block position-relative user-select-none" for="checkbox">Remember
+                            me</label>
+                    </div>
+                    <div class="w-50 d-flex align-items-center justify-content-end">
+                        <a class="forgotpassword" href="./signUp.html">Forgot Password?</a>
+                    </div>
                 </div>
 
                 <div class="w-100 d-flex flex-wrap justify-content-center">
-                    <button class="btn w-100">Sign In</button>
+                    <button id="signIn" class="btn w-100">Sign In</button>
                 </div>
 
                 <div class="flex-wrap d-flex align-items-center justify-content-center p-t-155">
@@ -290,7 +333,7 @@
                 </div>
             </form>
         </div>
-        <footer class="footer fixed-bottom p-3">
+        <footer id="footer" class="footer fixed-bottom p-3">
             <div class="text-center d-flex justify-content-between align-items-center">
                 <span class="text-white h5 copyright">Copyright &copy; ChatMe 2023</span>
                 <div class="d-flex">
