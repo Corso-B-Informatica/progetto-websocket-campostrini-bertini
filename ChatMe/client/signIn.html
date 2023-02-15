@@ -232,8 +232,10 @@
             .login {
                 border-radius: 0px !important;
             }
+
             body {
-                background: #fff !important;}
+                background: #fff !important;
+            }
         }
 
         @media (max-height: 720px) {
@@ -281,6 +283,10 @@
             transition: all 0.2s ease-in-out;
             color: #fff
         }
+
+        .forgotpassword {
+            font-size: 12px;
+        }
     </style>
     <script src="/socket.io/socket.io.js"></script>
 </head>
@@ -305,11 +311,15 @@
                     <input class="input" type="password" placeholder="Password">
                     <span class="focus-input position-absolute d-block w-100 h-100" data-placeholder="&#xf191;"></span>
                 </div>
-
-                <div class="container-checkbox">
-                    <input class="input-checkbox d-none" id="checkbox" type="checkbox">
-                    <label class="label-checkbox d-block position-relative user-select-none" for="checkbox">Remember
-                        me</label>
+                <div class="container-checkbox flex-wrap d-flex align-items-center justify-content-center">
+                    <div  class="w-50 d-flex align-items-center justify-content-start">
+                        <input class="input-checkbox d-none" id="checkbox" type="checkbox">
+                        <label class="label-checkbox d-block position-relative user-select-none" for="checkbox">Remember
+                            me</label>
+                    </div>
+                    <div class="w-50 d-flex align-items-center justify-content-end">
+                        <a class="forgotpassword" href="./signUp.html">Forgot Password?</a>
+                    </div>
                 </div>
 
                 <div class="w-100 d-flex flex-wrap justify-content-center">
