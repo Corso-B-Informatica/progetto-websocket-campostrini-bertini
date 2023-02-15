@@ -18,7 +18,7 @@
     <link rel="stylesheet" type="text/css" href="./css/main.css">
     <script src="https://kit.fontawesome.com/bbf7a86a8c.js" crossorigin="anonymous"></script>
     <style>
-        body {
+                body {
             background-size: cover;
             background-image: url('./images/background-access.jpg');
         }
@@ -159,7 +159,7 @@
         }
 
         .label-checkbox {
-            font-size: 13px;
+            font-size: 12px;
             line-height: 1.2;
             color: #333;
             padding-left: 26px;
@@ -198,10 +198,42 @@
             color: #a64bf4;
         }
 
-        @media (max-width: 576px) {
+        @media (max-width: 440px) {
             .login {
                 padding: 55px 15px 37px 15px;
             }
+
+            .input {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            #signIn {
+                font-size: 15px;
+                padding: 20px 80px;
+            }
+        }
+
+        @media (max-width: 276px) {
+            #signIn {
+                font-size: 14px;
+                padding: 20px 60px;
+            }
+        }
+
+        @media (max-height: 905px) {
+            #footer {
+                display: none !important;
+            }
+        }
+
+        @media (max-height: 800px) {
+            .login {
+                border-radius: 0px !important;
+            }
+            body {
+                background: #fff !important;}
         }
 
         @media (max-height: 720px) {
