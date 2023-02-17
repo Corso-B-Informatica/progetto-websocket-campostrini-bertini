@@ -5,35 +5,31 @@ const openpgp = require("openpgp");
 var AES = require("crypto-js/aes");
 const sqlite3 = require("sqlite3").verbose();
 
-const passphrase = `sgk#^Ca!5s=Gq;jY|~tm98@Wyoze3nJAl-80Ecc%1vx33uG7qd]+nbLRi4-]oK![hbu@B>}l\qkFQFyKw[d|eXC#\`nBaZ|qg.Wk"KW8joLbVHx6Vim#LJ[2x7?O@mP{nFBYk\BRKzIW94vfWynq\oiE:h|9<:1l*gtT3o8l=^h%iL-JYB?Y?3$1p+e>2rsD:_E-@>nS:*s6|E(as\`2.Oo&4w[1QZLV!JG8|RwfX)k|W)'t}Kh$/4S!<[5dv*C}i=<-&0*t4Qp_NY9h[Qn\}aW=fk@LZL=o,+K_8]2v3e<h~;#LH'~ln\`F^Cc\}GC$ly'?*.E!JyWy8mFv2gI4Y+dWCLf=n=(2qsZX/'rWR.~$c5\lz?<Qy81ZZ=HkF{7?O.wQ$M2"9Jr;wlYhcwP"qkPCy06>{_r0btfNdN9*di>oa,so{f$8\`;la*&L-5%@?5!\CT6vli9.oO&pr/+:9!D[1dG-k'WQ6O9*A\~Y%j2DNt2d;"sKZz&IpE7qkRCH"US:`; // what the private key is encrypted with
+const PublicKey = `-----BEGIN PGP PRIVATE KEY BLOCK-----
 
-function encryptData(data) {
+xYYEY+OA6hYJKwYBBAHaRw8BAQdAE2OJacHeP3Is1YPbia1aaWRKO3o9qQ1m
+Td8JpQiJ0F3+CQMILXavJP7Dgv/g+0TSGXPuCL5sGl1eArmEr5Ydg5MNMU9n
+aYBswVesaGQIUUo6MwiWQ8ib88+2pth0ZQ9EedKxwky/qdd82MxQqlpKcWEb
+Lc0bUGlhcmRpIDxwaWFyZGlAZXhhbXBsZS5jb20+wowEEBYKAD4FAmPjgOoE
+CwkHCAkQAgMpsEw9B78DFQgKBBYAAgECGQECGwMCHgEWIQRVgAE9MNkG13oY
+NbUCAymwTD0HvwAAvbMA/2Yyco37N4uZjpu2KnwQG20ShbTssV28pC0+h3oG
+DWtHAQD+bknb0Lm0Dh3zvv6TxzmhT4wVovv+sbgsbKY9kQYUBseLBGPjgOoS
+CisGAQQBl1UBBQEBB0CvHES9Fm08BhMH4newkWxD0OzYulhYt9UW4aC7MmCr
+YwMBCAf+CQMIDk90TM9eDcbgh91DAFhL/oS94DiGXAaAZgiEYSCxKQ6nkWHr
+g0m5EUGBARcv7ecF+5q77aFnEe2ggrphzPWNd7fQmxNzDPMknYK5ZW6FmcJ4
+BBgWCAAqBQJj44DqCRACAymwTD0HvwIbDBYhBFWAAT0w2QbXehg1tQIDKbBM
+PQe/AAABrAEA3C2FaXjJoFrnv5gB1c1mWvUmLiFV34mDWpRju/YpdEcBAO1E
+ePPW0Y/+5LEpzNJUDpIbsSVSYoU4Z5k4u5DRI58N
+=mJgw
+-----END PGP PRIVATE KEY BLOCK-----`;
+
+function encryptData(data, PublicKey) {
   (async () => {
-    //generazione chiavi
-    const { privateKey, publicKey, revocationCertificate } =
-      await openpgp.generateKey({
-        type: "ecc",
-        curve: "curve25519",
-        userIDs: [{ name: "Jon Smith", email: "jon@example.com" }],
-        passphrase: `sgk#^Ca!5s=Gq;jY|~tm98@Wyoze3nJAl-80Ecc%1vx33uG7qd]+nbLRi4-]oK![hbu@B>}l\qkFQFyKw[d|eXC#\`nBaZ|qg.Wk"KW8joLbVHx6Vim#LJ[2x7?O@mP{nFBYk\BRKzIW94vfWynq\oiE:h|9<:1l*gtT3o8l=^h%iL-JYB?Y?3$1p+e>2rsD:_E-@>nS:*s6|E(as\`2.Oo&4w[1QZLV!JG8|RwfX)k|W)'t}Kh$/4S!<[5dv*C}i=<-&0*t4Qp_NY9h[Qn\}aW=fk@LZL=o,+K_8]2v3e<h~;#LH'~ln\`F^Cc\}GC$ly'?*.E!JyWy8mFv2gI4Y+dWCLf=n=(2qsZX/'rWR.~$c5\lz?<Qy81ZZ=HkF{7?O.wQ$M2"9Jr;wlYhcwP"qkPCy06>{_r0btfNdN9*di>oa,so{f$8\`;la*&L-5%@?5!\CT6vli9.oO&pr/+:9!D[1dG-k'WQ6O9*A\~Y%j2DNt2d;"sKZz&IpE7qkRCH"US:`, // protects the private key
-        format: "armored",
-      });
-    console.log(privateKey);
-    console.log(publicKey);
-    console.log(revocationCertificate);
-
     //lettura chiavi
     const public = await openpgp.readKey({
-      armoredKey: publicKey,
+      armoredKey: PublicKey,
     });
-
-    const private = await openpgp.decryptKey({
-      privateKey: await openpgp.readPrivateKey({
-        armoredKey: privateKey,
-      }),
-      passphrase,
-    });
-
+    
     //cifratura messaggio
     const encrypted = await openpgp.encrypt({
       message: await openpgp.createMessage({ text: data }),
@@ -42,26 +38,7 @@ function encryptData(data) {
     console.log(encrypted);
   })();
 }
-encryptData("chiave da criptare");
-/*(async () => {
-
-  const message = await openpgp.readMessage({
-    armoredMessage: encrypted, // parse armored message
-  });
-  const { data: decrypted, signatures } = await openpgp.decrypt({
-    message,
-    verificationKeys: publicKey, // optional
-    decryptionKeys: privateKey,
-  });
-  console.log(decrypted); // 'Hello, World!'
-  // check signature validity (signed messages only)
-  try {
-    await signatures[0].verified; // throws on invalid signature
-    console.log("Signature is valid");
-  } catch (e) {
-    throw new Error("Signature could not be verified: " + e.message);
-  }
-})();*/
+encryptData("chiave da criptare", PublicKey);
 
 const app = express();
 app.use(express.static("../client"));
