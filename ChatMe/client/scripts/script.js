@@ -1,14 +1,13 @@
 /*Socket.io*/
 var socket = io();
-//var CryptoJS = require("crypto-js");
-//var openpgp = require("openpgp");
 function register() {
     socket.emit("getPublicKey");
+    console.log("chiave pubblica richiesta");
 }
 
 socket.on("publicKey", (publicKey) => {
     // Genera una chiave di 256 bit in formato word array
-    var key = CryptoJS.lib.WordArray.random(32);
+    /*var key = CryptoJS.lib.WordArray.random(32);
 
     // Converte la chiave in formato base64
     var keyBase64 = CryptoJS.enc.Base64.stringify(key);
@@ -27,11 +26,11 @@ socket.on("publicKey", (publicKey) => {
         publicKey
     );
     let crypted_key = encryptPGP(keyBase64, publicKey);
-    socket.emit("register", crypted_email, crypted_password, crypted_nickname, crypted_key);
+    socket.emit("register", crypted_email, crypted_password, crypted_nickname, crypted_key);*/
 });
 
 /*OpenPGP*/
-function encryptPGP(data, publicKey) {
+/*function encryptPGP(data, publicKey) {
     (async () => {
         //lettura chiavi
         const key = await openpgp.readKey({
@@ -47,8 +46,8 @@ function encryptPGP(data, publicKey) {
         return encrypted;
     })();
 }
-
+*/
 /*CryptoJS*/
-function encryptAES(data, key) {
+/*function encryptAES(data, key) {
     return CryptoJS.AES.encrypt(data, key).toString();
-}
+}*/
