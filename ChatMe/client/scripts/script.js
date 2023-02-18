@@ -1,53 +1,72 @@
 /*Socket.io*/
 var socket = io();
 function register() {
-    socket.emit("getPublicKey");
-    console.log("chiave pubblica richiesta");
+  socket.emit("getPublicKey");
+  console.log("chiave pubblica richiesta");
 }
 
 socket.on("publicKey", (publicKey) => {
-    // Genera una chiave di 256 bit in formato word array
-    /*var key = CryptoJS.lib.WordArray.random(32);
+  console.log("chiave pubblica ricevuta " + publicKey);
+  // Genera una chiave di 256 bit in formato word array
+  var key = CryptoJS.lib.WordArray.random(32);
+  console.log("chiave generata " + key);
 
-    // Converte la chiave in formato base64
-    var keyBase64 = CryptoJS.enc.Base64.stringify(key);
+  // Converte la chiave in formato base64
+  var keyBase64 = CryptoJS.enc.Base64.stringify(key);
+  console.log("chiave base64 " + keyBase64);
 
-    let crypted_nickname = encryptPGP(
-        encryptAES(document.getElementById("username").value, keyBase64),
-        publicKey
-    );
+  var username = document.getElementById("username").value;
+  var cn = encryptAES(username, keyBase64);
+  console.log("nickname " + cn);
+  let crypted_nickname = encryptPGP(cn, publicKey);
+  console.log("nickname cifrato " + crypted_nickname);
 
-    let crypted_email = encryptPGP(
-        encryptAES(document.getElementById("email").value, keyBase64),
-        publicKey
-    );
-    let crypted_password = encryptPGP(
-        encryptAES(document.getElementById("password").value, keyBase64),
-        publicKey
-    );
-    let crypted_key = encryptPGP(keyBase64, publicKey);
-    socket.emit("register", crypted_email, crypted_password, crypted_nickname, crypted_key);*/
+  var email = document.getElementById("email").value;
+  var ce = encryptAES(email, keyBase64);
+  console.log("email " + ce);
+  /*let crypted_email = encryptPGP(ce, publicKey);
+            console.log("email cifrata " + crypted_email);*/
+
+  var password = document.getElementById("password").value;
+  var cp = encryptAES(password, keyBase64);
+  console.log("password " + cp);
+  /*let crypted_password = encryptPGP(cp, publicKey);
+            console.log("password cifrata " + crypted_password);*/
+
+  /*let crypted_key = encryptPGP(keyBase64, publicKey);
+            console.log("chiave cifrata " + crypted_key);*/
+
+  socket.emit(
+    "register",
+    crypted_email,
+    crypted_password,
+    crypted_nickname,
+    crypted_key
+  );
+  console.log("dati inviati");
 });
 
 /*OpenPGP*/
-/*function encryptPGP(data, publicKey) {
-    (async () => {
-        //lettura chiavi
-        const key = await openpgp.readKey({
-            armoredKey: publicKey,
-        });
+function encryptPGP(data, publicKey) {
+  (async () => {
+    //lettura chiavi
+    const key = await openpgp.readKey({
+      armoredKey: publicKey,
+    });
+    console.log("chiave pgp: " + key);
+    //cifratura messaggio
+    const encrypted = await openpgp.encrypt({
+      message: await openpgp.createMessage({ text: data }),
+      encryptionKeys: key,
+    });
 
-        //cifratura messaggio
-        const encrypted = await openpgp.encrypt({
-            message: await openpgp.createMessage({ text: data }),
-            encryptionKeys: key,
-        });
-
-        return encrypted;
-    })();
+    return encrypted;
+  })();
 }
-*/
+
 /*CryptoJS*/
-/*function encryptAES(data, key) {
-    return CryptoJS.AES.encrypt(data, key).toString();
-}*/
+function encryptAES(data, key) {
+  console.log("dati da cifrare: " + data);
+  console.log("chiave aes: " + key);
+  return CryptoJS.AES.encrypt(data, key).toString();
+}
