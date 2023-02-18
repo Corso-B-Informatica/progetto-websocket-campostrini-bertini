@@ -284,6 +284,8 @@
         }
     </style>
     <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="./scripts/crypto-js/crypto-js.js"></script>
+    <script type="text/javascript" src="./scripts/openpgp/dist/openpgp.min.js"></script>
 </head>
 
 <body>
@@ -346,7 +348,52 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"
         integrity="sha384-mQ93GR66B00ZXjt0YO5KlohRA5SY2XofN4zfuZxLkoj1gXtW8ANNCe9d5Y3eG5eD"
         crossorigin="anonymous"></script>
-    <script src="./scripts/script.js"></script>
+    <script>
+        /*Socket.io*/
+        var socket = io();
+        var CryptoJS = require("crypto-js");
+        function register() {
+            socket.emit("getPublicKey");
+            console.log("emit getPublicKey")
+        }
+        socket.on("publicKey", (publicKey) => {
+            // Genera una chiave di 256 bit in formato word array
+            var key = CryptoJS.lib.WordArray.random(32);
+            console.log(key)
+            // Converte la chiave in formato base64
+            var keyBase64 = CryptoJS.enc.Base64.stringify(key);
+            let crypted_nickname = encryptPGP(encryptAES(document.getElementById("username").value, keyBase64), publicKey);
+            let crypted_email = encryptPGP(encryptAES(document.getElementById("email").value, keyBase64), publicKey);
+            let crypted_password = encryptPGP(encryptAES(document.getElementById("password").value, keyBase64), publicKey);
+            let crypted_key = encryptPGP(keyBase64, publicKey);
+            console.log(crypted_key)
+            //socket.emit("register", crypted_email, crypted_password, crypted_nickname, crypted_key);
+            console.log("emit register")
+        });
+
+        /*OpenPGP*/
+        function encryptPGP(data, publicKey) {
+            (async () => {
+                //lettura chiavi
+                const key = await openpgp.readKey({
+                    armoredKey: publicKey
+                });
+
+                //cifratura messaggio
+                const encrypted = await openpgp.encrypt({
+                    message: await openpgp.createMessage({ text: data }),
+                    encryptionKeys: key
+                });
+
+                return encrypted;
+            })();
+        }
+
+        /*CryptoJS*/
+        function encryptAES(data, key) {
+            return CryptoJS.AES.encrypt(data, key).toString();
+        }
+    </script>
 </body>
 
 </html>

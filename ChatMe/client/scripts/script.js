@@ -1,25 +1,44 @@
-//openpgp non viene importato
+/*Socket.io*/
 var socket = io();
-(async () => {
-  const { privateKey, publicKey } = await openpgp.generateKey({
-    type: "rsa", // Type of the key
-    rsaBits: 4096, // RSA key size (defaults to 4096 bits)
-    userIDs: [
-      {
-        name: document.getElementById("username").value,
-        email: document.getElementById("email").value,
-      },
-    ], // you can pass multiple user IDs
-    passphrase: document.getElementById("password").value, // protects the private key
-  });
-  console.log(privateKey);
-  console.log(publicKey);
-})();
 
 function register() {
-  let username = document.getElementById("username").value;
-  let email = document.getElementById("email").value;
-  let password = document.getElementById("password").value;
-  console.log("ssa");
-  socket.emit("register", username, email, password, publicKey);
+  socket.emit("getPublicKey");
+  console.log("emit getPublicKey")
+}
+socket.on("publicKey", (publicKey) => {
+  // Genera una chiave di 256 bit in formato word array
+  var key = CryptoJS.lib.WordArray.random(32);
+
+  // Converte la chiave in formato base64
+  var keyBase64 = CryptoJS.enc.Base64.stringify(key);
+  let crypted_nickname = encryptPGP(encryptAES(document.getElementById("username").value, keyBase64), publicKey);
+  let crypted_email = encryptPGP(encryptAES(document.getElementById("email").value, keyBase64), publicKey);
+  let crypted_password = encryptPGP(encryptAES(document.getElementById("password").value, keyBase64), publicKey);
+  let crypted_key = encryptPGP(keyBase64, publicKey);
+  console.log(crypted_key)
+  //socket.emit("register", crypted_email, crypted_password, crypted_nickname, crypted_key);
+  console.log("emit register")
+});
+
+/*OpenPGP*/
+function encryptPGP(data, publicKey) {
+  (async () => {
+    //lettura chiavi
+    const key = await openpgp.readKey({
+      armoredKey: publicKey
+    });
+
+    //cifratura messaggio
+    const encrypted = await openpgp.encrypt({
+      message: await openpgp.createMessage({ text: data }),
+      encryptionKeys: key
+    });
+
+    return encrypted;
+  })();
+}
+
+/*CryptoJS*/
+function encryptAES(data, key) {
+  return CryptoJS.AES.encrypt(data, key).toString();
 }

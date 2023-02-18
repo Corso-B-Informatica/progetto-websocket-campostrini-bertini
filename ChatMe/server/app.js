@@ -2,10 +2,64 @@ const express = require("express");
 const config = require("./config.js");
 const socketio = require("socket.io");
 const openpgp = require("openpgp");
-var AES = require("crypto-js/aes");
+var CryptoJS = require("crypto-js");
 const sqlite3 = require("sqlite3").verbose();
 
-const PublicKey = `-----BEGIN PGP PRIVATE KEY BLOCK-----
+/*Express*/
+const app = express();
+app.use(express.static("../client"));
+
+/*Socket.io*/
+const server = app.listen(config.port, () => {
+  console.log("Server in ascolto sulla porta " + config.port);
+});
+const io = socketio(server);
+
+io.on("connection", (socket) => {
+  socket.on("getPublicKey", () => {
+    console.log("Richiesta chiave pubblica da parte di " + socket.id);
+    socket.emit("publicKey", publicKey);
+  });
+  socket.on("register", (crypted_email, crypted_password, crypted_nickname, crypted_key) => {
+    console.log("Richiesta registrazione da parte di " + socket.id);
+    key = decryptPGP(crypted_key);
+    email = decryptAES(decryptPGP(crypted_email, key));
+    password = decryptAES(decryptPGP(crypted_password, key));
+    nickname = decryptAES(decryptPGP(crypted_nickname, key));
+    /*const newUser = {
+      email: email,
+      username: nickname,
+      password: password,
+    };*/
+    //se l'utente non è già presente e se il formato è corretto
+    //manda una mail di conferma della registrazione e salva il codice di registrazione assieme all'utente
+    //riceve il codice di conferma dal client e l'utente è stato creato
+    //se non si riceve il codice di conferma entro 24 ore l'utente viene eliminato
+    //se viene ricevuto semplicente si toglie dal database la data di scadenza del codice di registrazione e il codice di registrazione
+    //se l'utente richiede più di un codice di conferma per la stessa registrazione, viene mandato quello precedentemente salvato nel database
+    //users.push(newUser);
+    socket.emit("confirm", "Registrazione avvenuta con successo. Benvenuto " + cnickname
+    );
+  });
+});
+
+/*Public Key*/
+const publicKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+xjMEY+OA6hYJKwYBBAHaRw8BAQdAE2OJacHeP3Is1YPbia1aaWRKO3o9qQ1m
+Td8JpQiJ0F3NG1BpYXJkaSA8cGlhcmRpQGV4YW1wbGUuY29tPsKMBBAWCgA+
+BQJj44DqBAsJBwgJEAIDKbBMPQe/AxUICgQWAAIBAhkBAhsDAh4BFiEEVYAB
+PTDZBtd6GDW1AgMpsEw9B78AAL2zAP9mMnKN+zeLmY6btip8EBttEoW07LFd
+vKQtPod6Bg1rRwEA/m5J29C5tA4d877+k8c5oU+MFaL7/rG4LGymPZEGFAbO
+OARj44DqEgorBgEEAZdVAQUBAQdArxxEvRZtPAYTB+J3sJFsQ9Ds2LpYWLfV
+FuGguzJgq2MDAQgHwngEGBYIACoFAmPjgOoJEAIDKbBMPQe/AhsMFiEEVYAB
+PTDZBtd6GDW1AgMpsEw9B78AAAGsAQDcLYVpeMmgWue/mAHVzWZa9SYuIVXf
+iYNalGO79il0RwEA7UR489bRj/7ksSnM0lQOkhuxJVJihThnmTi7kNEjnw0=
+=99ZC
+-----END PGP PUBLIC KEY BLOCK-----`;
+
+/*Private Key*/
+const privateKey = `-----BEGIN PGP PRIVATE KEY BLOCK-----
 
 xYYEY+OA6hYJKwYBBAHaRw8BAQdAE2OJacHeP3Is1YPbia1aaWRKO3o9qQ1m
 Td8JpQiJ0F3+CQMILXavJP7Dgv/g+0TSGXPuCL5sGl1eArmEr5Ydg5MNMU9n
@@ -23,27 +77,32 @@ ePPW0Y/+5LEpzNJUDpIbsSVSYoU4Z5k4u5DRI58N
 =mJgw
 -----END PGP PRIVATE KEY BLOCK-----`;
 
-function encryptData(data, PublicKey) {
+/*OpenPGP*/
+function decryptPGP(data) {
   (async () => {
     //lettura chiavi
-    const public = await openpgp.readKey({
-      armoredKey: PublicKey,
+    const key = await openpgp.readKey({
+      armoredKey: privateKey
     });
-    
-    //cifratura messaggio
-    const encrypted = await openpgp.encrypt({
-      message: await openpgp.createMessage({ text: data }),
-      encryptionKeys: public
+
+    //decifratura messaggio
+    const decrypted = await openpgp.decrypt({
+      message: await openpgp.readMessage({
+        armoredMessage: data
+      }),
+      decryptionKeys: key
     });
-    console.log(encrypted);
+    return decrypted;
   })();
 }
-encryptData("chiave da criptare", PublicKey);
 
-const app = express();
-app.use(express.static("../client"));
+/*CryptoJS*/
+function decryptAES(data, key) {
+  return CryptoJS.AES.decrypt(data, key).toString(CryptoJS.enc.Utf8);
+}
 
-const users = [
+/*Database*/
+/*const users = [
   {
     email: "user1@example.com",
     username: "user1",
@@ -113,45 +172,4 @@ function insertUser(db, newUser) {
       }
     }
   );
-}
-
-const server = app.listen(config.port, () => {
-  console.log("Server in ascolto sulla porta " + config.port);
-});
-const io = socketio(server);
-// var nicknames = [];
-// io.on("connection", (socket) => {
-//   socket.on("register", (nome) => {
-//     console.log("client connesso");
-//     socket.nome = nome;
-//     console.log("Client connesso:", socket.nome);
-//     socket.emit(
-//       "confirm",
-//       "Registrazione avvenuta con successo. Benvenuto " + socket.nome
-//     );
-//     socket.broadcast.emit("newuser", socket.nome + " si è unito alla chat.");
-//     io.emit("newuser", socket.nome);
-
-//   });
-// });
-
-io.on("connection", (socket) => {
-  socket.on("getPublicKey", (publicKeyClient) => {
-    io.emit("publicKey", publicKey);
-  });
-  socket.on("register", (cemail, cpassword, cnickname) => {
-    email = decrypt(cemail);
-    password = decrypt(cpassword);
-    nickname = decrypt(cnickname);
-    const newUser = {
-      email: email,
-      username: nickname,
-      password: password,
-    };
-    users.push(newUser);
-    io.emit(
-      "confirm",
-      "Registrazione avvenuta con successo. Benvenuto " + cnickname
-    );
-  });
-});
+}*/
