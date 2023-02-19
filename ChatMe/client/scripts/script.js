@@ -1,6 +1,8 @@
+import openpgp from "https://cdn.jsdelivr.net/npm/openpgp@5.6.0/dist/openpgp.min.js";
+console.log(openpgp);
 /*Socket.io*/
 var socket = io();
-function register() {
+window.register = function register() {
   socket.emit("getPublicKey");
 }
 
@@ -20,25 +22,25 @@ socket.on("publicKey", (publicKey) => {
   var email = document.getElementById("email").value;
   var ce = encryptAES(email, keyBase64);
   console.log("email " + ce);
-  let crypted_email = encryptPGP(ce, publicKey);
-  console.log("email cifrata " + crypted_email);
+  /*let crypted_email = encryptPGP(ce, publicKey);
+  console.log("email cifrata " + crypted_email);*/
 
   var password = document.getElementById("password").value;
   var cp = encryptAES(password, keyBase64);
   console.log("password " + cp);
-  let crypted_password = encryptPGP(cp, publicKey);
-  console.log("password cifrata " + crypted_password);
+  /*let crypted_password = encryptPGP(cp, publicKey);
+  console.log("password cifrata " + crypted_password);*/
 
-  let crypted_key = encryptPGP(keyBase64, publicKey);
-  console.log("chiave cifrata " + crypted_key);
+  /*let crypted_key = encryptPGP(keyBase64, publicKey);
+  console.log("chiave cifrata " + crypted_key);*/
 
-  socket.emit(
+  /*socket.emit(
     "register",
     crypted_email,
     crypted_password,
     crypted_nickname,
     crypted_key
-  );
+  );*/
 });
 
 /*OpenPGP*/
@@ -54,7 +56,6 @@ function encryptPGP(data, publicKey) {
       message: await openpgp.createMessage({ text: data }),
       encryptionKeys: key,
     });
-
     return encrypted;
   })();
 }
