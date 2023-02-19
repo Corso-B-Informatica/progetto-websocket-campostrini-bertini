@@ -1,13 +1,13 @@
-import openpgp from "https://cdn.jsdelivr.net/npm/openpgp@5.6.0/dist/openpgp.min.js";
-console.log(openpgp);
+import { createMessage, encrypt, readKey } from "https://cdn.jsdelivr.net/npm/openpgp@5.6.0/dist/openpgp.min.mjs";
 /*Socket.io*/
 var socket = io();
 window.register = function register() {
   socket.emit("getPublicKey");
-}
+};
 
 socket.on("publicKey", (publicKey) => {
   // Genera una chiave di 256 bit in formato word array
+  console.log(publicKey);
   var key = CryptoJS.lib.WordArray.random(32);
 
   // Converte la chiave in formato base64
@@ -47,13 +47,13 @@ socket.on("publicKey", (publicKey) => {
 function encryptPGP(data, publicKey) {
   (async () => {
     //lettura chiavi
-    const key = await openpgp.readKey({
+    const key = await readKey({
       armoredKey: publicKey,
     });
     console.log("chiave pgp: " + key);
     //cifratura messaggio
-    const encrypted = await openpgp.encrypt({
-      message: await openpgp.createMessage({ text: data }),
+    const encrypted = await encrypt({
+      message: await createMessage({ text: data }),
       encryptionKeys: key,
     });
     return encrypted;
