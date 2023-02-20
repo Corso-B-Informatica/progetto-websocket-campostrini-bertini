@@ -6,10 +6,8 @@ socket.on("publicKey", (publicKeyArmored) => {
 });
 
 function register() {
-  if (checkUsername() && checkEmail() && checkPassword()) {
     socket.emit("getPublicKey");
   }
-}
 
 function checkUsername() {
   var username = document.getElementById("username").value;

@@ -38,6 +38,24 @@ PQe/AAABrAEA3C2FaXjJoFrnv5gB1c1mWvUmLiFV34mDWpRju/YpdEcBAO1E
 ePPW0Y/+5LEpzNJUDpIbsSVSYoU4Z5k4u5DRI58N
 =mJgw
 -----END PGP PRIVATE KEY BLOCK-----`;
+passphrase = 'fsrL[yhRbtlES_rOyaYkaz!;XTiC;),w4V.P]zYEp<F@iLTWRk.)Ij`GZ}$u+>92]H]OA}B\.)lCfi}tdrZ25cT-Mb~z*NxVH;Yens!OoEj=Nl&TCfzSp0#akDv>{ik%_HC7wX-[bXH<VRMa2Qb$0v~{(2B<lCA<)~X}AcTmp\<aCXC7!d>a|pMC.U{;(MmE@X"a7bn/.R=9P)_E[yB0gqgQy(~#RzPLNuxURh@yK(98Mbvo59Tl9ZhNZBAOFnjN9%#dQBv2=p-)IFXHE2p.mP;a+7Ro`_me$!}-w$O3I0Go;z%B0bD7+k=kaWS"^W"xhuvQ{1#=F(jX-1ID(,NU|(=;=a>f,]8%osRE<{p9@.$\H-CJh4dv>\zT2!lb8/6|hpbFtl]ZQ(dr[X6h@BLc`z|2wHy(@xJ+3g++Sm)Is~?K\^-*0!AtSYprX?l6!6\~tcxOI:-zyAYib:"C]]32Dd5!v2U7G1t&iksW7g4=xH)6./]$)J[WEY2!u$MjW#gn'
+
+
+async function decrypt(msg,passphrase) {
+  const privatekey = await openpgp.decryptKey({
+    privateKey: await openpgp.readPrivateKey({ armoredKey: privateKey }),
+    passphrase
+  });
+  const message = await openpgp.readMessage({
+    armoredMessage: msg // parse armored message
+  });
+  const { data: decrypted } = await openpgp.decrypt({
+    message,
+    decryptionKeys: privatekey
+  });
+
+  return decrypted;
+}
 
 /*Express*/
 const app = express();
@@ -60,10 +78,26 @@ io.on("connection", (socket) => {
       console.log(crypted_password);
       console.log(crypted_nickname);
       console.log(crypted_key);
-      key = decryptPGP(crypted_key);
-      email = decryptAES(decryptPGP(crypted_email, key));
-      password = decryptAES(decryptPGP(crypted_password, key));
-      nickname = decryptAES(decryptPGP(crypted_nickname, key));
+      key = decrypt(crypted_key,passphrase).then((decrypted) => {
+        console.log(decrypted);
+      }).catch((error) => {
+        console.error(error);
+      });
+      email = decrypt(crypted_email,passphrase).then((decrypted) => {
+        console.log(decrypted);
+      }).catch((error) => {
+        console.error(error);
+      });
+      nickname = decrypt(crypted_nickname,passphrase).then((decrypted) => {
+        console.log(decrypted);
+      }).catch((error) => {
+        console.error(error);
+      });
+      password = decrypt(crypted_password,passphrase).then((decrypted) => {
+        console.log(decrypted);
+      }).catch((error) => {
+        console.error(error);
+      });
       /*const newUser = {
       email: email,
       username: nickname,
@@ -76,45 +110,48 @@ io.on("connection", (socket) => {
       //se viene ricevuto semplicente si toglie dal database la data di scadenza del codice di registrazione e il codice di registrazione
       //se l'utente richiede più di un codice di conferma per la stessa registrazione, viene mandato quello precedentemente salvato nel database
       //users.push(newUser);
-      socket.emit(
-        "confirm",
-        "Registrazione avvenuta con successo. Benvenuto " + cnickname
-      );
+      // socket.emit(
+      //   "confirm",
+      //   "Registrazione avvenuta con successo. Benvenuto " + cnickname
+      // );
     }
   );
 });
 
 
-/*OpenPGP*/
-function decryptPGP(data) {
-  (async () => {
-    //lettura chiavi
-    const key = await openpgp.readKey({
-      armoredKey: privateKey,
-    });
-
-    //decifratura messaggio
-    const decrypted = await openpgp.decrypt({
-      message: await openpgp.readMessage({
-        armoredMessage: data,
-      }),
-      decryptionKeys: key,
-    });
-    return decrypted;
-  })();
-}
 /*CryptoJS*/
 function decryptAES(data, key) {
   return CryptoJS.AES.decrypt(data, key).toString(CryptoJS.enc.Utf8);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*Database*/
-/*const users = [
+const users = [
   {
     email: "user1@example.com",
     username: "user1",
     password: "password1",
-    eta: 20,
   },
 ];
 
@@ -142,12 +179,11 @@ function createDatabase() {
 
 function createTables(newdb) {
   newdb.exec(
-    `
+  `
   create table users (
       username text primary key not null,
       email text not null,
-      password text not null,
-      eta int 
+      password text not null
   );`,
     (err) => {
       console.log("Error creating tables: " + err);
@@ -170,13 +206,13 @@ function getUsers(db) {
 function insertUser(db, newUser) {
   console.log(newUser);
   db.all(
-    `insert into users (username, email, password, eta)
-  values (?, '?', '?', '?');`,
-    [newUser.username, newUser.email, newUser.password, newUser.eta],
+    `insert into users (username, email, password)
+  values (?, '?', '?');`,
+    [newUser.username, newUser.email, newUser.password],
     (err, rows) => {
       if (err) {
         console.log("Error inserting user: " + err);
       }
     }
   );
-}*/
+}
