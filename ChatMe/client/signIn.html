@@ -207,27 +207,95 @@
             }
         }
 
-        @media (max-width: 360px) {
-            #signIn {
-                font-size: 15px;
-                padding: 20px 80px;
+        @media (max-width: 440px) {
+            .input {
+                font-size: 12px;
             }
         }
 
-        @media (max-width: 276px) {
+        @media (max-width: 540px) {
+            .login {
+                width: 80%;
+            }
+        }
+
+        @media (max-width: 440px) {
             #signIn {
                 font-size: 14px;
                 padding: 20px 60px;
             }
         }
 
-        @media (max-height: 905px) {
+        @media (max-width: 350px) {
+            .login {
+                width: 100%;
+            }
+
+            #container {
+                padding: 0 !important;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .login {
+                border-radius: 0 !important;
+            }
+            body {
+                background: #fff !important;
+            }
+        }
+
+        @media (max-height: 1000px) {
             #footer {
                 display: none !important;
             }
         }
 
-        @media (max-height: 800px) {
+        @media (max-height: 880px) {
+            img {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        @media (max-height: 850px) {
+            .input {
+                font-size: 12px;
+            }
+
+            .p-t-155 {
+                font-size: 15px;
+                padding-top: 60px;
+            }
+        }
+
+        @media (max-height: 750px) {
+            .login {
+                padding: 25px 30px 20px 30px;
+            }
+        }
+
+        @media (max-height: 720px) {
+            #container {
+                padding: 0 !important;
+            }
+        }
+
+        @media (max-height: 680px) {
+            .p-t-155 {
+                padding-top: 30px;
+            }
+
+            .container-checkbox {
+                padding-bottom: 25px;
+            }
+
+            .container-input {
+                margin-bottom: 15px;
+            }
+        }
+
+        @media (max-height: 600px) {
             .login {
                 border-radius: 0px !important;
             }
@@ -235,11 +303,13 @@
             body {
                 background: #fff !important;
             }
-        }
 
-        @media (max-height: 720px) {
-            #container {
-                padding: 0 !important;
+            .p-t-27 {
+                padding-top: 13px;
+            }
+
+            .p-b-34 {
+                padding-bottom: 17px;
             }
         }
 
@@ -301,15 +371,17 @@
 
                 <span class="h1 fw-bold text-center d-block p-b-34 p-t-27 text-dark">Sign In</span>
 
-                <div class="container-input w-100 position-relative">
-                    <input class="input text-dark d-block w-100 bg-transparent" type="text" placeholder="Username">
+                <div id="container-username" class="container-input w-100 position-relative">
+                    <input id="username" class="input text-dark d-block w-100 bg-transparent" type="text"
+                        placeholder="Username">
                     <span class="focus-input position-absolute d-block w-100 h-100" data-placeholder="&#xf207;"></span>
                 </div>
 
-                <div class="container-input w-100 position-relative">
-                    <input class="input" type="password" placeholder="Password">
+                <div id="container-password" class="container-input w-100 position-relative">
+                    <input id="password" class="input" type="password" placeholder="Password">
                     <span class="focus-input position-absolute d-block w-100 h-100" data-placeholder="&#xf191;"></span>
                 </div>
+
                 <div class="container-checkbox flex-wrap d-flex align-items-center justify-content-center">
                     <div class="w-50 d-flex align-items-center justify-content-start">
                         <input class="input-checkbox d-none" id="checkbox" type="checkbox">
@@ -322,7 +394,7 @@
                 </div>
 
                 <div class="w-100 d-flex flex-wrap justify-content-center">
-                    <button id="signIn" class="btn w-100">Sign In</button>
+                    <button id="signIn" class="btn w-100" onclick="register()" type="button">Sign In</button>
                 </div>
 
                 <div class="flex-wrap d-flex align-items-center justify-content-center p-t-155">

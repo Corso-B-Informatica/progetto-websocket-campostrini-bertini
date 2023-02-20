@@ -21,7 +21,7 @@
             background-size: cover;
             background-image: url('./images/background-access.jpg');
         }
-
+        
         a {
             color: #333 !important;
             margin: 0px;
@@ -207,17 +207,42 @@
             }
         }
 
-        @media (max-width: 360px) {
-            #signIn {
-                font-size: 15px;
-                padding: 20px 80px;
+        @media (max-width: 440px) {
+            .input {
+                font-size: 12px;
             }
         }
 
-        @media (max-width: 276px) {
-            #signIn {
+        @media (max-width: 540px) {
+            .login {
+                width: 80%;
+            }
+        }
+
+        @media (max-width: 440px) {
+            #signUp {
                 font-size: 14px;
                 padding: 20px 60px;
+            }
+        }
+
+        @media (max-width: 350px) {
+            .login {
+                width: 100%;
+            }
+
+            #container {
+                padding: 0 !important;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .login {
+                border-radius: 0 !important;
+            }
+
+            body {
+                background: #fff !important;
             }
         }
 
@@ -342,18 +367,20 @@
                 </span>
 
                 <span class="h1 fw-bold text-center d-block p-b-34 p-t-27 text-dark">Sign Up</span>
-                <div class="container-input w-100 position-relative">
+
+                <div id="container-email" class="container-input w-100 position-relative">
                     <input id="email" class="input text-dark d-block w-100 bg-transparent" type="text"
                         placeholder="Email">
                     <span class="focus-input position-absolute d-block w-100 h-100" data-placeholder="&#xf348;"></span>
                 </div>
-                <div class="container-input w-100 position-relative">
+
+                <div id="container-username" class="container-input w-100 position-relative">
                     <input id="username" class="input text-dark d-block w-100 bg-transparent" type="text"
                         placeholder="Username">
                     <span class="focus-input position-absolute d-block w-100 h-100" data-placeholder="&#xf207;"></span>
                 </div>
 
-                <div class="container-input w-100 position-relative">
+                <div id="container-password" class="container-input w-100 position-relative">
                     <input id="password" class="input" type="password" placeholder="Password">
                     <span class="focus-input position-absolute d-block w-100 h-100" data-placeholder="&#xf191;"></span>
                 </div>
@@ -365,7 +392,7 @@
                 </div>
 
                 <div class="w-100 d-flex flex-wrap justify-content-center">
-                    <button id="signIn" class="btn w-100" onclick="register()" type="button">Sign Up</button>
+                    <button id="signUp" class="btn w-100" onclick="register()" type="button">Sign Up</button>
                 </div>
 
                 <div class="flex-wrap d-flex align-items-center justify-content-center p-t-155">
@@ -386,6 +413,7 @@
             </div>
         </footer>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
         integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3"
         crossorigin="anonymous"></script>

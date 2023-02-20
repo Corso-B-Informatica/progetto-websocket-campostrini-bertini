@@ -1,14 +1,47 @@
 /*Socket.io*/
 var socket = io();
-function register() {
-  //check di dati in locale
-  //se i dati sono validi possiamo richiedere al server la public key altrimenti avvisiamo l'utente
-  socket.emit("getPublicKey");
-};
 
 socket.on("publicKey", (publicKeyArmored) => {
   sendRegister(publicKeyArmored);
 });
+
+function register() {
+  if (checkUsername() && checkEmail() && checkPassword()) {
+    socket.emit("getPublicKey");
+  }
+}
+
+function checkUsername() {
+  var username = document.getElementById("username").value;
+  return true;
+}
+
+function checkEmail() {
+  var email = document.getElementById("email").value;
+  if (
+    email
+      .trim()
+      .match(
+        /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/
+      ) == null
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function checkPassword() {
+  var password = document.getElementById("password").value;
+  if (password.length < 8) {
+    document.getElementById("container-password").classList.add("short-password");
+    return false;
+  }
+  if (password.length > 50) {
+    document.getElementById("container-password").classList.add("long-password");
+    return false;
+  }
+  return true;
+}
 
 function sendRegister(publicKeyArmored) {
   // Genera una chiave di 256 bit in formato word array e la converte in formato base64
@@ -18,14 +51,14 @@ function sendRegister(publicKeyArmored) {
 
   (async () => {
     //lettura key dalla armored key
-    const Publickey = await openpgp.readKey({ armoredKey: publicKeyArmored });
+    const publicKey = await openpgp.readKey({ armoredKey: publicKeyArmored });
 
     //cifratura dati
     const crypted_nickname = await openpgp.encrypt({
       message: await openpgp.createMessage({
         text: document.getElementById("username").value,
       }),
-      encryptionKeys: Publickey,
+      encryptionKeys: publicKey,
     });
     console.log(crypted_nickname);
 
@@ -33,7 +66,7 @@ function sendRegister(publicKeyArmored) {
       message: await openpgp.createMessage({
         text: document.getElementById("email").value,
       }),
-      encryptionKeys: Publickey,
+      encryptionKeys: publicKey,
     });
     console.log(crypted_email);
 
@@ -41,16 +74,16 @@ function sendRegister(publicKeyArmored) {
       message: await openpgp.createMessage({
         text: document.getElementById("password").value,
       }),
-      encryptionKeys: Publickey,
+      encryptionKeys: publicKey,
     });
     console.log(crypted_password);
 
     const crypted_key = await openpgp.encrypt({
       message: await openpgp.createMessage({ text: keyBase64 }),
-      encryptionKeys: Publickey,
+      encryptionKeys: publicKey,
     });
     console.log(crypted_key);
-    
+
     //invio dati cifrati al server
     socket.emit(
       "register",
