@@ -18,36 +18,36 @@ function sendRegister(publicKeyArmored) {
 
   (async () => {
     //lettura key dalla armored key
-    const key = await openpgp.readKey({ armoredKey: publicKeyArmored });
+    const Publickey = await openpgp.readKey({ armoredKey: publicKeyArmored });
 
     //cifratura dati
     const crypted_nickname = await openpgp.encrypt({
       message: await openpgp.createMessage({
-        text: encryptAES(document.getElementById("username").value, keyBase64),
+        text: document.getElementById("username").value,
       }),
-      encryptionKeys: key,
+      encryptionKeys: Publickey,
     });
     console.log(crypted_nickname);
 
     const crypted_email = await openpgp.encrypt({
       message: await openpgp.createMessage({
-        text: encryptAES(document.getElementById("email").value, keyBase64),
+        text: document.getElementById("email").value,
       }),
-      encryptionKeys: key,
+      encryptionKeys: Publickey,
     });
     console.log(crypted_email);
 
     const crypted_password = await openpgp.encrypt({
       message: await openpgp.createMessage({
-        text: encryptAES(document.getElementById("password").value, keyBase64),
+        text: document.getElementById("password").value,
       }),
-      encryptionKeys: key,
+      encryptionKeys: Publickey,
     });
     console.log(crypted_password);
 
     const crypted_key = await openpgp.encrypt({
       message: await openpgp.createMessage({ text: keyBase64 }),
-      encryptionKeys: key,
+      encryptionKeys: Publickey,
     });
     console.log(crypted_key);
     
@@ -61,20 +61,6 @@ function sendRegister(publicKeyArmored) {
     );
   })();
 }
-/*OpenPGP*/
-/*function encryptPGP(data, publicKey) {
-  (async () => {
-    //lettura chiavi
-    const key = await openpgp.readKey({ armoredKey: publicKey });
-
-    //cifratura messaggio
-    const encrypted = await openpgp.encrypt({
-      message: await openpgp.createMessage({ text: data }),
-      encryptionKeys: key,
-    });
-    return encrypted;
-  })();
-}*/
 
 /*CryptoJS*/
 function encryptAES(data, key) {
