@@ -13,34 +13,41 @@ app.use(express.static("../client"));
 const server = app.listen(config.port, () => {
   console.log("Server in ascolto sulla porta " + config.port);
 });
-const io = socketio(server);
 
+const io = socketio(server);
 io.on("connection", (socket) => {
   socket.on("getPublicKey", () => {
-    console.log("Richiesta chiave pubblica da parte di " + socket.id);
     socket.emit("publicKey", publicKey);
   });
-  socket.on("register", (crypted_email, crypted_password, crypted_nickname, crypted_key) => {
-    console.log("Richiesta registrazione da parte di " + socket.id);
-    key = decryptPGP(crypted_key);
-    email = decryptAES(decryptPGP(crypted_email, key));
-    password = decryptAES(decryptPGP(crypted_password, key));
-    nickname = decryptAES(decryptPGP(crypted_nickname, key));
-    /*const newUser = {
+  socket.on(
+    "register",
+    (crypted_email, crypted_password, crypted_nickname, crypted_key) => {
+      console.log(crypted_email);
+      console.log(crypted_password);
+      console.log(crypted_nickname);
+      console.log(crypted_key);
+      key = decryptPGP(crypted_key);
+      email = decryptAES(decryptPGP(crypted_email, key));
+      password = decryptAES(decryptPGP(crypted_password, key));
+      nickname = decryptAES(decryptPGP(crypted_nickname, key));
+      /*const newUser = {
       email: email,
       username: nickname,
       password: password,
     };*/
-    //se l'utente non è già presente e se il formato è corretto
-    //manda una mail di conferma della registrazione e salva il codice di registrazione assieme all'utente
-    //riceve il codice di conferma dal client e l'utente è stato creato
-    //se non si riceve il codice di conferma entro 24 ore l'utente viene eliminato
-    //se viene ricevuto semplicente si toglie dal database la data di scadenza del codice di registrazione e il codice di registrazione
-    //se l'utente richiede più di un codice di conferma per la stessa registrazione, viene mandato quello precedentemente salvato nel database
-    //users.push(newUser);
-    socket.emit("confirm", "Registrazione avvenuta con successo. Benvenuto " + cnickname
-    );
-  });
+      //se l'utente non è già presente e se il formato è corretto
+      //manda una mail di conferma della registrazione e salva il codice di registrazione assieme all'utente
+      //riceve il codice di conferma dal client e l'utente è stato creato
+      //se non si riceve il codice di conferma entro 24 ore l'utente viene eliminato
+      //se viene ricevuto semplicente si toglie dal database la data di scadenza del codice di registrazione e il codice di registrazione
+      //se l'utente richiede più di un codice di conferma per la stessa registrazione, viene mandato quello precedentemente salvato nel database
+      //users.push(newUser);
+      socket.emit(
+        "confirm",
+        "Registrazione avvenuta con successo. Benvenuto " + cnickname
+      );
+    }
+  );
 });
 
 /*Public Key*/
@@ -82,20 +89,19 @@ function decryptPGP(data) {
   (async () => {
     //lettura chiavi
     const key = await openpgp.readKey({
-      armoredKey: privateKey
+      armoredKey: privateKey,
     });
 
     //decifratura messaggio
     const decrypted = await openpgp.decrypt({
       message: await openpgp.readMessage({
-        armoredMessage: data
+        armoredMessage: data,
       }),
-      decryptionKeys: key
+      decryptionKeys: key,
     });
     return decrypted;
   })();
 }
-
 /*CryptoJS*/
 function decryptAES(data, key) {
   return CryptoJS.AES.decrypt(data, key).toString(CryptoJS.enc.Utf8);
