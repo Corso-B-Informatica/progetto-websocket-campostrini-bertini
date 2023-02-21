@@ -197,51 +197,46 @@
             color: #a64bf4;
         }
 
+        @media (max-width: 540px) {
+            .login {
+                width: 95%;
+            }
+        }
+
         @media (max-width: 440px) {
             .login {
+                width: 100%;
                 padding: 55px 15px 37px 15px;
             }
 
             .input {
                 font-size: 12px;
             }
-        }
 
-        @media (max-width: 440px) {
-            .input {
-                font-size: 12px;
-            }
-        }
-
-        @media (max-width: 540px) {
-            .login {
-                width: 80%;
-            }
-        }
-
-        @media (max-width: 440px) {
             #signIn {
                 font-size: 14px;
                 padding: 20px 60px;
             }
         }
 
-        @media (max-width: 350px) {
-            .login {
-                width: 100%;
-            }
-
-            #container {
-                padding: 0 !important;
+        @media (max-width: 390px) {
+            #signIn {
+                font-size: 12px;
             }
         }
 
-        @media (max-width: 320px) {
+
+        @media (max-width: 350px) {
             .login {
                 border-radius: 0 !important;
             }
+
             body {
                 background: #fff !important;
+            }
+
+            #footer {
+                display: none !important;
             }
         }
 
@@ -275,12 +270,6 @@
             }
         }
 
-        @media (max-height: 720px) {
-            #container {
-                padding: 0 !important;
-            }
-        }
-
         @media (max-height: 680px) {
             .p-t-155 {
                 padding-top: 30px;
@@ -295,7 +284,7 @@
             }
         }
 
-        @media (max-height: 600px) {
+        @media (max-height: 650px) {
             .login {
                 border-radius: 0px !important;
             }
@@ -303,7 +292,9 @@
             body {
                 background: #fff !important;
             }
+        }
 
+        @media (max-height: 600px) {
             .p-t-27 {
                 padding-top: 13px;
             }
@@ -356,6 +347,55 @@
         .forgotpassword {
             font-size: 12px;
         }
+
+        .error::before {
+            content: attr(error-message);
+            position: absolute;
+            max-width: 70%;
+            background-color: #fff;
+            border: 1px solid #c80000;
+            border-radius: 2px;
+            padding: 4px 25px 4px 10px;
+            bottom: 45%;
+            -webkit-transform: translateY(50%);
+            -moz-transform: translateY(50%);
+            -ms-transform: translateY(50%);
+            -o-transform: translateY(50%);
+            transform: translateY(50%);
+            right: 2px;
+            pointer-events: none;
+            color: #c80000;
+            font-size: 13px;
+            line-height: 1.4;
+            text-align: left;
+            visibility: hidden;
+            opacity: 0;
+            -webkit-transition: opacity .4s;
+            -o-transition: opacity .4s;
+            -moz-transition: opacity .4s;
+            transition: opacity .4s
+        }
+
+        .error::after {
+            content: "\f06a";
+            font-family: FontAwesome;
+            display: block;
+            position: absolute;
+            color: #c80000;
+            font-size: 16px;
+            bottom: 45%;
+            -webkit-transform: translateY(50%);
+            -moz-transform: translateY(50%);
+            -ms-transform: translateY(50%);
+            -o-transform: translateY(50%);
+            transform: translateY(50%);
+            right: 8px
+        }
+
+        .error:hover:before {
+            visibility: visible;
+            opacity: 1
+        }
     </style>
     <script src="/socket.io/socket.io.js"></script>
 </head>
@@ -371,15 +411,20 @@
 
                 <span class="h1 fw-bold text-center d-block p-b-34 p-t-27 text-dark">Sign In</span>
 
-                <div id="container-username" class="container-input w-100 position-relative">
+                <div id="container-username" class="container-input w-100 position-relative"
+                    error-message="Invalid Username">
                     <input id="username" class="input text-dark d-block w-100 bg-transparent" type="text"
-                        placeholder="Username">
-                    <span class="focus-input position-absolute d-block w-100 h-100" data-placeholder="&#xf207;"></span>
+                        placeholder="Username" required>
+                    <span id="span-username" class="focus-input position-absolute d-block w-100 h-100"
+                        data-placeholder="&#xf207;"></span>
                 </div>
 
-                <div id="container-password" class="container-input w-100 position-relative">
-                    <input id="password" class="input" type="password" placeholder="Password">
-                    <span class="focus-input position-absolute d-block w-100 h-100" data-placeholder="&#xf191;"></span>
+                <div id="container-password" class="container-input w-100 position-relative"
+                    error-message="Invalid Password">
+                    <input id="password" class="input text-dark d-block w-100 bg-transparent" type="password"
+                        placeholder="Password">
+                    <span id="span-password" class="focus-input position-absolute d-block w-100 h-100"
+                        data-placeholder="&#xf191;"></span>
                 </div>
 
                 <div class="container-checkbox flex-wrap d-flex align-items-center justify-content-center">
