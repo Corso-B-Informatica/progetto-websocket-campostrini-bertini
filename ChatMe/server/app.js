@@ -4,6 +4,10 @@ const socketio = require("socket.io");
 const openpgp = require("openpgp");
 var CryptoJS = require("crypto-js");
 const sqlite3 = require("sqlite3").verbose();
+const fs = require("fs");
+
+/*Json file*/
+const json = "./db/data.txt";
 
 /*Public Key*/
 const publicKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -63,21 +67,14 @@ io.on("connection", (socket) => {
     socket.emit("publicKey", publicKey);
   });
 
-  socket.on(
-    "register",
-    (crypted_email, crypted_password, crypted_nickname, crypted_key) => {
-      console.log(crypted_email);
-      console.log(crypted_password);
-      console.log(crypted_nickname);
-      console.log(crypted_key);
-      key = decryptPGP(crypted_key, passphrase)
-        .then((decrypted) => {
-          console.log(decrypted);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-      email = decryptPGP(crypted_email, passphrase)
+  socket.on("register", (armored_email, armored_password, armored_nickname) => {
+    console.log(armored_email);
+    console.log(armored_password);
+    console.log(armored_nickname);
+
+    checkUserData(armored_email, armored_password, armored_nickname, socket);
+
+    /*email = decryptPGP(crypted_email, passphrase)
         .then((decrypted) => {
           console.log(decrypted);
         })
@@ -97,26 +94,240 @@ io.on("connection", (socket) => {
         })
         .catch((error) => {
           console.error(error);
-        });
-      /*const newUser = {
-      email: email,
-      username: nickname,
-      password: password,
-    };*/
-      //se l'utente non è già presente e se il formato è corretto
-      //manda una mail di conferma della registrazione e salva il codice di registrazione assieme all'utente
-      //riceve il codice di conferma dal client e l'utente è stato creato
-      //se non si riceve il codice di conferma entro 24 ore l'utente viene eliminato
-      //se viene ricevuto semplicente si toglie dal database la data di scadenza del codice di registrazione e il codice di registrazione
-      //se l'utente richiede più di un codice di conferma per la stessa registrazione, viene mandato quello precedentemente salvato nel database
-      //users.push(newUser);
-      // socket.emit(
-      //   "confirm",
-      //   "Registrazione avvenuta con successo. Benvenuto " + cnickname
-      // );
-    }
-  );
+        });*/
+    //se l'utente non è già presente e se il formato è corretto |fatto
+    //manda una mail di conferma della registrazione e salva il codice di registrazione assieme all'utente
+    //riceve il codice di conferma dal client e l'utente è stato creato
+    //se non si riceve il codice di conferma entro 24 ore l'utente viene eliminato |fatto
+    //se viene ricevuto semplicente si toglie dal database la data di scadenza del codice di registrazione e il codice di registrazione
+    //se l'utente richiede più di un codice di conferma per la stessa registrazione, viene mandato quello precedentemente salvato nel database
+  });
 });
+
+async function checkUserData(
+  armored_email,
+  armored_password,
+  armored_nickname,
+  socket
+) {
+  const privatekey = await openpgp.decryptKey({
+    privateKey: await openpgp.readPrivateKey({ armoredKey: privateKey }),
+    passphrase,
+  });
+
+  const crypted_email = await openpgp.readMessage({
+    armoredMessage: armored_email,
+  });
+
+  const { data: email } = await openpgp.decrypt({
+    message: crypted_email,
+    decryptionKeys: privatekey,
+  });
+
+  const crypted_password = await openpgp.readMessage({
+    armoredMessage: armored_password,
+  });
+
+  const { data: password } = await openpgp.decrypt({
+    message: crypted_password,
+    decryptionKeys: privatekey,
+  });
+
+  const crypted_nickname = await openpgp.readMessage({
+    armoredMessage: armored_nickname,
+  });
+
+  const { data: nickname } = await openpgp.decrypt({
+    message: crypted_nickname,
+    decryptionKeys: privatekey,
+  });
+
+  console.log(email);
+  console.log(password);
+  console.log(nickname);
+
+  var check1 = checkUsername(nickname);
+  var check2 = checkEmail(email);
+  var check3 = checkPassword(password);
+
+  if (check1 && check2 && check3) {
+    if (existInDatabase(email, password, nickname)) {
+      console.log("Utente già registrato");
+      socket.emit("registerError", "User already registered");
+    } else {
+      console.log("Utente non registrato");
+      if (addUserToJson(email, password, nickname)) {
+        console.log("Utente aggiunto al database");
+        socket.emit("registerSuccess");
+      } else {
+        console.log("Errore durante l'aggiunta dell'utente al database");
+        socket.emit(
+          "registerError",
+          "Error during registration, please try again"
+        );
+      }
+    }
+  } else {
+    console.log("Dati non validi");
+    sendErrors(nickname, password, check1 , check2, check3, socket);
+  }
+}
+
+function sendErrors(nickname, password, check1, check2, check3, socket) {
+  var error = "";
+
+  if (!check1) {
+    if (nickname.length == 0) {
+      error += "Username must be filled out\n";
+    } else if (nickname.length > 30) {
+      error += "Username must be at most 30 characters long\n";
+    } else if (!/[a-zA-Z0-9]/.test(nickname)) {
+      error += "Username must contain at least one letter or number\n";
+    }
+  }
+
+  if (!check2) {
+    error += "Email must be valid\n";
+  }
+
+  if (!check3) {
+    if (password.length == 0) {
+      error += "Password must be filled out\n";
+    } else if (password.length < 8) {
+      error += "Password must be at least 8 characters long\n";
+    } else if (password.length > 50) {
+      error += "Password must be at most 50 characters long\n";
+    } else if (!/[a-z]/.test(password)) {
+      error += "Password must contain at least one lowercase letter\n";
+    } else if (!/[A-Z]/.test(password)) {
+      error += "Password must contain at least one uppercase letter\n";
+    } else if (!/[0-9]/.test(password)) {
+      error += "Password must contain at least one number\n";
+    } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      error += "Password must contain at least one special character\n";
+    }
+  }
+
+  socket.emit("registerDataError", check1, check2, check3, error);
+}
+/*Json*/
+function addUserToJson(email, password, nickname) {
+  const verification_code = CryptoJS.lib.WordArray.random(10).toString(
+    CryptoJS.enc.Hex
+  );
+
+  const expiration_time = new Date();
+  expiration_time.setDate(expiration_time.getDate() + 1);
+
+  var user = {
+    username: nickname,
+    password: password,
+    email: email,
+    verification_code: verification_code,
+    expiration_time: expiration_time,
+    attempts: 0,
+  };
+
+  console.log("utente: " + JSON.stringify(user));
+
+  if (fs.existsSync(json)) {
+    console.log("Il file JSON esiste già");
+
+    const data = fs.readFileSync(json, "utf8");
+
+    const usersJSON = JSON.parse(decryptAES(data)).users;
+
+    let i = 0;
+    let found = false;
+
+    while (i < usersJSON.length && !found) {
+      const u = usersJSON[i];
+
+      if (
+        u.username === nickname &&
+        u.password === password &&
+        u.email === email
+      ) {
+        usersJSON.splice(i, 1, user);
+        found = true;
+      }
+      i++;
+    }
+
+    if (!found) {
+      usersJSON.push(user);
+    }
+
+    console.log("\njson: " + JSON.stringify(usersJSON));
+
+    const jsonData = encryptAES(JSON.stringify(usersJSON));
+
+    fs.writeFile(json, jsonData, "utf8", (err) => {
+      if (err) {
+        console.log("Errore nella scrittura del json");
+        return false;
+      } else {
+        console.log("Utente aggiunto al json");
+        sendCodeViaEmail(email, nickname, verification_code, expiration_time);
+        return true;
+      }
+    });
+  } else {
+    console.log("Il file JSON non esiste");
+
+    const usersJSON = {
+      users: [user],
+    };
+
+    console.log("\njson: " + JSON.stringify(usersJSON));
+
+    const jsonData = encryptAES(JSON.stringify(usersJSON));
+
+    fs.writeFile(json, jsonData, "utf8", (err) => {
+      if (err) {
+        if (!fs.existsSync(json)) {
+          console.log("Errore nella scrittura del json");
+          return false;
+        }
+      } else {
+        console.log("Utente aggiunto al json");
+        sendCodeViaEmail(email, nickname, verification_code, expiration_time);
+        return true;
+      }
+    });
+  }
+}
+
+function cleanJson() {
+  if (fs.existsSync(json)) {
+    var removed = 0;
+
+    const data = fs.readFileSync(json, "utf8");
+
+    const usersJSON = JSON.parse(decryptAES(data)).users;
+
+    for (let i = 0; i < usersJSON.length; i++) {
+      const u = usersJSON[i];
+
+      if (new Date(u.expiration_time) < new Date()) {
+        usersJSON.splice(i, 1);
+        removed++;
+      }
+    }
+
+    const jsonData = encryptAES(JSON.stringify(usersJSON));
+
+    fs.writeFile(json, jsonData, "utf8", (err) => {
+      if (err) {
+        console.log("Errore nella scrittura del json");
+      } else {
+        console.log("Pulizia json effettuata, utenti rimossi: " + removed);
+      }
+    });
+  }
+}
+
+setInterval(cleanJson, 600000);
 
 /*CryptoJS*/
 function encryptAES(data) {
@@ -128,7 +339,7 @@ function decryptAES(data) {
 }
 
 /*OpenPGP*/
-async function decryptPGP(msg, passphrase) {
+/*async function decryptPGP(msg, passphrase) {
   const privatekey = await openpgp.decryptKey({
     privateKey: await openpgp.readPrivateKey({ armoredKey: privateKey }),
     passphrase,
@@ -142,13 +353,13 @@ async function decryptPGP(msg, passphrase) {
   });
 
   return decrypted;
-}
+}*/
 
 /*Database*/
 const users = [
   {
-    email: "user1@example.com",
     username: "user1",
+    email: "user1@example.com",
     password: "password1",
   },
 ];
@@ -213,4 +424,123 @@ function insertUser(db, newUser) {
       }
     }
   );
+}
+
+function existInDatabase(email, password, nickname) {
+  //aggiungere sql injection protection
+  db.all(
+    `select * from users where username = ? and password = ? and email = ?`,
+    [nickname, password, email],
+    (err, rows) => {
+      if (err) {
+        console.log("Error selecting user: " + err);
+      } else {
+        console.log(rows);
+        return rows.length > 0;
+      }
+    }
+  );
+}
+
+/*Check functions*/
+function checkUsername(username) {
+  if (username.length == 0) {
+    console.log("username non valido");
+    return false;
+  }
+  if (username.length > 30) {
+    console.log("username non valido");
+    return false;
+  }
+  if (!/[a-zA-Z0-9]/.test(username)) {
+    console.log("username non valido");
+    return false;
+  }
+  console.log("username valido");
+  return true;
+}
+
+function checkEmail(email) {
+  if (
+    email
+      .trim()
+      .match(
+        /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/
+      ) == null
+  ) {
+    console.log("email non valida")
+    return false;
+  }
+  console.log("email valida")
+  return true;
+}
+
+function checkPassword(password) {
+  if (password.length == 0) {
+    console.log("password non valida1")
+    return false;
+  }
+  if (password.length < 8) {
+    console.log("password non valida2")
+    console.log(password.length)
+    return false;
+  }
+  if (password.length > 50) {
+    console.log("password non valida3")
+    return false;
+  }
+  if (!/[a-z]/.test(password)) {
+    console.log("password non valida4")
+    return false;
+  }
+  if (!/[A-Z]/.test(password)) {
+    console.log("password non valida5")
+    return false;
+  }
+  if (!/[0-9]/.test(password)) {
+    console.log("password non valida6")
+    return false;
+  }
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    console.log("password non valida7")
+    return false;
+  }
+  console.log("password valida")
+  return true;
+}
+
+
+/*Email*/
+function sendCodeViaEmail(email, nickname, code, expiration_time) {
+  /*const { google } = require('googleapis');
+  const OAuth2 = google.auth.OAuth2;
+
+  const oauth2Client = new OAuth2(
+    'CLIENT_ID',
+    'CLIENT_SECRET',
+    'REDIRECT_URL'
+  );
+
+  oauth2Client.setCredentials({
+    access_token: 'ACCESS_TOKEN',
+    refresh_token: 'REFRESH_TOKEN'
+  });
+
+  const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+  const email = 'To: example@example.com\r\n' +
+    'Subject: Test Email\r\n\r\n' +
+    'This is a test email.';
+
+  const message = Buffer.from(email).toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
+
+  gmail.users.messages.send({
+    userId: 'me',
+    requestBody: {
+      raw: message
+    }
+  }, (err, res) => {
+    if (err) return console.log('Error sending email: ' + err);
+    console.log('Email sent successfully.');
+  });*/
 }

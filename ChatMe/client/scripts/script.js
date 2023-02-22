@@ -5,6 +5,32 @@ socket.on("publicKey", (publicKeyArmored) => {
   sendRegister(publicKeyArmored);
 });
 
+socket.on("registerError", (error) => {
+  alert(error);
+});
+
+socket.on("registerSuccess", () => {
+  window.location.href = "../confirm.html";
+});
+
+socket.on("registerDataError", (check1, check2, check3, error) => {
+  if (!check1) {
+    var containerUsername = document.getElementById("container-username");
+    containerUsername.classList.add("error");
+  }
+
+  if (!check2) {
+    var containerEmail = document.getElementById("container-email");
+    containerEmail.classList.add("error");
+  }
+
+  if (!check3) {
+    var containerPassword = document.getElementById("container-password");
+    containerPassword.classList.add("error");
+  }
+  
+  alert(error);
+});
 /*Letters and signs*/
 var alertMessage = "";
 var less = /</g;
@@ -20,7 +46,6 @@ function register() {
   var check1 = checkUsername();
   var check2 = checkEmail();
   var check3 = checkPassword();
-  console.log("sas");
   if (check1 && check2 && check3) {
     socket.emit("getPublicKey");
   } else {
@@ -29,62 +54,60 @@ function register() {
   }
 }
 
-function sendRegister(publicKeyArmored) {
-  (async () => {
-    //lettura key dalla armored key
-    const publicKey = await openpgp.readKey({ armoredKey: publicKeyArmored });
+async function sendRegister(publicKeyArmored) {
+  //lettura key dalla armored key
+  const publicKey = await openpgp.readKey({ armoredKey: publicKeyArmored });
 
-    //cifratura dati
-    const crypted_nickname = await openpgp.encrypt({
-      message: await openpgp.createMessage({
-        text: document
-          .getElementById("username")
-          .value.toString()
-          .replace(less, "&lt;")
-          .replace(greater, "&gt;")
-          .replace(apostrofe, "&#39;")
-          .replace(quotation, "&#34;")
-          .replace(and, "&#38;")
-          .replace(grave, "&#96;")
-          .replace(slash, "&#47;"),
-      }),
-      encryptionKeys: publicKey,
-    });
+  //cifratura dati
+  const crypted_nickname = await openpgp.encrypt({
+    message: await openpgp.createMessage({
+      text: document
+        .getElementById("username")
+        .value.toString()
+        .replace(less, "&lt;")
+        .replace(greater, "&gt;")
+        .replace(apostrofe, "&#39;")
+        .replace(quotation, "&#34;")
+        .replace(and, "&#38;")
+        .replace(grave, "&#96;")
+        .replace(slash, "&#47;"),
+    }),
+    encryptionKeys: publicKey,
+  });
 
-    const crypted_email = await openpgp.encrypt({
-      message: await openpgp.createMessage({
-        text: document
-          .getElementById("email")
-          .value.toString()
-          .replace(less, "&lt;")
-          .replace(greater, "&gt;")
-          .replace(apostrofe, "&#39;")
-          .replace(quotation, "&#34;")
-          .replace(and, "&#38;")
-          .replace(grave, "&#96;")
-          .replace(slash, "&#47;"),
-      }),
-      encryptionKeys: publicKey,
-    });
+  const crypted_email = await openpgp.encrypt({
+    message: await openpgp.createMessage({
+      text: document
+        .getElementById("email")
+        .value.toString()
+        .replace(less, "&lt;")
+        .replace(greater, "&gt;")
+        .replace(apostrofe, "&#39;")
+        .replace(quotation, "&#34;")
+        .replace(and, "&#38;")
+        .replace(grave, "&#96;")
+        .replace(slash, "&#47;"),
+    }),
+    encryptionKeys: publicKey,
+  });
 
-    const crypted_password = await openpgp.encrypt({
-      message: await openpgp.createMessage({
-        text: document
-          .getElementById("password")
-          .value.toString()
-          .replace(less, "&lt;")
-          .replace(greater, "&gt;")
-          .replace(apostrofe, "&#39;")
-          .replace(quotation, "&#34;")
-          .replace(and, "&#38;")
-          .replace(grave, "&#96;")
-          .replace(slash, "&#47;"),
-      }),
-      encryptionKeys: publicKey,
-    });
+  const crypted_password = await openpgp.encrypt({
+    message: await openpgp.createMessage({
+      text: document
+        .getElementById("password")
+        .value.toString()
+        .replace(less, "&lt;")
+        .replace(greater, "&gt;")
+        .replace(apostrofe, "&#39;")
+        .replace(quotation, "&#34;")
+        .replace(and, "&#38;")
+        .replace(grave, "&#96;")
+        .replace(slash, "&#47;"),
+    }),
+    encryptionKeys: publicKey,
+  });
 
-    socket.emit("register", crypted_email, crypted_nickname, crypted_password);
-  })();
+  socket.emit("register", crypted_email, crypted_nickname, crypted_password);
 }
 
 /*Check functions*/
@@ -102,7 +125,6 @@ function checkUsername() {
     alertMessage += "Username must be at most 30 characters long\n";
     return false;
   }
-  //username must contain at least one letter or number
   if (!/[a-zA-Z0-9]/.test(username)) {
     var containerUsername = document.getElementById("container-username");
     containerUsername.classList.add("error");
@@ -131,6 +153,7 @@ function checkEmail() {
 
 function checkPassword() {
   var password = document.getElementById("password").value;
+
   if (password.length == 0) {
     var containerPassword = document.getElementById("container-password");
     containerPassword.classList.add("error");
@@ -149,25 +172,25 @@ function checkPassword() {
     alertMessage += "Password must be at most 50 characters long";
     return false;
   }
-  if (/[a-z]/.test(password)) {
+  if (!/[a-z]/.test(password)) {
     var containerPassword = document.getElementById("container-password");
     containerPassword.classList.add("error");
     alertMessage += "Password must contain at least one lowercase letter";
     return false;
   }
-  if (/[A-Z]/.test(password)) {
+  if (!/[A-Z]/.test(password)) {
     var containerPassword = document.getElementById("container-password");
     containerPassword.classList.add("error");
     alertMessage += "Password must contain at least one uppercase letter";
     return false;
   }
-  if (/[0-9]/.test(password)) {
+  if (!/[0-9]/.test(password)) {
     var containerPassword = document.getElementById("container-password");
     containerPassword.classList.add("error");
     alertMessage += "Password must contain at least one number";
     return false;
   }
-  if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
     var containerPassword = document.getElementById("container-password");
     containerPassword.classList.add("error");
     alertMessage += "Password must contain at least one special character";
