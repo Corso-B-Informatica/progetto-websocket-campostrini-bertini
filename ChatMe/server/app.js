@@ -97,12 +97,6 @@ io.on("connection", (socket) => {
         console.log(decrypted);
       }).catch((error) => {
         console.error(error);
-      });
-      /*const newUser = {
-      email: email,
-      username: nickname,
-      password: password,
-    };*/
       //se l'utente non è già presente e se il formato è corretto
       //manda una mail di conferma della registrazione e salva il codice di registrazione assieme all'utente
       //riceve il codice di conferma dal client e l'utente è stato creato
@@ -116,6 +110,7 @@ io.on("connection", (socket) => {
       // );
     }
   );
+});
 });
 
 
@@ -147,49 +142,19 @@ function decryptAES(data, key) {
 
 
 /*Database*/
-const users = [
-  {
-    email: "user1@example.com",
-    username: "user1",
-    password: "password1",
-  },
-];
-
-var db;
-db = new sqlite3.Database("./db/users.db", sqlite3.OPEN_READWRITE, (err) => {
-  if (err && err.code == "SQLITE_CANTOPEN") {
-    createDatabase();
-    return;
-  } else if (err) {
-    console.log("Getting error " + err);
-    exit(1);
+const Newuser = ["user1","user1@example.com","password1"];
+const db = new sqlite3.Database("./db/users.db", sqlite3.OPEN_READWRITE, (err) => {
+  if (err) {
+    console.error(err.message);
   }
-  insertUser(db, users[0]);
+  console.log("Connected to the users database.");
 });
-
-function createDatabase() {
-  var newdb = new sqlite3.Database("./db/users.db", (err) => {
-    if (err) {
-      console.log("Getting error " + err);
-      exit(1);
-    }
-    createTables(newdb);
-  });
-}
-
-function createTables(newdb) {
-  newdb.exec(
-  `
-  create table users (
-      username text primary key not null,
-      email text not null,
-      password text not null
-  );`,
-    (err) => {
-      console.log("Error creating tables: " + err);
-    }
-  );
-}
+//create tables
+// sql =`CREATE TABLE IF NOT EXISTS users (username text PRIMARY KEY not null, email text not null, password text not null);`; 
+// db.run(sql);
+//cancellare tables
+// sql =`DROP TABLE users;`;
+// db.run(sql);
 
 function getUsers(db) {
   db.all(
@@ -205,14 +170,16 @@ function getUsers(db) {
 
 function insertUser(db, newUser) {
   console.log(newUser);
-  db.all(
-    `insert into users (username, email, password)
-  values (?, '?', '?');`,
-    [newUser.username, newUser.email, newUser.password],
-    (err, rows) => {
+  console.log(newUser[0]);
+  db.run(
+    ` INSERT INTO users (username, email, password)
+      VALUES (?, ?, ?);`,
+    [newUser[0], newUser[1], newUser[2]],
+    (err) => {
       if (err) {
         console.log("Error inserting user: " + err);
       }
     }
   );
 }
+insertUser(db, Newuser);
