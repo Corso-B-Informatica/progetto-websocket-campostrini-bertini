@@ -262,16 +262,16 @@ function addUserToJson(email, password, nickname) {
 
     const jsonData = encryptAES(JSON.stringify(usersJSON));
 
-    fs.writeFile(json, jsonData, "utf8", (err) => {
-      if (err) {
-        console.log("Errore nella scrittura del json");
-        return false;
-      } else {
-        console.log("Utente aggiunto al json");
-        sendCodeViaEmail(email, nickname, verification_code, expiration_time);
-        return true;
-      }
-    });
+    // fs.writeFile(json, jsonData, "utf8", (err) => {
+    //   if (err) {
+    //     console.log("Errore nella scrittura del json");
+    //     return false;
+    //   } else {
+    //     console.log("Utente aggiunto al json");
+    //     sendCodeViaEmail(email, nickname, verification_code, expiration_time);
+    //     return true;
+    //   }
+    // });
   } else {
     console.log("Il file JSON non esiste");
 
@@ -283,51 +283,51 @@ function addUserToJson(email, password, nickname) {
 
     const jsonData = encryptAES(JSON.stringify(usersJSON));
 
-    fs.writeFile(json, jsonData, "utf8", (err) => {
-      if (err) {
-        if (!fs.existsSync(json)) {
-          console.log("Errore nella scrittura del json");
-          return false;
-        }
-      } else {
-        console.log("Utente aggiunto al json");
-        sendCodeViaEmail(email, nickname, verification_code, expiration_time);
-        return true;
-      }
-    });
+    // fs.writeFile(json, jsonData, "utf8", (err) => {
+    //   if (err) {
+    //     if (!fs.existsSync(json)) {
+    //       console.log("Errore nella scrittura del json");
+    //       return false;
+    //     }
+    //   } else {
+    //     console.log("Utente aggiunto al json");
+    //     sendCodeViaEmail(email, nickname, verification_code, expiration_time);
+    //     return true;
+    //   }
+    // });
   }
 }
 
-function cleanJson() {
-  if (fs.existsSync(json)) {
-    var removed = 0;
+// function cleanJson() {
+//   if (fs.existsSync(json)) {
+//     var removed = 0;
 
-    const data = fs.readFileSync(json, "utf8");
+//     const data = fs.readFileSync(json, "utf8");
 
-    const usersJSON = JSON.parse(decryptAES(data)).users;
+//     const usersJSON = JSON.parse(decryptAES(data)).users;
 
-    for (let i = 0; i < usersJSON.length; i++) {
-      const u = usersJSON[i];
+//     for (let i = 0; i < usersJSON.length; i++) {
+//       const u = usersJSON[i];
 
-      if (new Date(u.expiration_time) < new Date()) {
-        usersJSON.splice(i, 1);
-        removed++;
-      }
-    }
+//       if (new Date(u.expiration_time) < new Date()) {
+//         usersJSON.splice(i, 1);
+//         removed++;
+//       }
+//     }
 
-    const jsonData = encryptAES(JSON.stringify(usersJSON));
+//     const jsonData = encryptAES(JSON.stringify(usersJSON));
 
-    fs.writeFile(json, jsonData, "utf8", (err) => {
-      if (err) {
-        console.log("Errore nella scrittura del json");
-      } else {
-        console.log("Pulizia json effettuata, utenti rimossi: " + removed);
-      }
-    });
-  }
-}
+//     fs.writeFile(json, jsonData, "utf8", (err) => {
+//       if (err) {
+//         console.log("Errore nella scrittura del json");
+//       } else {
+//         console.log("Pulizia json effettuata, utenti rimossi: " + removed);
+//       }
+//     });
+//   }
+// }
 
-setInterval(cleanJson, 600000);
+// setInterval(cleanJson, 600000);
 
 /*CryptoJS*/
 function encryptAES(data) {
@@ -396,13 +396,13 @@ function insertUser(db, newUser) {
     }
   );
 }
-insertUser(db, Newuser);
+// insertUser(db, Newuser);
 
-function existInDatabase(email, password, nickname) {
+function existInDatabase(email,username) {
   //aggiungere sql injection protection
   db.all(
-    `select * from users where username = ? and password = ? and email = ?`,
-    [nickname, password, email],
+    `select * from users where username = ? or email = ?`,
+    [username,email],
     (err, rows) => {
       if (err) {
         console.log("Error selecting user: " + err);
@@ -413,7 +413,7 @@ function existInDatabase(email, password, nickname) {
     }
   );
 }
-
+existInDatabase('user1@example.com','pene');
 /*Check functions*/
 function checkUsername(username) {
   if (username.length == 0) {
