@@ -4,11 +4,7 @@ const socketio = require("socket.io");
 const openpgp = require("openpgp");
 var CryptoJS = require("crypto-js");
 const sqlite3 = require("sqlite3").verbose();
-const fs = require("fs");
 const nodemailer = require('nodemailer');
-
-/*Json file*/
-const json = "./db/data.txt";
 
 /*Public Key*/
 const publicKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
@@ -290,7 +286,7 @@ function sendErrors(nickname, password, check1, check2, check3, socket) {
 
 /*Json*/
 
-function checkJsonData(email, password, nickname, verification_code, socket) {
+function ConfirmUser(email, password, nickname, verification_code, socket) {
   if (fs.existsSync(json)) {
     const data = fs.readFileSync(json, "utf8");
 
@@ -353,27 +349,7 @@ function checkJsonData(email, password, nickname, verification_code, socket) {
   }
 }
 
-function existInJson(email, nickname) {
-  if (fs.existsSync(json)) {
-    const data = fs.readFileSync(json, "utf8");
-
-    const usersJSON = JSON.parse(decryptAES(data)).users;
-
-    for (let i = 0; i < usersJSON.length; i++) {
-      const u = usersJSON[i];
-
-      if (
-        u.username === nickname ||
-        u.email === email
-      ) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-function addUserToJson(email, password, nickname, socket) {
+function addTempUser(email, password, nickname, socket) {
   const verification_code = CryptoJS.lib.WordArray.random(5).toString();
 
   console.log(verification_code);
@@ -382,27 +358,12 @@ function addUserToJson(email, password, nickname, socket) {
 
   expiration_time.setDate(expiration_time.getDate() + 1);
 
-  var user = {
-    username: nickname,
-    password: password,
-    email: email,
-    verification_code: verification_code,
-    expiration_time: expiration_time,
-    attempts: 0,
-  };
+  var user = [nickname,email,password,verification_code,expiration_time,0]
 
-  if (fs.existsSync(json)) {
-    const data = fs.readFileSync(json, "utf8");
 
-    const usersJSON = JSON.parse(decryptAES(data)).users;
-
-    usersJSON.push(user);
-
-    const jsonData = encryptAES(JSON.stringify(usersJSON));
-
-    fs.writeFile(json, jsonData, "utf8", (err) => {
+  insertTempUser(user, (err) => {
       if (err) {
-        console.log("Errore durante l'aggiunta dell'utente al json");
+        console.log("Errore durante l'aggiunta dell'utente a temp-user");
         socket.emit(
           "registerError",
           "Error during registration, please try again"
@@ -418,57 +379,9 @@ function addUserToJson(email, password, nickname, socket) {
         socket.emit("registerSuccess", crypted_email, crypted_password, crypted_nickname);
       }
     });
-  } else {
-    const usersJSON = {
-      users: [user],
-    };
-
-    const jsonData = encryptAES(JSON.stringify(usersJSON));
-
-    fs.writeFile(json, jsonData, "utf8", (err) => {
-      if (err) {
-        console.log("Errore durante l'aggiunta dell'utente al json");
-        socket.emit(
-          "registerError",
-          "Error during registration, please try again"
-        );
-      } else {
-        sendCodeViaEmail(email, nickname, password, verification_code, expiration_time);
-        console.log("Utente aggiunto al json");
-        socket.emit("registerSuccess");
-      }
-    });
   }
-}
 
-function cleanJson() {
-  if (fs.existsSync(json)) {
-    var removed = 0;
-
-    const data = fs.readFileSync(json, "utf8");
-
-    const usersJSON = JSON.parse(decryptAES(data)).users;
-
-    for (let i = 0; i < usersJSON.length; i++) {
-      const u = usersJSON[i];
-
-      if (new Date(u.expiration_time) < new Date()) {
-        usersJSON.splice(i, 1);
-        removed++;
-      }
-    }
-
-    const jsonData = encryptAES(JSON.stringify(usersJSON));
-
-    fs.writeFile(json, jsonData, "utf8", (err) => {
-      if (err) {
-        console.log("Errore nella scrittura del json");
-      } else {
-        console.log("Pulizia json effettuata, utenti rimossi: " + removed);
-      }
-    });
-  }
-}
+function cleanTempUser() {}
 
 setInterval(cleanJson, 600000);
 
@@ -489,8 +402,15 @@ const db = new sqlite3.Database("./db/users.db", sqlite3.OPEN_READWRITE, (err) =
   }
   console.log("Connected to the users database.");
 });
+const db1 = new sqlite3.Database("./db/temp-user.db", sqlite3.OPEN_READWRITE, (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log("Connected to the temp-users database.");
+});
 //create tables
-// sql =`CREATE TABLE IF NOT EXISTS users (username text PRIMARY KEY not null, email text not null, password text not null);`; 
+// sql =`CREATE TABLE IF NOT EXISTS users (nickname text PRIMARY KEY not null, email text not null, password text not null,verification_code text not null,expiration_time text not null,attempts int not null);`;
+// sql =`CREATE TABLE IF NOT EXISTS users (nickname text PRIMARY KEY not null, email text not null, password text not null);`; 
 // db.run(sql);
 //cancellare tables
 // sql =`DROP TABLE users;`;
@@ -507,12 +427,23 @@ function getUsers(db) {
     }
   );
 }
-
-function insertUser(db, newUser) {
+function insertTempUser(user) {
+  console.log(user);
+  db1.run(
+    ` INSERT INTO users (nickname, email, password,verification_code,expiration_time,attempts)
+      VALUES (?, ?, ?, ?, ?, ?);`,
+    [user[0], user[1], user[2], user[3], user[4], user[5]],
+    (err) => {
+      if (err) {
+        console.log("Error inserting user: " + err);
+      }
+    }
+  );
+}
+function insertUser(newUser) {
   console.log(newUser);
-  console.log(newUser[0]);
   db.run(
-    ` INSERT INTO users (username, email, password)
+    ` INSERT INTO users (nickname, email, password, publicKey, privateKey)
       VALUES (?, ?, ?);`,
     [newUser[0], newUser[1], newUser[2]],
     (err) => {
@@ -524,11 +455,11 @@ function insertUser(db, newUser) {
 }
 // insertUser(db, Newuser);
 
-function existInDatabase(email,username) {
+function existInDatabase(db,email,nickname) {
   //aggiungere sql injection protection
   db.all(
     `select * from users where username = ? or email = ?`,
-    [username,email],
+    [nickname,email],
     (err, rows) => {
       if (err) {
         console.log("Error selecting user: " + err);
