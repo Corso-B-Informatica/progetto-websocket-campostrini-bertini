@@ -52,6 +52,20 @@ var AESKey =
 const app = express();
 app.use(express.static("../client"));
 
+//declaration database
+const db = new sqlite3.Database("./db/users.db", sqlite3.OPEN_READWRITE, (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log("Connected to the users database.");
+});
+const db1 = new sqlite3.Database("./db/temp-user.db", sqlite3.OPEN_READWRITE, (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log("Connected to the temp-users database.");
+});
+
 /*Socket.io*/
 const server = app.listen(config.port, () => {
   console.log("Server in ascolto sulla porta " + config.port);
@@ -177,6 +191,34 @@ async function confirmUserDataViaLink(armored_email, armored_password, armored_n
   }
 
 }
+async function encrypt(Data){
+  const encryptedData = await openpgp.encrypt({
+    message: await openpgp.createMessage({
+    text: Data,
+    }),
+    encryptionKeys: await openpgp.readKey({ armoredKey: publicKey }),
+    });
+    return encryptedData;
+}
+async function decrypt(encryptedData) {
+  const privateKeyObj = await openpgp.key.readArmored(privateKey);
+  await privateKeyObj.decrypt(passphrase);
+
+  const options = {
+    message: await openpgp.message.readArmored(encryptedData),
+    privateKeys: [privateKeyObj.keys[0]]
+  };
+
+  const decrypted = await openpgp.decrypt(options);
+  return decrypted.data; // plaintext value
+}
+
+var x = encrypt('nigro')
+.then(plaintext => console.log('Decrypted value:', plaintext))
+.catch(error => console.error('Decryption failed:', error));
+console.log(Promise.resolve(x));
+
+
 
 async function checkUserData(
   armored_email,
@@ -283,8 +325,7 @@ function sendErrors(nickname, password, check1, check2, check3, socket) {
 
   socket.emit("registerDataError", check1, check2, check3, error);
 }
-
-/*Json*/
+/**/
 
 function ConfirmUser(email, password, nickname, verification_code, socket) {
   if (fs.existsSync(json)) {
@@ -356,7 +397,7 @@ function addTempUser(email, password, nickname, socket) {
 
   const expiration_time = new Date();
 
-  expiration_time.setDate(expiration_time.getDate() + 1);
+  expiration_time.setDate(expiration_time.getDate());
 
   var user = [nickname,email,password,verification_code,expiration_time,0]
 
@@ -370,7 +411,7 @@ function addTempUser(email, password, nickname, socket) {
         );
       } else {
         sendCodeViaEmail(email, nickname, verification_code, expiration_time);
-        console.log("Utente aggiunto al json");
+        console.log("Utente aggiunto a temp-user");
 
         var crypted_email = encryptAES(email);
         var crypted_password = encryptAES(password);
@@ -380,10 +421,28 @@ function addTempUser(email, password, nickname, socket) {
       }
     });
   }
-
-function cleanTempUser() {}
-
-setInterval(cleanJson, 600000);
+function cleanTempUser() {
+  data = new Date()
+  db1.all("SELECT * FROM users", (err, rows) => {
+    if (err) {
+      console.log(err);
+    } else {
+      rows.forEach((row) => {
+        if (row.expiration_time < data) {
+          db1.run("DELETE FROM users WHERE email = ?", row.email, (err) => {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log("Utente rimosso da temp-user");
+            }
+          });
+        }
+      });
+    }
+  });
+  
+}
+//setInterval(cleanTempUser, 300000);
 
 /*CryptoJS*/
 function encryptAES(data) {
@@ -396,25 +455,20 @@ function decryptAES(data) {
 
 /*Database*/
 const Newuser = ["user1","user1@example.com","password1"];
-const db = new sqlite3.Database("./db/users.db", sqlite3.OPEN_READWRITE, (err) => {
-  if (err) {
-    console.error(err.message);
-  }
-  console.log("Connected to the users database.");
-});
-const db1 = new sqlite3.Database("./db/temp-user.db", sqlite3.OPEN_READWRITE, (err) => {
-  if (err) {
-    console.error(err.message);
-  }
-  console.log("Connected to the temp-users database.");
-});
+
+// sql=`SELECT COUNT(*) FROM users;`
+// db1.run(sql)
 //create tables
-// sql =`CREATE TABLE IF NOT EXISTS users (nickname text PRIMARY KEY not null, email text not null, password text not null,verification_code text not null,expiration_time text not null,attempts int not null);`;
-// sql =`CREATE TABLE IF NOT EXISTS users (nickname text PRIMARY KEY not null, email text not null, password text not null);`; 
-// db.run(sql);
+//sql =`CREATE TABLE IF NOT EXISTS users (nickname text PRIMARY KEY not null, email text not null, password text not null,verification_code text not null,expiration_time text not null,attempts int not null);`;
+//sql =`CREATE TABLE IF NOT EXISTS users (nickname text PRIMARY KEY not null, email text not null, password text not null);`; 
+//db.run(sql);
 //cancellare tables
 // sql =`DROP TABLE users;`;
 // db.run(sql);
+//cambio dati
+// sql =`UPDATE users SET nickname = 'user2' WHERE nickname = 'user1';`;
+//eliminare dati
+// sql =`DELETE FROM users WHERE nickname = 'user2';`;
 
 function getUsers(db) {
   db.all(
@@ -443,7 +497,7 @@ function insertTempUser(user) {
 function insertUser(newUser) {
   console.log(newUser);
   db.run(
-    ` INSERT INTO users (nickname, email, password, publicKey, privateKey)
+    ` INSERT INTO users (nickname, email, password)
       VALUES (?, ?, ?);`,
     [newUser[0], newUser[1], newUser[2]],
     (err) => {
@@ -458,7 +512,7 @@ function insertUser(newUser) {
 function existInDatabase(db,email,nickname) {
   //aggiungere sql injection protection
   db.all(
-    `select * from users where username = ? or email = ?`,
+    `select * from users where nickname = ? or email = ?`,
     [nickname,email],
     (err, rows) => {
       if (err) {
@@ -470,7 +524,7 @@ function existInDatabase(db,email,nickname) {
     }
   );
 }
-existInDatabase('user1@example.com', 'pene');
+//existInDatabase(db1,'user1@example.com', 'pene');
 
 /*Check functions*/
 function checkUsername(username) {
