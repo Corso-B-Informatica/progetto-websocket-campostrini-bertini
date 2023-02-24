@@ -1,10 +1,11 @@
-const express = require("express");
+const express = require('express');
 const config = require("./config.js");
 const socketio = require("socket.io");
 const openpgp = require("openpgp");
 var CryptoJS = require("crypto-js");
 const sqlite3 = require("sqlite3").verbose();
 const fs = require("fs");
+const nodemailer = require('nodemailer');
 
 /*Json file*/
 const json = "./db/data.txt";
@@ -73,36 +74,113 @@ io.on("connection", (socket) => {
     console.log(armored_nickname);
 
     checkUserData(armored_email, armored_password, armored_nickname, socket);
+  });
+  socket.on("confirmViaLink", (email, password, nickname, verification_code, pKeyArmored) => {
+    confirmUserDataViaLink(email, password, nickname, verification_code, socket, publicKeyArmored);
+  });
 
-    /*email = decryptPGP(crypted_email, passphrase)
-        .then((decrypted) => {
-          console.log(decrypted);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-      nickname = decryptPGP(crypted_nickname, passphrase)
-        .then((decrypted) => {
-          console.log(decrypted);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-      password = decryptPGP(crypted_password, passphrase)
-        .then((decrypted) => {
-          console.log(decrypted);
-        })
-        .catch((error) => {
-          console.error(error);
-        });*/
-    //se l'utente non è già presente e se il formato è corretto |fatto
-    //manda una mail di conferma della registrazione e salva il codice di registrazione assieme all'utente
-    //riceve il codice di conferma dal client e l'utente è stato creato
-    //se non si riceve il codice di conferma entro 24 ore l'utente viene eliminato |fatto
-    //se viene ricevuto semplicente si toglie dal database la data di scadenza del codice di registrazione e il codice di registrazione
-    //se l'utente richiede più di un codice di conferma per la stessa registrazione, viene mandato quello precedentemente salvato nel database
+  socket.on("confirmViaCode", (email, password, nickname, verification_code) => {
+    confirmUserDataViaCode(email, password, nickname, verification_code, socket);
   });
 });
+
+async function confirmUserDataViaLink(armored_email, armored_password, armored_nickname, armored_verification_code, socket, pKeyArmored) {
+  const privatekey = await openpgp.decryptKey({
+    privateKey: await openpgp.readPrivateKey({ armoredKey: privateKey }),
+    passphrase,
+  });
+
+  const double_crypted_email = await openpgp.readMessage({
+    armoredMessage: armored_email,
+  });
+
+  const { data: crypted_email } = await openpgp.decrypt({
+    message: double_crypted_email,
+    decryptionKeys: privatekey,
+  });
+
+  const double_crypted_password = await openpgp.readMessage({
+    armoredMessage: armored_password,
+  });
+
+  const { data: crypted_password } = await openpgp.decrypt({
+    message: double_crypted_password,
+    decryptionKeys: privatekey,
+  });
+
+  const double_crypted_nickname = await openpgp.readMessage({
+    armoredMessage: armored_nickname,
+  });
+
+  const { data: crypted_nickname } = await openpgp.decrypt({
+    message: double_crypted_nickname,
+    decryptionKeys: privatekey,
+  });
+
+  const double_crypted_verification_code = await openpgp.readMessage({
+    armoredMessage: armored_verification_code,
+  });
+
+  const { data: crypted_verification_code } = await openpgp.decrypt({
+    message: double_crypted_verification_code,
+    decryptionKeys: privatekey,
+  });
+
+  const crypted_pKey = await openpgp.readMessage({
+    armoredMessage: pKeyArmored,
+  });
+
+  const { data: pKey } = await openpgp.decrypt({
+    message: crypted_pKey,
+    decryptionKeys: privatekey,
+  });
+
+  const email = decryptAES(crypted_email, AESKey);
+  const password = decryptAES(crypted_password, AESKey);
+  const nickname = decryptAES(crypted_nickname, AESKey);
+  const verification_code = decryptAES(crypted_verification_code, AESKey);
+
+  if (existInJson(email, nickname)) {
+    //se l'utente esiste nel json controllo che tutto corrisponda
+    if (!checkJsonData(email, password, nickname, verification_code, socket)) {
+      //aumento il numero di tentativi
+
+
+
+
+
+
+
+
+
+
+
+
+      increaseAttempts(email, nickname);
+      //se il numero di tentativi è maggiore di 3 diminuisco il tempo di scadenza del codice di conferma
+      if (getAttempts(email, nickname) > 3) {
+        decreaseExpirationTime(email, nickname);
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+  } else {
+    //altrimenti se l'utente non esiste nel json restituisco un errore
+    socket.emit("confirmError", "User not found");
+  }
+
+}
 
 async function checkUserData(
   armored_email,
@@ -150,26 +228,24 @@ async function checkUserData(
   var check2 = checkEmail(email);
   var check3 = checkPassword(password);
 
+  //se i dati sono validi
   if (check1 && check2 && check3) {
-    if (existInDatabase(email, password, nickname)) {
+    //se esiste nel database un utente con lo stesso nickname o email
+    if (existInDatabase(email, nickname)) {
+      console.log("Utente già registrato");
+      socket.emit("registerError", "User already registered");
+    } else if (existInJson(email, nickname)) {
+      //se esiste nel json un utente con lo stesso nickname o email
       console.log("Utente già registrato");
       socket.emit("registerError", "User already registered");
     } else {
+      //altrimenti crea un nuovo utente
       console.log("Utente non registrato");
-      if (addUserToJson(email, password, nickname)) {
-        console.log("Utente aggiunto al database");
-        socket.emit("registerSuccess");
-      } else {
-        console.log("Errore durante l'aggiunta dell'utente al database");
-        socket.emit(
-          "registerError",
-          "Error during registration, please try again"
-        );
-      }
+      addUserToJson(email, password, nickname, socket);
     }
   } else {
     console.log("Dati non validi");
-    sendErrors(nickname, password, check1 , check2, check3, socket);
+    sendErrors(nickname, password, check1, check2, check3, socket);
   }
 }
 
@@ -185,6 +261,7 @@ function sendErrors(nickname, password, check1, check2, check3, socket) {
       error += "Username must contain at least one letter or number\n";
     }
   }
+
 
   if (!check2) {
     error += "Email must be valid\n";
@@ -210,13 +287,99 @@ function sendErrors(nickname, password, check1, check2, check3, socket) {
 
   socket.emit("registerDataError", check1, check2, check3, error);
 }
+
 /*Json*/
-function addUserToJson(email, password, nickname) {
-  const verification_code = CryptoJS.lib.WordArray.random(10).toString(
-    CryptoJS.enc.Hex
-  );
+
+function checkJsonData(email, password, nickname, verification_code, socket) {
+  if (fs.existsSync(json)) {
+    const data = fs.readFileSync(json, "utf8");
+
+    const usersJSON = JSON.parse(decryptAES(data)).users;
+
+    for (let i = 0; i < usersJSON.length; i++) {
+      const u = usersJSON[i];
+
+      if (
+        u.username === nickname &&
+        u.password === password &&
+        u.email === email &&
+        u.verification_code === verification_code
+      ) {
+        //rimuovo l'utente dal json
+        usersJSON.splice(i, 1);
+        fs.writeFile(json, usersJSON, "utf8", (err) => {
+          if (err) {
+            console.log("Errore durante la scrittura del file json");
+            socket.emit("confirmUnknownError", "Wrong data");
+          } else {
+            console.log("Utente verificato");
+            socket.emit("confirmSuccess");
+            //devo mandare il file html della chat all'utente
+            //aggiungo l'utente al database
+            addUserToDatabase(email, password, nickname, socket);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            //finire di implementare la funzione nel database.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+          }
+        });
+      }
+    }
+  }
+}
+
+function existInJson(email, nickname) {
+  if (fs.existsSync(json)) {
+    const data = fs.readFileSync(json, "utf8");
+
+    const usersJSON = JSON.parse(decryptAES(data)).users;
+
+    for (let i = 0; i < usersJSON.length; i++) {
+      const u = usersJSON[i];
+
+      if (
+        u.username === nickname ||
+        u.email === email
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function addUserToJson(email, password, nickname, socket) {
+  const verification_code = CryptoJS.lib.WordArray.random(5).toString();
+
+  console.log(verification_code);
 
   const expiration_time = new Date();
+
   expiration_time.setDate(expiration_time.getDate() + 1);
 
   var user = {
@@ -228,106 +391,86 @@ function addUserToJson(email, password, nickname) {
     attempts: 0,
   };
 
-  console.log("utente: " + JSON.stringify(user));
-
   if (fs.existsSync(json)) {
-    console.log("Il file JSON esiste già");
+    const data = fs.readFileSync(json, "utf8");
+
+    const usersJSON = JSON.parse(decryptAES(data)).users;
+
+    usersJSON.push(user);
+
+    const jsonData = encryptAES(JSON.stringify(usersJSON));
+
+    fs.writeFile(json, jsonData, "utf8", (err) => {
+      if (err) {
+        console.log("Errore durante l'aggiunta dell'utente al json");
+        socket.emit(
+          "registerError",
+          "Error during registration, please try again"
+        );
+      } else {
+        sendCodeViaEmail(email, nickname, verification_code, expiration_time);
+        console.log("Utente aggiunto al json");
+
+        var crypted_email = encryptAES(email);
+        var crypted_password = encryptAES(password);
+        var crypted_nickname = encryptAES(nickname);
+
+        socket.emit("registerSuccess", crypted_email, crypted_password, crypted_nickname);
+      }
+    });
+  } else {
+    const usersJSON = {
+      users: [user],
+    };
+
+    const jsonData = encryptAES(JSON.stringify(usersJSON));
+
+    fs.writeFile(json, jsonData, "utf8", (err) => {
+      if (err) {
+        console.log("Errore durante l'aggiunta dell'utente al json");
+        socket.emit(
+          "registerError",
+          "Error during registration, please try again"
+        );
+      } else {
+        sendCodeViaEmail(email, nickname, password, verification_code, expiration_time);
+        console.log("Utente aggiunto al json");
+        socket.emit("registerSuccess");
+      }
+    });
+  }
+}
+
+function cleanJson() {
+  if (fs.existsSync(json)) {
+    var removed = 0;
 
     const data = fs.readFileSync(json, "utf8");
 
     const usersJSON = JSON.parse(decryptAES(data)).users;
 
-    let i = 0;
-    let found = false;
-
-    while (i < usersJSON.length && !found) {
+    for (let i = 0; i < usersJSON.length; i++) {
       const u = usersJSON[i];
 
-      if (
-        u.username === nickname &&
-        u.password === password &&
-        u.email === email
-      ) {
-        usersJSON.splice(i, 1, user);
-        found = true;
+      if (new Date(u.expiration_time) < new Date()) {
+        usersJSON.splice(i, 1);
+        removed++;
       }
-      i++;
     }
-
-    if (!found) {
-      usersJSON.push(user);
-    }
-
-    console.log("\njson: " + JSON.stringify(usersJSON));
 
     const jsonData = encryptAES(JSON.stringify(usersJSON));
 
-    // fs.writeFile(json, jsonData, "utf8", (err) => {
-    //   if (err) {
-    //     console.log("Errore nella scrittura del json");
-    //     return false;
-    //   } else {
-    //     console.log("Utente aggiunto al json");
-    //     sendCodeViaEmail(email, nickname, verification_code, expiration_time);
-    //     return true;
-    //   }
-    // });
-  } else {
-    console.log("Il file JSON non esiste");
-
-    const usersJSON = {
-      users: [user],
-    };
-
-    console.log("\njson: " + JSON.stringify(usersJSON));
-
-    const jsonData = encryptAES(JSON.stringify(usersJSON));
-
-    // fs.writeFile(json, jsonData, "utf8", (err) => {
-    //   if (err) {
-    //     if (!fs.existsSync(json)) {
-    //       console.log("Errore nella scrittura del json");
-    //       return false;
-    //     }
-    //   } else {
-    //     console.log("Utente aggiunto al json");
-    //     sendCodeViaEmail(email, nickname, verification_code, expiration_time);
-    //     return true;
-    //   }
-    // });
+    fs.writeFile(json, jsonData, "utf8", (err) => {
+      if (err) {
+        console.log("Errore nella scrittura del json");
+      } else {
+        console.log("Pulizia json effettuata, utenti rimossi: " + removed);
+      }
+    });
   }
 }
 
-// function cleanJson() {
-//   if (fs.existsSync(json)) {
-//     var removed = 0;
-
-//     const data = fs.readFileSync(json, "utf8");
-
-//     const usersJSON = JSON.parse(decryptAES(data)).users;
-
-//     for (let i = 0; i < usersJSON.length; i++) {
-//       const u = usersJSON[i];
-
-//       if (new Date(u.expiration_time) < new Date()) {
-//         usersJSON.splice(i, 1);
-//         removed++;
-//       }
-//     }
-
-//     const jsonData = encryptAES(JSON.stringify(usersJSON));
-
-//     fs.writeFile(json, jsonData, "utf8", (err) => {
-//       if (err) {
-//         console.log("Errore nella scrittura del json");
-//       } else {
-//         console.log("Pulizia json effettuata, utenti rimossi: " + removed);
-//       }
-//     });
-//   }
-// }
-
-// setInterval(cleanJson, 600000);
+setInterval(cleanJson, 600000);
 
 /*CryptoJS*/
 function encryptAES(data) {
@@ -337,23 +480,6 @@ function encryptAES(data) {
 function decryptAES(data) {
   return CryptoJS.AES.decrypt(data, AESKey).toString(CryptoJS.enc.Utf8);
 }
-
-/*OpenPGP*/
-/*async function decryptPGP(msg, passphrase) {
-  const privatekey = await openpgp.decryptKey({
-    privateKey: await openpgp.readPrivateKey({ armoredKey: privateKey }),
-    passphrase,
-  });
-  const message = await openpgp.readMessage({
-    armoredMessage: msg, // parse armored message
-  });
-  const { data: decrypted } = await openpgp.decrypt({
-    message,
-    decryptionKeys: privatekey,
-  });
-
-  return decrypted;
-}*/
 
 /*Database*/
 const Newuser = ["user1","user1@example.com","password1"];
@@ -413,7 +539,8 @@ function existInDatabase(email,username) {
     }
   );
 }
-existInDatabase('user1@example.com','pene');
+existInDatabase('user1@example.com', 'pene');
+
 /*Check functions*/
 function checkUsername(username) {
   if (username.length == 0) {
@@ -432,6 +559,20 @@ function checkUsername(username) {
   return true;
 }
 
+/*Check functions*/
+function checkUsername(username) {
+  if (username.length == 0) {
+    return false;
+  }
+  if (username.length > 30) {
+    return false;
+  }
+  if (!/[a-zA-Z0-9]/.test(username)) {
+    return false;
+  }
+  return true;
+}
+
 function checkEmail(email) {
   if (
     email
@@ -440,79 +581,77 @@ function checkEmail(email) {
         /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/
       ) == null
   ) {
-    console.log("email non valida")
     return false;
   }
-  console.log("email valida")
   return true;
 }
 
 function checkPassword(password) {
   if (password.length == 0) {
-    console.log("password non valida1")
     return false;
   }
   if (password.length < 8) {
-    console.log("password non valida2")
-    console.log(password.length)
     return false;
   }
   if (password.length > 50) {
-    console.log("password non valida3")
     return false;
   }
   if (!/[a-z]/.test(password)) {
-    console.log("password non valida4")
     return false;
   }
   if (!/[A-Z]/.test(password)) {
-    console.log("password non valida5")
     return false;
   }
   if (!/[0-9]/.test(password)) {
-    console.log("password non valida6")
     return false;
   }
   if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    console.log("password non valida7")
     return false;
   }
-  console.log("password valida")
   return true;
 }
 
-
 /*Email*/
-function sendCodeViaEmail(email, nickname, code, expiration_time) {
-  /*const { google } = require('googleapis');
-  const OAuth2 = google.auth.OAuth2;
+function sendCodeViaEmail(email, nickname, password, code, expiration_time) {
 
-  const oauth2Client = new OAuth2(
-    'CLIENT_ID',
-    'CLIENT_SECRET',
-    'REDIRECT_URL'
-  );
-
-  oauth2Client.setCredentials({
-    access_token: 'ACCESS_TOKEN',
-    refresh_token: 'REFRESH_TOKEN'
+  // Crea un trasportatore SMTP
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Usa SSL
+    auth: {
+      user: 'service.chatme@gmail.com', // Inserisci il tuo indirizzo email
+      pass: 'qfdimntkltaapvcv' // Inserisci la tua password
+    }
   });
 
-  const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+  //cifratura dati
+  const crypted_nickname = encryptAES(nickname);
 
-  const email = 'To: example@example.com\r\n' +
-    'Subject: Test Email\r\n\r\n' +
-    'This is a test email.';
+  const crypted_email = encryptAES(email);
 
-  const message = Buffer.from(email).toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
+  const crypted_password = encryptAES(password);
 
-  gmail.users.messages.send({
-    userId: 'me',
-    requestBody: {
-      raw: message
+  const crypted_code = encryptAES(code);
+
+  const url = 'https://andreacampostrini-jubilant-engine-56vgx5p5644fj44-3000.preview.app.github.dev/confirm.html#email=' + crypted_email + '&nickname=' + crypted_nickname + '&password=' + crypted_password + '&code=' + crypted_code;
+
+  const mail = 'Dear ' + nickname + ',\n\nThank you for registering for "Chat Me." We are delighted to have you as a new user.\n\nTo complete the registration process, we are providing you with a unique confirmation code that you will need to enter in the chat by ' + expiration_time.toString() + ' to access its full features.\n\nConfirmation code: ' + code + '\n\nAlternatively, if you prefer, you can click on this link: ' + url + ' to complete the registration.\n\nIf you need any assistance or have any questions about how to use the chat, please do not hesitate to contact us via email at Service.ChatMe@gmail.com.\n\nThank you for choosing Chat Me.\n\nBest regards,\n\n\t\tThe Chat Me Team';
+
+  // Crea l'oggetto email
+  const mailOptions = {
+    from: 'Service.ChatMe@gmail.com',
+    to: email,
+    subject: 'Registration Confirmation for Chat Me',
+    text: mail
+  };
+
+  // Invia l'email
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Email inviata: ' + info.response);
     }
-  }, (err, res) => {
-    if (err) return console.log('Error sending email: ' + err);
-    console.log('Email sent successfully.');
-  });*/
+  });
 }

@@ -2,15 +2,12 @@
 var socket = io();
 
 socket.on("publicKey", (publicKeyArmored) => {
+  localStorage.setItem("publicKeyArmored", publicKeyArmored);
   sendRegister(publicKeyArmored);
 });
 
 socket.on("registerError", (error) => {
   alert(error);
-});
-
-socket.on("registerSuccess", () => {
-  window.location.href = "../confirm.html";
 });
 
 socket.on("registerDataError", (check1, check2, check3, error) => {
@@ -28,7 +25,34 @@ socket.on("registerDataError", (check1, check2, check3, error) => {
     var containerPassword = document.getElementById("container-password");
     containerPassword.classList.add("error");
   }
-  
+
+  alert(error);
+});
+
+socket.on("registerSuccess", (email, password, nickname) => {
+  window.location.href = "../confirm.html#email=" + email + "&password=" + password + "&nickname=" + nickname + "&code=";
+  localStorage.setItem("email", email);
+  localStorage.setItem("password", password);
+  localStorage.setItem("nickname", nickname);
+  localStorage.setItem("rememberMe", document.getElementById("remember-me").checked);
+});
+
+socket.on("registerDataError", (check1, check2, check3, error) => {
+  if (!check1) {
+    var containerUsername = document.getElementById("container-username");
+    containerUsername.classList.add("error");
+  }
+
+  if (!check2) {
+    var containerEmail = document.getElementById("container-email");
+    containerEmail.classList.add("error");
+  }
+
+  if (!check3) {
+    var containerPassword = document.getElementById("container-password");
+    containerPassword.classList.add("error");
+  }
+
   alert(error);
 });
 /*Letters and signs*/
@@ -106,8 +130,7 @@ async function sendRegister(publicKeyArmored) {
     }),
     encryptionKeys: publicKey,
   });
-
-  socket.emit("register", crypted_email, crypted_nickname, crypted_password);
+  socket.emit("register", crypted_email, crypted_password, crypted_nickname);
 }
 
 /*Check functions*/
