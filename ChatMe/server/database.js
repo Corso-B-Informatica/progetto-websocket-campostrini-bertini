@@ -32,6 +32,7 @@ function existInDatabase(db, email, nickname, operator) {
     (err, rows) => {
       if (err) {
         console.log("Error selecting user: " + err);
+        return false;
       } else {
         console.log(rows);
         return rows.length > 0;
@@ -94,6 +95,68 @@ function cleanDatabase() {
   return true;
 }
 
+//ritorna true se l'utente ha meno di 3 tentativi
+function getAttempts(email, password){
+    tempUsers.all("SELECT * FROM users WHERE email = ? and password = ?", [email,password], (err, rows) => {
+        if (err) {
+        console.log(err);
+        return false
+        } else {
+        return rows.attempts <= 3;
+        }
+    });
+}
+
+//ritorna true se il codice di verifica è corretto
+function checkVerificationCode(email, password, verification_code){
+    tempUsers.all("SELECT * FROM users WHERE email = ? and password = ?", [email,password], (err, rows) => {
+        if (err) {
+        console.log(err);
+        return false
+        } else {
+        return rows.verification_code == verification_code;
+        }
+    });
+}
+
+//rimuove un utente da TempUsers
+function removeTempUsers(email,password){
+    tempUsers.run("DELETE FROM users WHERE email = ? and password = ?", [email,password], (err) => {
+        if (err) {
+        console.log(err);
+        return false;
+        } else {
+        console.log("Utente rimosso da temp-users");
+        return true;
+        }
+    });
+}
+
+//aumenta il numero di tentativi di conferma
+function increaseConfirmAttempts(email,password){
+    tempUsers.run("UPDATE users SET attempts = attempts + 1 WHERE email = ? and password = ?", [email,password], (err) => {
+        if (err) {
+        console.log(err);
+        return false;
+        } else {
+        console.log("Tentativi di conferma aumentati");
+        return true;
+        }
+    });
+}
+
+//setta la data di scandeza dell'account ad adesso
+function setExpirationTime(email,password){
+    tempUsers.run("UPDATE users SET expiration_time = ? WHERE email = ? and password = ?", [new Date().getTime(),email,password], (err) => {
+        if (err) {
+        console.log(err);
+        return false;
+        } else {
+        console.log("Expiration time aggiornata");
+        return true;
+        }
+    });
+};
 // sql=`SELECT COUNT(*) FROM users;`
 // db1.run(sql)
 //create tables
@@ -111,9 +174,13 @@ function cleanDatabase() {
 module.exports = {
   existInDatabase,
   insertTempUsers,
-  getConfirmUsers,
   insertUser,
   cleanDatabase,
+  getAttempts,
+  checkVerificationCode,
+  removeTempUsers,
+  increaseConfirmAttempts,
+  setExpirationTime,
   tempUsers,
   Users,
 };

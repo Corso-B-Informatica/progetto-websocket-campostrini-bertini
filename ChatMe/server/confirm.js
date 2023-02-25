@@ -10,22 +10,22 @@ async function confirmUserDataViaLink(armored_email, armored_password, armored_n
 
     if (database.existInDatabase(database.tempUsers,email, nickname, 'and')) {
         //se l'utente esiste in TempUsers controllo che i tentativi siano minori di 3
-        if (database.getAttempts(email, nickname) < 3) {
+        if (database.getAttempts(email,password)) {
             //se i tentativi sono minori di 3 controllo che il codice di conferma sia corretto
-            if (database.checkVerificationCode(email, password, nickname, verification_code)) {
+            if (database.checkVerificationCode(email,password, verification_code)) {
                 //se tutto corrisponde inserisco l'utente nel database di utenti
                 database.insertUser(email, password, nickname);
                 //rimuovo l'utente dal database confirm
-                database.removeFromTempUsers(email, nickname);
+                database.removeTempUsers(email, password);
                 //invio un messaggio di conferma
                 socket.emit("confirmSuccess");
             } else {
                 //aumento il numero di tentativi
-                database.increaseConfirmAttempts(email, nickname);
+                database.increaseConfirmAttempts(email,password);
                 //se il numero di tentativi è maggiore di 3 diminuisco il tempo di scadenza del codice di conferma
-                if (getConfirmAttempts(email, nickname) > 3) {
+                if (database.getAttempts(email,password)) {
                     //se l'utente ha sbagliato più di 3 volte setto il tempo di scadenza a 10 minuti da ora, poi l'utente verrà cancellato in modo che l'utente non possa registrarsi di nuovo con la stessa email
-                    database.setConfirmExpirationTime(email, nickname, 10);
+                    database.setExpirationTime(email,password);
                 }
                 //invio un messaggio di errore
                 socket.emit("confirmError", "Wrong data");
@@ -35,7 +35,7 @@ async function confirmUserDataViaLink(armored_email, armored_password, armored_n
             socket.emit("confirmError", "Too many attempts");
         }
     } else {
-        //altrimenti se l'utente non esiste nel json restituisco un errore
+        //altrimenti se l'utente non esiste nel database restituisco un errore
         socket.emit("confirmError", "User not found");
     }
 }
