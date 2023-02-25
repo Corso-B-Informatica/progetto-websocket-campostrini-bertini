@@ -55,6 +55,7 @@ socket.on("registerDataError", (check1, check2, check3, error) => {
 
   alert(error);
 });
+
 /*Letters and signs*/
 var alertMessage = "";
 var less = /</g;
