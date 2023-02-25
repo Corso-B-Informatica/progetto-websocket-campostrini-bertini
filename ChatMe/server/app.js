@@ -36,42 +36,42 @@ io.on("connection", (socket) => {
 });
 
 
-async function checkUserData(
-  armored_email,
-  armored_password,
-  armored_nickname,
-  socket
-) {
-  const { data: email } = await crypto.decrypt(armored_email);
+// async function checkUserData(
+//   armored_email,
+//   armored_password,
+//   armored_nickname,
+//   socket
+// ) {
+//   const { data: email } = await crypto.decrypt(armored_email);
 
-  const { data: password } = await crypto.decrypt(armored_password);
+//   const { data: password } = await crypto.decrypt(armored_password);
 
-  const { data: nickname } = await crypto.decrypt(armored_nickname);
+//   const { data: nickname } = await crypto.decrypt(armored_nickname);
 
-  var check1 = validator.checkUsername(nickname);
-  var check2 = validator.checkEmail(email);
-  var check3 = validator.checkPassword(password);
+//   var check1 = validator.checkUsername(nickname);
+//   var check2 = validator.checkEmail(email);
+//   var check3 = validator.checkPassword(password);
 
-  //se i dati sono validi
-  if (check1 && check2 && check3) {
-    //se esiste nel database di utenti un utente con lo stesso nickname o email
-    if (database.existInUsersDatabase(email, nickname)) {
-      console.log("Utente già registrato");
-      socket.emit("registerError", "User already registered");
-    } else if (database.existInTempDatabase(email, nickname)) {
-      //se esiste nel database temporaneo un utente con lo stesso nickname o email
-      console.log("Utente già registrato");
-      socket.emit("registerError", "User already registered");
-    } else {
-      //altrimenti crea un nuovo utente
-      console.log("Utente non registrato");
-      registerUser(email, password, nickname, socket);
-    }
-  } else {
-    console.log("Dati non validi");
-    sendErrors(nickname, password, check1, check2, check3, socket);
-  }
-}
+//   //se i dati sono validi
+//   if (check1 && check2 && check3) {
+//     //se esiste nel database di utenti un utente con lo stesso nickname o email
+//     if (database.existInUsersDatabase(email, nickname)) {
+//       console.log("Utente già registrato");
+//       socket.emit("registerError", "User already registered");
+//     } else if (database.existInTempDatabase(email, nickname)) {
+//       //se esiste nel database temporaneo un utente con lo stesso nickname o email
+//       console.log("Utente già registrato");
+//       socket.emit("registerError", "User already registered");
+//     } else {
+//       //altrimenti crea un nuovo utente
+//       console.log("Utente non registrato");
+//       registerUser(email, password, nickname, socket);
+//     }
+//   } else {
+//     console.log("Dati non validi");
+//     sendErrors(nickname, password, check1, check2, check3, socket);
+//   }
+// }
 
 function sendErrors(nickname, password, check1, check2, check3, socket) {
   var errors = "";
@@ -140,5 +140,4 @@ function registerUser(email, password, nickname, socket) {
     }
   });
 }
-
-setInterval(database.cleanConfirmDatabase, 300000);
+//setInterval(database.cleanDatabase, 300000);

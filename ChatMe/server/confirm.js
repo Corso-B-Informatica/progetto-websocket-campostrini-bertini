@@ -8,15 +8,15 @@ async function confirmUserDataViaLink(armored_email, armored_password, armored_n
     const nickname = crypto.doubleDecrypt(armored_nickname);
     const verification_code = crypto.doubleDecrypt(armored_verification_code);
 
-    if (database.existInConfirmDatabase(email, nickname)) {
-        //se l'utente esiste nel database confirm controllo che i tentativi siano minori di 3
-        if (database.getConfirmAttempts(email, nickname) < 3) {
+    if (database.existInDatabase(database.tempUsers,email, nickname, 'and')) {
+        //se l'utente esiste in TempUsers controllo che i tentativi siano minori di 3
+        if (database.getAttempts(email, nickname) < 3) {
             //se i tentativi sono minori di 3 controllo che il codice di conferma sia corretto
-            if (database.checkConfirmDatabaseData(email, password, nickname, verification_code)) {
+            if (database.checkVerificationCode(email, password, nickname, verification_code)) {
                 //se tutto corrisponde inserisco l'utente nel database di utenti
-                database.insertInUsersDatabase(email, password, nickname);
+                database.insertUser(email, password, nickname);
                 //rimuovo l'utente dal database confirm
-                database.removeFromConfirmDatabase(email, nickname);
+                database.removeFromTempUsers(email, nickname);
                 //invio un messaggio di conferma
                 socket.emit("confirmSuccess");
             } else {
