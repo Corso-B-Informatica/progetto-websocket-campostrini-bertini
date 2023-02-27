@@ -4,6 +4,7 @@ const config = require("./config.js");
 const crypto = require('./crypto.js');
 const database = require('./database.js');
 const register = require('./register.js');
+const confirm = require('./confirm.js');
 
 /*Express*/
 const app = express();
@@ -26,7 +27,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("confirmViaLink", (email, password, nickname, verification_code, publicKeyArmored, aesKey) => {
-    confirmUserDataViaLink(email, password, nickname, verification_code, publicKeyArmored, aesKey, socket);
+    confirm.confirmUserViaLink(email, password, nickname, verification_code, publicKeyArmored, aesKey, socket);
   });
 
   socket.on("confirmViaCode", (email, password, nickname, verification_code) => {

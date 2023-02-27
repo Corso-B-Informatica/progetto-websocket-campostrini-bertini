@@ -1,7 +1,7 @@
 const crypto = require("./crypto.js");
 const database = require("./database.js");
 
-async function confirmUserDataViaLink(armored_email, armored_password, armored_nickname, armored_verification_code, publicKeyArmored, crypted_aesKey, socket) {
+async function confirmUserViaLink(armored_email, armored_password, armored_nickname, armored_verification_code, publicKeyArmored, crypted_aesKey, socket) {
     const email = await crypto.doubleDecrypt(armored_email);
     const password = await crypto.doubleDecrypt(armored_password);
     const nickname = await crypto.doubleDecrypt(armored_nickname);
@@ -49,5 +49,5 @@ async function confirmUserDataViaLink(armored_email, armored_password, armored_n
 }
 
 module.exports = {
-    confirmUserDataViaLink
+    confirmUserViaLink
 }

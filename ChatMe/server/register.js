@@ -32,13 +32,13 @@ async function checkUserData(
 
     //se i dati sono validi
     if (check1 && check2 && check3) {
-        if (await database.existInDatabase(database.getDatabase(), email, nickname, "or")) {
+        if (await database.existInDatabase(database.Users, nickname, email, "or")) {
             console.log("Utente già registrato");
 
             const message = crypto.encrypt("User already registered", publicKeyArmored);
 
             socket.emit("registerError", message);
-        } else if (await database.existInDatabase(database.getTempDatabase(), email, nickname, "or")) {
+        } else if (await database.existInDatabase(database.tempUsers, nickname,email, "or")) {
             console.log("Utente già registrato");
 
             const message = crypto.encrypt("User must confirm his account", publicKeyArmored);
