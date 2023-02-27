@@ -14,22 +14,17 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
     },
   });
 
-  //cifratura dati
-  const crypted_nickname = crypto.encryptAES(nickname);
-
-  const crypted_email = crypto.encryptAES(email);
-
-  const crypted_password = crypto.encryptAES(password);
+  const decrypted_email = crypto.decryptAES(email);
 
   const crypted_code = crypto.encryptAES(code);
 
   const url =
     "https://andreacampostrini-jubilant-engine-56vgx5p5644fj44-3000.preview.app.github.dev/confirm.html#email=" +
-    crypted_email +
+    email +
     "&nickname=" +
-    crypted_nickname +
+    nickname +
     "&password=" +
-    crypted_password +
+    password +
     "&code=" +
     crypted_code;
 
@@ -98,7 +93,7 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
   // Crea l'oggetto email
   const mailOptions = {
     from: "Service.ChatMe@gmail.com",
-    to: email,
+    to: decrypted_email,
     subject: "Registration Confirmation for Chat Me",
     html: mail,
   };

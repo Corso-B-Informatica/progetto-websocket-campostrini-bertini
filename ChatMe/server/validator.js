@@ -1,3 +1,13 @@
+/*Letters and signs*/
+var alertMessage = "";
+var less = /</g;
+var greater = />/g;
+var apostrofe = /'/g;
+var quotation = /"/g;
+var and = /&/g;
+var grave = /`/g;
+var slash = /\//g;
+
 /*Controlla se l'username è valido*/
 function checkUsername(username) {
   if (
@@ -41,4 +51,71 @@ function checkPassword(password) {
   return true;
 }
 
-module.exports = { checkUsername, checkEmail, checkPassword };
+/*Controlla se il campo remember è valido*/
+function checkRemember(remember) {
+  if (remember == "true" || remember == "false") {
+    return true;
+  }
+  return false;
+}
+
+/*Rimpiazza i caratteri speciali con i rispettivi codici html*/
+function validate(data) {
+  return data.toString()
+    .replace(less, "&lt;")
+    .replace(greater, "&gt;")
+    .replace(apostrofe, "&#39;")
+    .replace(quotation, "&#34;")
+    .replace(and, "&#38;")
+    .replace(grave, "&#96;")
+    .replace(slash, "&#47;");
+}
+
+function getErrors(nickname, password, check1, check2, check3) {
+  var errors = "";
+
+  if (!check1) {
+    if (nickname.length == 0) {
+      errors += "Username must be filled out\n";
+    } else if (nickname.length > 30) {
+      errors += "Username must be at most 30 characters long\n";
+    } else if (!/[a-zA-Z0-9]/.test(nickname)) {
+      errors += "Username must contain at least one letter or number\n";
+    } else if (username.includes("@")) {
+      errors += "Username must not contain '@'\n";
+    }
+  }
+
+  if (!check2) {
+    errors += "Email must be valid\n";
+  }
+
+  if (!check3) {
+    if (password.length == 0) {
+      errors += "Password must be filled out\n";
+    } else if (password.length < 8) {
+      errors += "Password must be at least 8 characters long\n";
+    } else if (password.length > 50) {
+      errors += "Password must be at most 50 characters long\n";
+    } else if (!/[a-z]/.test(password)) {
+      errors += "Password must contain at least one lowercase letter\n";
+    } else if (!/[A-Z]/.test(password)) {
+      errors += "Password must contain at least one uppercase letter\n";
+    } else if (!/[0-9]/.test(password)) {
+      errors += "Password must contain at least one number\n";
+    } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      errors += "Password must contain at least one special character\n";
+    }
+  }
+
+  return errors;
+}
+
+module.exports = {
+  checkUsername,
+  checkEmail,
+  checkPassword,
+  checkRemember,
+  validate,
+  getErrors,
+};

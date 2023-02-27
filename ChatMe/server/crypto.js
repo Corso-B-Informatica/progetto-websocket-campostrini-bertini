@@ -44,26 +44,26 @@ var AESKey =
   "5ef16edae3176232956802e6e138b2df3c20697b71bfba0793e7113a7644c80e63398b6def71f214b96a4c39722d899916830c3d1455f5ad19ceb92473a4210fa67dd4976670c5b42688aa7f04c3adcffb55372a5cdd051d6fc793a8c5f98a2d49e3d4b0a889c155f78da776aaeed10b10d0eff209840147e1bfb7c22f3ed3ef8673e91455f6dcde04db561826cd6e896aa2505224454a001b258e9ee702bcbffa220cc90c0dad4b6883cbdfbce664c957de1346883a2e02d7d6410d87ef73ea6a88e7fab818a4af237deeb7167cdb09766135c61ae357277cbf522ccee5052c1fc5a2025e9d3115f87e3c5ef782eca8659f8627ec08ad2fb9e36e13f84db447";
 
 /*Cripta un messaggio con la chiave pubblica*/
-async function encrypt(data) {
+async function encrypt(data, key) {
   return await openpgp.encrypt({
     message: await openpgp.createMessage({
       text: data,
     }),
-    encryptionKeys: await openpgp.readKey({ armoredKey: publicKey }),
+    encryptionKeys: await openpgp.readKey({ armoredKey: key }),
   });
 }
 
 /*Decripta un messaggio con la chiave privata*/
-async function decrypt(data) {
+async function decrypt(data, key) {
   return await openpgp.decrypt({
     message: await openpgp.readMessage({
       armoredMessage: data,
     }),
     decryptionKeys: await openpgp.decryptKey({
-      privateKey: await openpgp.readPrivateKey({ armoredKey: privateKey }),
+      privateKey: await openpgp.readPrivateKey({ armoredKey: key }),
       passphrase,
     }),
-  }).data;
+  });
 }
 
 /*Restituisce la chiave pubblica*/
@@ -71,9 +71,24 @@ function getPublicKey() {
   return publicKey;
 }
 
+/*Restituisce la chiave privata*/
+function getPrivateKey() {
+  return privateKey;
+}
+
+/*Restituisce la passphrase*/
+function getPassphrase() {
+  return passphrase;
+}
+
 /*Cripta un messaggio con la chiave AES*/
 function encryptAES(data) {
   return CryptoJS.AES.encrypt(data, AESKey).toString();
+}
+
+/*Genera una chiave AES casuale*/
+function generateRandomKey(length) {
+  return CryptoJS.lib.WordArray.random(length / 2).toString();
 }
 
 /*Decripta un messaggio con la chiave AES*/
@@ -82,15 +97,19 @@ function decryptAES(data) {
 }
 
 /*Effettua una doppia decriptazione*/
-function doubleDecrypt(data) {
-  return decryptAES(decrypt(data));
+async function doubleDecrypt(data) {
+  const { data: message } = await decrypt(data, privateKey);
+  return decryptAES(message);
 }
 
 module.exports = {
   encrypt,
   decrypt,
-  getPublicKey,
   encryptAES,
   decryptAES,
   doubleDecrypt,
+  generateRandomKey,
+  getPublicKey,
+  getPrivateKey,
+  getPassphrase,
 };

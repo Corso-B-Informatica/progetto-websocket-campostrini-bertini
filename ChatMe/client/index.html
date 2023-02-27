@@ -7,182 +7,14 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>ChatMe</title>
 	<link rel="shortcut icon" href="./images/logo.png" type="image/x-icon" />
-	<link rel="stylesheet" href="./css/style.css" />
-	<script src="https://kit.fontawesome.com/bbf7a86a8c.js" crossorigin="anonymous"></script>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
 		integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+	<link rel="stylesheet" href="./css/style.css">
+	<link rel="stylesheet" href="./css/index.css">
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
 		integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
 		crossorigin="anonymous"></script>
-	<style>
-		body {
-			background-size: cover;
-			height: 100vh;
-			background-image: linear-gradient(to bottom, #00dbde, #fc00ff);
-			animation: gradient 5s ease infinite;
-		}
-
-		@keyframes gradient {
-			0% {
-				background-image: linear-gradient(to bottom, #00dbde, #fc00ff);
-			}
-
-			6.25% {
-				background-image: linear-gradient(to bottom, #0bd2df, #f209fe);
-			}
-
-			12.5% {
-				background-image: linear-gradient(to bottom, #15c9e1, #e712fc);
-			}
-
-			18.75% {
-				background-image: linear-gradient(to bottom, #20c0e2, #dd1bfb);
-			}
-
-			25% {
-				background-image: linear-gradient(to bottom, #2ab7e4, #d225fa);
-			}
-
-			31.25% {
-				background-image: linear-gradient(to bottom, #35ade5, #c82ef8);
-			}
-
-			37.5% {
-				background-image: linear-gradient(to bottom, #3fa4e6, #bd37f7);
-			}
-
-			43.75% {
-				background-image: linear-gradient(to bottom, #4a9be8, #b340f5);
-			}
-
-			56.25% {
-				background-image: linear-gradient(to bottom, #4a9be8, #b340f5);
-			}
-
-			62.5% {
-				background-image: linear-gradient(to bottom, #3fa4e6, #bd37f7);
-			}
-
-			68.75% {
-				background-image: linear-gradient(to bottom, #35ade5, #c82ef8);
-			}
-
-			75% {
-				background-image: linear-gradient(to bottom, #2ab7e4, #d225fa);
-			}
-
-			81.25% {
-				background-image: linear-gradient(to bottom, #20c0e2, #dd1bfb);
-			}
-
-			87.5% {
-				background-image: linear-gradient(to bottom, #15c9e1, #e712fc);
-			}
-
-			93.75% {
-				background-image: linear-gradient(to bottom, #0bd2df, #f209fe);
-			}
-
-			100% {
-				background-image: linear-gradient(to bottom, #00dbde, #fc00ff);
-			}
-		}
-
-		.container {
-			padding-top: 15vh;
-			text-align: center;
-			color: #fff;
-		}
-
-		#name {
-			font-size: 72px;
-			font-weight: bold;
-			margin-bottom: 30px;
-		}
-
-		#slogan {
-			font-size: 24px;
-			margin-bottom: 50px;
-		}
-
-		.btn {
-			border-radius: 50px;
-			padding: 20px 50px;
-			font-size: 24px;
-			font-weight: bold;
-			transition: all 0.2s ease-in-out;
-		}
-
-		#login {
-			background-color: #343a40;
-			border-color: #343a40;
-			color: #fff;
-			box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-		}
-
-		#login:hover {
-			background-color: #fff;
-			color: #343a40;
-			border-color: #fff;
-			transform: translateY(-2px);
-			box-shadow: 0px 6px 6px rgba(0, 0, 0, 0.25);
-		}
-
-		#signup {
-			background-color: #fff;
-			border-color: #fff;
-			color: #343a40;
-			box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-		}
-
-		#signup:hover {
-			background-color: #343a40;
-			color: #fff;
-			border-color: #343a40;
-			transform: translateY(-2px);
-			box-shadow: 0px 6px 6px rgba(0, 0, 0, 0.25);
-		}
-
-		@media (max-width: 991px) {
-			.btn {
-				padding: 10px 30px;
-				font-size: 18px;
-			}
-
-			#name {
-				font-size: 48px;
-			}
-
-			#slogan {
-				font-size: 18px;
-			}
-		}
-
-		@media (max-height: 550px) {
-			#footer {
-				display: none !important;
-			}
-		}
-
-		.fa-github-square:hover {
-			transform: scale(1.2);
-			transition: all 0.2s ease-in-out;
-		}
-
-		.copyright {
-			font-size: 20px;
-		}
-
-		@media (max-width: 576px) {
-			.copyright {
-				font-size: 14px;
-			}
-
-			.fa-github-square {
-				font-size: 1rem;
-			}
-		}
-	</style>
+	<script src="https://kit.fontawesome.com/bbf7a86a8c.js" crossorigin="anonymous"></script>
 	<script src="/socket.io/socket.io.js"></script>
 </head>
 
@@ -224,7 +56,6 @@
 		integrity="sha384-mQ93GR66B00ZXjt0YO5KlohRA5SY2XofN4zfuZxLkoj1gXtW8ANNCe9d5Y3eG5eD"
 		crossorigin="anonymous"></script>
 	<script src="./scripts/script.js"></script>
-
 </body>
 
 </html>
