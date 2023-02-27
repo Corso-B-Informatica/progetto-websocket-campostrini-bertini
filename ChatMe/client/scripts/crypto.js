@@ -1,7 +1,8 @@
-var myPrivateKey;
-var myPublicKey;
+var myPrivateKey = "";
+var myPublicKey = "";
+var myRevocationCertificate = "";
+var passphrase = "";
 
-generateKeyPair();
 
 /*Cripta un messaggio con la chiave pubblica*/
 async function encrypt(data, publicKey) {
@@ -26,6 +27,7 @@ async function decrypt(data, privateKey) {
     }).data;
 }
 
+
 /*Genera una chiave AES casuale*/
 function generateRandomKey(length) {
     return CryptoJS.lib.WordArray.random(length / 8).toString(CryptoJS.enc.Hex);
@@ -43,22 +45,26 @@ function decryptAES(data, AESKey) {
 
 /*Genera una coppia di chiavi RSA*/
 async function generateKeyPair(name, email, password) {
-    const { privateKey, publicKey } = await openpgp.generateKey({
-        type: 'rsa',
-        rsaBits: 4096,
-        userIDs: [{ name: name, email: email }],
-        passphrase: password
+    const { privateKey, publicKey, revocationCertificate } = await openpgp.generateKey({
+        type: 'ecc', // Type of the key, defaults to ECC
+        curve: 'curve25519', // ECC curve name, defaults to curve25519
+        userIDs: [{ name: name, email: email }], // you can pass multiple user IDs
+        passphrase: password, // protects the private key
+        format: 'armored' // output key format, defaults to 'armored' (other options: 'binary' or 'object')
     });
     myPublicKey = publicKey;
     myPrivateKey = privateKey;
+    myRevocationCertificate = revocationCertificate;
+    passphrase = password;
 }
 
 /*Restituisce la chiave pubblica*/
-function getMyPublicKey() {
+function getPublicKey() {
+    console.log(myPublicKey)
     return myPublicKey;
 }
 
 /*Restituisce la chiave privata*/
-function getMyPrivateKey() {
+function getPrivateKey() {
     return myPrivateKey;
 }

@@ -5,8 +5,9 @@ socket.on("publicKey", (publicKeyArmored) => {
     sendRegister(publicKeyArmored);
 });
 
-socket.on("registerError", (err) => {
-    manageRegisterError(err);
+socket.on("registerError", (error) => {
+    console.log(error)
+    manageRegisterError(error);
 });
 
 socket.on("registerDataError", (check1, check2, check3, error) => {
@@ -23,6 +24,7 @@ function register() {
     var check2 = checkEmail();
     var check3 = checkPassword();
     if (check1 && check2 && check3) {
+        generateKeyPair(document.getElementById("username").value, document.getElementById("email").value, document.getElementById("password").value);
         socket.emit("getPublicKey");
     } else {
         alert(alertMessage);
@@ -48,12 +50,12 @@ async function sendRegister(publicKeyArmored) {
         .getElementById("checkbox")
         .checked.toString()), publicKeyArmored);
 
-    socket.emit("register", crypted_email, crypted_password, crypted_nickname, crypted_remember, getMyPublicKey());
+    socket.emit("register", crypted_email, crypted_password, crypted_nickname, crypted_remember, getPublicKey());
 }
 
 /*Manage errors*/
 async function manageRegisterError(err) {
-    var error = await decrypt(err, getMyPrivateKey());
+    var error = await decrypt(err, getPrivateKey());
 
     if (error == "User already registered") {
         var prompt = document.getElementById('prompt');
