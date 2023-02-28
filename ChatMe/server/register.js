@@ -15,6 +15,7 @@ async function checkUserData(
     const { data: validate_password } = await crypto.decrypt(armored_password, crypto.getPrivateKey());
     const { data: validate_nickname } = await crypto.decrypt(armored_nickname, crypto.getPrivateKey());
     const { data: validate_remember } = await crypto.decrypt(armored_remember, crypto.getPrivateKey());
+    const { data: pubKey } = await crypto.decrypt(publicKeyArmored, crypto.getPrivateKey());
 
     const email = validator.validate(validate_email);
     const password = validator.validate(validate_password);
@@ -33,29 +34,43 @@ async function checkUserData(
     //se i dati sono validi
     if (check1 && check2 && check3) {
         if (await database.existInDatabase(database.Users, nickname, email, "or")) {
+            //se l'utente è già registrato
+            //mando all'utente che la mail è già stata utilizzata o il nickname è già stato utilizzato o entrambi
             console.log("Utente già registrato");
 
-            const message = await crypto.encrypt("User already registered", publicKeyArmored);
+            const message = await crypto.encrypt("User already registered", pubKey);
 
-            socket.emit("registerError", message);
+            var first = await database.existInDatabase(database.Users, nickname, email, "and");
+            var second = await database.existInDatabase(database.Users, "", email, "or");
+            var third = await database.existInDatabase(database.Users, nickname, "", "or");
+            var who = first ? "both" : second ? "email" : third ? "nickname" : "both";
+            var error = await crypto.encrypt(who, pubKey);
+
+            socket.emit("registerError", message, error);
         } else if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
             console.log("Utente già registrato");
 
-            const message = await crypto.encrypt("User must confirm his account", publicKeyArmored);
+            const message = await crypto.encrypt("User must confirm his account", pubKey);
 
-            socket.emit("registerError", message);
+            var first = await database.existInDatabase(database.tempUsers, nickname, email, "and");
+            var second = await database.existInDatabase(database.tempUsers, "", email, "or");
+            var third = await database.existInDatabase(database.tempUsers, nickname, "", "or");
+            var who = first ? "both" : second ? "email" : third ? "nickname" : "both";
+            var error = await crypto.encrypt(who, pubKey);
+
+            socket.emit("registerError", message, error);
         } else {
             console.log("Utente non registrato");
 
-            registerUser(email, password, nickname, remember, publicKeyArmored, socket);
+            registerUser(email, password, nickname, remember, pubKey, socket);
         }
     } else {
         console.log("Dati non validi");
 
-        const crypted_check1 = await crypto.encrypt(check1, publicKeyArmored);
-        const crypted_check2 = await crypto.encrypt(check2, publicKeyArmored);
-        const crypted_check3 = await crypto.encrypt(check3, publicKeyArmored);
-        const crypted_errors = await crypto.encrypt(validator.getErrors(nickname, password, check1, check2, check3), publicKeyArmored);
+        const crypted_check1 = await crypto.encrypt(check1, pubKey);
+        const crypted_check2 = await crypto.encrypt(check2, pubKey);
+        const crypted_check3 = await crypto.encrypt(check3, pubKey);
+        const crypted_errors = await crypto.encrypt(validator.getErrors(nickname, password, check1, check2, check3), pubKey);
 
         socket.emit("registerDataError", crypted_check1, crypted_check2, crypted_check3, crypted_errors);
     }

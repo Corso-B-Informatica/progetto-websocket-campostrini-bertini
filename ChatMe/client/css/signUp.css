@@ -169,9 +169,27 @@ label {
   color: #a64bf4;
 }
 
+@media (max-width: 880px) {
+  #prompt p {
+    font-size: 18px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  #prompt p {
+    font-size: 15px !important;
+  }
+}
+
 @media (max-width: 540px) {
   .login {
     width: 95%;
+  }
+}
+
+@media (max-width: 500px) {
+  #prompt {
+    width: 80%;
   }
 }
 
@@ -198,6 +216,11 @@ label {
   }
 }
 
+@media (max-width: 350px) {
+  #prompt {
+    width: 100%;
+  }
+}
 @media (max-width: 350px) {
   .login {
     border-radius: 0 !important;
@@ -235,7 +258,6 @@ label {
   .input {
     font-size: 12px;
   }
-
   .p-t-155 {
     font-size: 15px;
     padding-top: 60px;
@@ -397,21 +419,23 @@ label {
 }
 
 #button-container button {
-  padding: 10px 20px;
-  margin: 0px 10px;
   font-size: 18px;
 }
 
 #yes-button {
+  padding: 10px 20px;
   background-color: #04a501;
   color: #fff;
   border: none;
-  border-radius: 30px;
+  border-radius: 15px;
+  display: none;
 }
 
 #no-button {
+  padding: 10px 20px;
   background-color: #c80000;
   color: #fff;
   border: none;
-  border-radius: 30px;
+  border-radius: 15px;
+  display: none;
 }

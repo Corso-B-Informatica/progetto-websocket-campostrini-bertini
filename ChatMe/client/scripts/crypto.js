@@ -1,9 +1,3 @@
-var myPrivateKey = "";
-var myPublicKey = "";
-var myRevocationCertificate = "";
-var passphrase = "";
-
-
 /*Cripta un messaggio con la chiave pubblica*/
 async function encrypt(data, publicKey) {
     return await openpgp.encrypt({
@@ -15,7 +9,7 @@ async function encrypt(data, publicKey) {
 }
 
 /*Decripta un messaggio con la chiave privata*/
-async function decrypt(data, privateKey) {
+async function decrypt(data, privateKey, passphrase) {
     return await openpgp.decrypt({
         message: await openpgp.readMessage({
             armoredMessage: data,
@@ -24,9 +18,8 @@ async function decrypt(data, privateKey) {
             privateKey: await openpgp.readPrivateKey({ armoredKey: privateKey }),
             passphrase,
         }),
-    }).data;
+    });
 }
-
 
 /*Genera una chiave AES casuale*/
 function generateRandomKey(length) {
@@ -43,8 +36,27 @@ function decryptAES(data, AESKey) {
     return CryptoJS.AES.decrypt(data, AESKey).toString(CryptoJS.enc.Utf8);
 }
 
+/*
+// Variabile globale contenente le chiavi
+var keyPair = null;
+
+// Funzione per generare una coppia di chiavi OpenPGP
+async function generateKeyPair() {
+    const { privateKey, publicKey, revocationCertificate } = await openpgp.generateKey({
+        type: 'ecc', // Type of the key, defaults to ECC
+        curve: 'curve25519', // ECC curve name, defaults to curve25519
+        userIDs: [{ name: "sasso", email: "sasso@gmail.com" }], // you can pass multiple user IDs
+        passphrase: "password", // protects the private key
+        format: 'armored' // output key format, defaults to 'armored' (other options: 'binary' or 'object')
+    });
+
+
+    keyPair = { privateKey, publicKey }; // salva le chiavi nella variabile globale
+}
+generateKeyPair();
+console.log(keyPair);*/
 /*Genera una coppia di chiavi RSA*/
-async function generateKeyPair(name, email, password) {
+/*async function generateKeyPair(name, email, password) {
     const { privateKey, publicKey, revocationCertificate } = await openpgp.generateKey({
         type: 'ecc', // Type of the key, defaults to ECC
         curve: 'curve25519', // ECC curve name, defaults to curve25519
@@ -53,18 +65,26 @@ async function generateKeyPair(name, email, password) {
         format: 'armored' // output key format, defaults to 'armored' (other options: 'binary' or 'object')
     });
     myPublicKey = publicKey;
+    return { privateKey, publicKey, revocationCertificate };
+    const { privateKey, publicKey, revocationCertificate } = await openpgp.generateKey({
+        type: 'ecc', // Type of the key, defaults to ECC
+        curve: 'curve25519', // ECC curve name, defaults to curve25519
+        userIDs: [{ name: name, email: email }], // you can pass multiple user IDs
+        passphrase: password, // protects the private key
+        format: 'armored' // output key format, defaults to 'armored' (other options: 'binary' or 'object')
+    });
+    myPublicKey = await publicKey;
     myPrivateKey = privateKey;
     myRevocationCertificate = revocationCertificate;
     passphrase = password;
-}
+}*/
 
 /*Restituisce la chiave pubblica*/
-function getPublicKey() {
-    console.log(myPublicKey)
-    return myPublicKey;
-}
+//function getPublicKey() {
+//    return keyPair.pubKey;
+//}
 
 /*Restituisce la chiave privata*/
-function getPrivateKey() {
-    return myPrivateKey;
-}
+//function getPrivateKey() {
+//    return keyPair.privKey;
+//}

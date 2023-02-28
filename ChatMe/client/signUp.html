@@ -72,10 +72,10 @@
                 </div>
             </form>
         </div>
-        <div id="prompt">
+        <div id="prompt" class="rounded-5">
             <p id="prompt-error"></p>
             <p id="prompt-text"></p>
-            <div id="d-flex flex-wrap align-items-center justify-content-between">
+            <div id="button-container" class="d-flex flex-wrap align-items-center justify-content-evenly w-100">
                 <button id="yes-button">Yes</button>
                 <button id="no-button">No</button>
             </div>
@@ -99,6 +99,7 @@
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/openpgp@5.6.0/dist/openpgp.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="./scripts/keyManager.js"></script>
     <script src="./scripts/script.js"></script>
     <script src="./scripts/crypto.js"></script>
     <script src="./scripts/validator.js"></script>
