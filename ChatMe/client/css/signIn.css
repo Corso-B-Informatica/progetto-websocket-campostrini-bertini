@@ -241,7 +241,7 @@ label {
   }
 }
 
-@media (max-height: 680px) {
+@media (max-height: 690px) {
   .p-t-155 {
     padding-top: 30px;
   }
@@ -255,7 +255,7 @@ label {
   }
 }
 
-@media (max-height: 650px) {
+@media (max-height: 610px) {
   .login {
     border-radius: 0px !important;
   }

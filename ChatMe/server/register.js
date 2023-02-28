@@ -70,9 +70,12 @@ async function checkUserData(
         const crypted_check1 = await crypto.encrypt(check1, pubKey);
         const crypted_check2 = await crypto.encrypt(check2, pubKey);
         const crypted_check3 = await crypto.encrypt(check3, pubKey);
-        const crypted_errors = await crypto.encrypt(validator.getErrors(nickname, password, check1, check2, check3), pubKey);
+        const errors = validator.getErrors(nickname, password, check1, check2, check3).split("\n");
+        const crypted_data1 = await crypto.encrypt(errors[0], pubKey);
+        const crypted_data2 = await crypto.encrypt(errors[1], pubKey);
+        const crypted_data3 = await crypto.encrypt(errors[2], pubKey);
 
-        socket.emit("registerDataError", crypted_check1, crypted_check2, crypted_check3, crypted_errors);
+        socket.emit("registerDataError", crypted_check1, crypted_check2, crypted_check3, crypted_data1, crypted_data2, crypted_data3);
     }
 }
 

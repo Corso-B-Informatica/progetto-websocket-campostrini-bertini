@@ -35,4 +35,4 @@ io.on("connection", (socket) => {
   });
 });
 
-setInterval(database.cleanDatabase, 300000);
+setInterval(database.cleanDatabase, 60000);
