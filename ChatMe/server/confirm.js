@@ -38,7 +38,7 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
         } else {
             //se il numero di tentativi è maggiore di 3 invio un messaggio di errore
             var wait_time = await crypto.encrypt(database.getWaitTime(), publicKey);
-            var message = await crypto.encrypt("You have exceeded the number of attempts.", publicKey); 
+            var message = await crypto.encrypt("You have exceeded the number of attempts.", publicKey);
             socket.emit("confirmError", message, wait_time);
         }
     } else {
@@ -48,6 +48,22 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
     }
 }
 
-module.exports = {
-    confirmUserViaLink
+//ci vanno i parametri email e password
+async function getAnotherVerificationCode(socket) {
+    //se il wait time è 0 allora posso generare un nuovo codice di conferma
+    if (database.getWaitTime() == 0) {
+        //se times < 5 allora posso generare un nuovo codice di conferma
+        if (database.getTimes() < 5) {
+            //se fosse >= 5 non posso più richiedere codici di conferma finché non scade il tempo di attesa
+        } else {
+            //altrimenti invio un messaggio di errore
+            //non posso mandare un messaggio di errore con la mia chiave
+            var crypted_wait_time = await crypto.encrypt(database.getWaitTime(), crypto.getPublicKey());
+            socket.emit("confirmError", "wait", crypted_wait_time);
+        }
+    }
 }
+    module.exports = {
+        confirmUserViaLink,
+        getAnotherVerificationCode
+    }

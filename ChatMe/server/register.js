@@ -7,29 +7,21 @@ async function checkUserData(
     armored_email,
     armored_password,
     armored_nickname,
-    armored_remember,
     publicKeyArmored,
     socket
 ) {
     const { data: validate_email } = await crypto.decrypt(armored_email, crypto.getPrivateKey());
     const { data: validate_password } = await crypto.decrypt(armored_password, crypto.getPrivateKey());
     const { data: validate_nickname } = await crypto.decrypt(armored_nickname, crypto.getPrivateKey());
-    const { data: validate_remember } = await crypto.decrypt(armored_remember, crypto.getPrivateKey());
     const { data: pubKey } = await crypto.decrypt(publicKeyArmored, crypto.getPrivateKey());
 
     const email = validator.validate(validate_email);
     const password = validator.validate(validate_password);
     const nickname = validator.validate(validate_nickname);
-    const remember = validator.validate(validate_remember);
-
 
     var check1 = validator.checkUsername(nickname);
     var check2 = validator.checkEmail(email);
     var check3 = validator.checkPassword(password);
-
-    if (!validator.checkRemember(remember)) {
-        remember = true;
-    }
 
     //se i dati sono validi
     if (check1 && check2 && check3) {
@@ -62,7 +54,7 @@ async function checkUserData(
         } else {
             console.log("Utente non registrato");
 
-            registerUser(email, password, nickname, remember, pubKey, socket);
+            registerUser(email, password, nickname, pubKey, socket);
         }
     } else {
         console.log("Dati non validi");
@@ -79,7 +71,7 @@ async function checkUserData(
     }
 }
 
-async function registerUser(email, password, nickname, remeber, publicKeyArmored, socket) {
+async function registerUser(email, password, nickname, publicKeyArmored, socket) {
     const verification_code = crypto.generateRandomKey(10);
 
     const expiration_time = new Date();
@@ -88,7 +80,7 @@ async function registerUser(email, password, nickname, remeber, publicKeyArmored
 
     //non vanno i database
 
-    if (await database.insertTempUsers(nickname, email, password, remeber, verification_code, expiration_time.toString(), 0, 0)) {
+    if (await database.insertTempUsers(nickname, email, password, verification_code, expiration_time.toString(), 0, 0, 0)) {
         console.log("Utente aggiunto a temp-users");
 
         var crypted_email = crypto.encryptAES(email);
@@ -100,9 +92,8 @@ async function registerUser(email, password, nickname, remeber, publicKeyArmored
         var doubleCrypted_email = await crypto.encrypt(crypted_email, publicKeyArmored);
         var doubleCrypted_password = await crypto.encrypt(crypted_password, publicKeyArmored);
         var doubleCrypted_nickname = await crypto.encrypt(crypted_nickname, publicKeyArmored);
-        var crypted_remember = await crypto.encrypt(remeber, publicKeyArmored);
 
-        socket.emit("registerSuccess", doubleCrypted_email, doubleCrypted_password, doubleCrypted_nickname, crypted_remember);
+        socket.emit("registerSuccess", doubleCrypted_email, doubleCrypted_password, doubleCrypted_nickname);
     } else {
         console.log("Errore durante l'aggiunta dell'utente a temp-users");
         const message = await crypto.encrypt("Error during registration, please try again", publicKeyArmored);

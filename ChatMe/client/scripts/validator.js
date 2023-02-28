@@ -104,6 +104,53 @@ function checkPassword() {
     return true;
 }
 
+/*Controlla se l'email è valida*/
+function checkUE_Email() {
+    var username = document.getElementById("username").value;
+    if (
+        username
+            .trim()
+            .match(
+                /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/
+            ) == null
+    ) {
+        var containerEmail = document.getElementById("container-username-email");
+        containerEmail.classList.add("error");
+        containerEmail.setAttribute("error-message", "Email must be valid");
+        return false;
+    }
+    return true;
+}
+
+/*Controlla se l'username è valido*/
+function checkUE_Username() {
+    var username = document.getElementById("username").value;
+    if (username.length == 0) {
+        var containerUsername = document.getElementById("container-username-email");
+        containerUsername.classList.add("error");
+        containerUsername.setAttribute("error-message", "Username must be filled out");
+        return false;
+    }
+    if (username.length > 30) {
+        var containerUsername = document.getElementById("container-username-email");
+        containerUsername.classList.add("error");
+        containerUsername.setAttribute("error-message", "Username must be at most 30 characters long");
+        return false;
+    }
+    if (!/[a-zA-Z0-9]/.test(username)) {
+        var containerUsername = document.getElementById("container-username-email");
+        containerUsername.classList.add("error");
+        containerUsername.setAttribute("error-message", "Username must contain at least one letter or number");
+        return false;
+    }
+    if (username.includes("@")) {
+        var containerUsername = document.getElementById("container-username-email");
+        containerUsername.classList.add("error");
+        containerUsername.setAttribute("error-message", "Username must not contain '@'");
+        return false;
+    }
+    return true;
+}
 /*Rimpiazza i caratteri speciali con i rispettivi codici html*/
 function validate(data) {
     return data

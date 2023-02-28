@@ -1,3 +1,5 @@
+/*keyManager*/
+const kM = new keyManager();
 
 /*Socket.io*/
 var socket = io();
@@ -12,6 +14,7 @@ socket.on("publicKey", (publicKeyArmored) => {
 socket.on("confirmSuccess", (error) => { });
 
 function isUrlConfirmed(url, email, password, nickname, verification_code) {
+    //il controllo va fatto meglio
     return url.includes("/confirm.html#") && email != null && password != null && nickname != null && verification_code != null;
 }
 
@@ -26,7 +29,10 @@ async function sendConfirmViaLink(publicKeyArmored, email, password, nickname, v
 
 /*Page withouth login*/
 function setPageWithoutLogin() {
-    
+    var containerUsernameEmail = document.getElementById("container-username-email");
+    containerUsernameEmail.style.display = "none";
+    var containerPassword = document.getElementById("container-password");
+    containerPassword.style.display = "none";
 }
 
 /*On page load*/
@@ -47,12 +53,94 @@ async function tryConfirmViaLink(publicKeyArmored) {
         var email = localStorage.getItem("email");
         var password = localStorage.getItem("password");
         var nickname = localStorage.getItem("nickname");
-        var rememberMe = localStorage.getItem("rememberMe");
         
-        if ((email != null || nickname != null) && password != null && rememberMe == "true") {
+        if ((email != null || nickname != null) && password != null) {
             setPageWithoutLogin();
         } else {
             clearLocalStorage();
         }
     }
 }
+
+function clearLocalStorage() {
+    localStorage.clear();
+}
+
+async function getCode() {
+    var email = localStorage.getItem("email");
+    var password = localStorage.getItem("password");
+    var nickname = localStorage.getItem("nickname");
+    var publicKey = localStorage.getItem("publicKeyArmored");
+
+    if ((email != null || nickname != null) && password != null) {
+        if (email != null) {
+            var crypted_email = null;
+            var crypted_password = null;
+            try {
+                crypted_email = await encrypt(email, publicKey);
+                crypted_password = await encrypt(password, publicKey);
+            } catch (error) {
+                clearLocalStorage();
+                window.location.href = "../confirm.html";
+            }
+            socket.emit("getCodeViaEmail", crypted_email, crypted_password);
+        } else {
+            var crypted_nickname = null;
+            var crypted_password = null;
+            try {
+                crypted_nickname = await encrypt(nickname, publicKey);
+                crypted_password = await encrypt(password, publicKey);
+            } catch (error) {
+                clearLocalStorage();
+                window.location.href = "../confirm.html";
+            }
+            socket.emit("getCodeViaNickname", crypted_nickname, crypted_password);
+        }
+    } else {
+        //se sono presenti nell'input email e password oppure nickname e password
+        var check1 = checkUE_Email();
+        var check2 = checkUE_Username();
+        var check3 = checkPassword();
+
+        if (check1 && check3) {
+            //se sono presenti input invio i dati al server
+            //ma non salvo i dati sul localstorage per ora
+            //ma devo generare una nuova chiave pubblica e privata da mandare al server
+            //il server verifica i dati e quando mi risponde se con successo mi rimanda anche i dati e io li salvo sul localstorage
+            var em = document.getElementById("username").value;
+            var pass = document.getElementById("password").value;
+
+            var crypted_email = null;
+            var crypted_password = null;
+
+            try {
+                crypted_email = await encrypt(em, publicKey);
+                crypted_password = await encrypt(pass, publicKey);
+            } catch (error) {
+                clearLocalStorage();
+                window.location.href = "../confirm.html";
+            }
+            socket.emit("getCodeViaEmail", crypted_email, crypted_password);
+        } else if (check2 && check3) {
+            var nick = document.getElementById("username").value;
+            var pass = document.getElementById("password").value;
+
+            var crypted_nickname = null;
+            var crypted_password = null;
+
+            try {
+                crypted_nickname = await encrypt(nick, publicKey);
+                crypted_password = await encrypt(pass, publicKey);
+            } catch (error) {
+                clearLocalStorage();
+                window.location.href = "../confirm.html";
+            }
+            socket.emit("getCodeViaNickname", crypted_nickname, crypted_password);
+        } else {
+            //gestisci errore
+            //se non sono presenti input digli all'utente che deve inserire i dati
+        }
+    }
+}
+
+//fare la parte del confirm con codice

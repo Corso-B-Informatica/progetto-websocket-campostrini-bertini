@@ -19,8 +19,8 @@ socket.on(
   }
 );
 
-socket.on("registerSuccess", (email, password, nickname, remeber) => {
-  manageRegisterSuccess(email, password, nickname, remeber);
+socket.on("registerSuccess", (email, password, nickname) => {
+  manageRegisterSuccess(email, password, nickname);
 });
 
 /*Register*/
@@ -55,11 +55,6 @@ async function sendRegister(publicKeyArmored) {
     publicKeyArmored
   );
 
-  const crypted_remember = await encrypt(
-    validate(document.getElementById("checkbox").checked.toString()),
-    publicKeyArmored
-  );
-
   const crypted_publicKeyArmored = await encrypt(
     kM.getPublicKey(),
     publicKeyArmored
@@ -70,7 +65,6 @@ async function sendRegister(publicKeyArmored) {
     crypted_email,
     crypted_password,
     crypted_nickname,
-    crypted_remember,
     crypted_publicKeyArmored
   );
 }
@@ -236,8 +230,7 @@ async function manageRegisterDataError(
 async function manageRegisterSuccess(
   crypted_email,
   crypted_password,
-  crypted_nickname,
-  crypted_remember
+  crypted_nickname
 ) {
   var { data: email } = await decrypt(
     crypted_email,
@@ -254,17 +247,11 @@ async function manageRegisterSuccess(
     kM.getPrivateKey(),
     kM.getPassphrase()
   );
-  var { data: remember } = await decrypt(
-    crypted_remember,
-    kM.getPrivateKey(),
-    kM.getPassphrase()
-  );
 
   window.location.href = "../confirm.html";
   localStorage.setItem("email", email);
   localStorage.setItem("password", password);
   localStorage.setItem("nickname", nickname);
-  localStorage.setItem("rememberMe", remember);
 }
 
 /*Reset errori*/
