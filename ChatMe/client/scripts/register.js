@@ -26,7 +26,7 @@ async function register() {
   var check2 = checkEmail();
   var check3 = checkPassword();
   if (check1 && check2 && check3) {
-    await kM.generateKeyPair(
+    await kM.generateNewKeyPair(
       document.getElementById("username").value,
       document.getElementById("email").value,
       document.getElementById("password").value

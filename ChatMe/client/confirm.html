@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirm Sign Up ChatMe</title>
+    <title>Confirm account ChatMe</title>
     <link rel="shortcut icon" href="./images/logo.png" type="image/x-icon" />
     <link rel="stylesheet" type="text/css" href="./fonts/iconic/css/material-design-iconic-font.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -29,14 +29,14 @@
                     <img src="./images/logo.png" width="100px" height="100px">
                 </span>
     
-                <span class="h1 fw-bold text-center d-block p-b-34 p-t-27 text-dark">Confirm sign up</span>
+                <span class="h1 fw-bold text-center d-block p-b-34 p-t-27 text-dark">Confirm account</span>
     
                 <div id="container-username-email" class="container-input w-100 position-relative"
                     error-message="Invalid Username or Email">
                     <input id="username" class="input text-dark d-block w-100 bg-transparent" type="text"
-                        placeholder="Username or Email" required>
+                        placeholder="Username or Email">
                     <span id="span-username" class="focus-input position-absolute d-block w-100 h-100"
-                        data-placeholder="&#xf207;"></span>
+                        data-placeholder="&#xf348;"></span>
                 </div>
     
                 <div id="container-password" class="container-input w-100 position-relative"
@@ -45,6 +45,14 @@
                         placeholder="Password">
                     <span id="span-password" class="focus-input position-absolute d-block w-100 h-100"
                         data-placeholder="&#xf191;"></span>
+                </div>
+
+                <div id="container-code" class="container-input w-100 position-relative"
+                    error-message="Invalid verification code">
+                    <input id="code" class="input text-dark d-block w-100 bg-transparent" type="text"
+                        placeholder="Verification code" required>
+                    <span id="span-username" class="focus-input position-absolute d-block w-100 h-100"
+                        data-placeholder="&#xf207;"></span>
                 </div>
     
                 <div class="container-checkbox flex-wrap d-flex align-items-center justify-content-center">
@@ -59,7 +67,7 @@
                 </div>
     
                 <div class="w-100 d-flex flex-wrap justify-content-center">
-                    <button id="signIn" class="btn w-100" onclick="register()" type="button">Sign In</button>
+                    <button id="signIn" class="btn w-100" onclick="register()" type="button">Confirm</button>
                 </div>
     
                 <div class="flex-wrap d-flex align-items-center justify-content-center p-t-155">

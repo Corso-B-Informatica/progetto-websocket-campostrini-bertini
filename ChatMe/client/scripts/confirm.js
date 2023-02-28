@@ -5,7 +5,8 @@ var socket = io();
 socket.emit("getPublicKey");
 
 socket.on("publicKey", (publicKeyArmored) => {
-    tryConfirmViaLink(publicKeyArmored)
+    tryConfirmViaLink(publicKeyArmored);
+    localStorage.setItem("publicKeyArmored", publicKeyArmored);
 });
 
 socket.on("confirmSuccess", (error) => { });

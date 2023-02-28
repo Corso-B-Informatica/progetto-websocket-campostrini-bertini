@@ -3,7 +3,7 @@ class keyManager {
         this.keyPair = null;
     }
 
-    async generateKeyPair(nickname, email, password) {
+    async generateNewKeyPair(nickname, email, password) {
         const generatedKeyPair = await openpgp.generateKey({
             type: 'ecc', // Type of the key, defaults to ECC
             curve: 'curve25519', // ECC curve name, defaults to curve25519
