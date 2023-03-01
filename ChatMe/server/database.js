@@ -1,11 +1,11 @@
 const sqlite3 = require("sqlite3").verbose();
 
 /*Crea il database se non esiste*/
-function crateDatabase() {
-  const db1 = new sqlite3.Database("./db/users.db");
-  const db2 = new sqlite3.Database("./db/temp-users.db");
-}
-crateDatabase();
+// function crateDatabase() {
+//   const Users = new sqlite3.Database("./db/users.db");
+//   const tempUsers = new sqlite3.Database("./db/temp-users.db");
+// }
+// crateDatabase();
 
 /*Inizializzazione database utenti*/
 const Users = new sqlite3.Database(
@@ -32,44 +32,44 @@ const tempUsers = new sqlite3.Database(
 );
 
 /*Crea le tabelle nel database se non esistono*/
-function createTables() {
-  Users.run(
-    `CREATE TABLE IF NOT EXISTS users (
-        nickname text PRIMARY KEY not null,
-        email text not null,
-        password text not null,
-        key text not null
-    );`,
-    (err) => {
-      if (err) {
-        console.log("Error creating table: " + err);
-      } else {
-        console.log("Table created successfully or already exists");
-      }
-    }
-  );
+// function createTables() {
+//   Users.run(
+//     `CREATE TABLE IF NOT EXISTS users (
+//         nickname text PRIMARY KEY not null,
+//         email text not null,
+//         password text not null,
+//         key text not null
+//     );`,
+//     (err) => {
+//       if (err) {
+//         console.log("Error creating table: " + err);
+//       } else {
+//         console.log("Table created successfully or already exists");
+//       }
+//     }
+//   );
 
-  tempUsers.run(
-    `CREATE TABLE IF NOT EXISTS users (
-        nickname text PRIMARY KEY not null,
-        email text not null,
-        password text not null,
-        remember text not null,
-        verification_code text not null,
-        expiration_time text not null,
-        attempts integer not null,
-        wait_time integer not null
-    );`,
-    (err) => {
-      if (err) {
-        console.log("Error creating table: " + err);
-      } else {
-        console.log("Table created successfully or already exists");
-      }
-    }
-  );
-}
-createTables();
+//   tempUsers.run(
+//     `CREATE TABLE IF NOT EXISTS users (
+//         nickname text PRIMARY KEY not null,
+//         email text not null,
+//         password text not null,
+//         remember text not null,
+//         verification_code text not null,
+//         expiration_time text not null,
+//         attempts integer not null,
+//         wait_time integer not null
+//     );`,
+//     (err) => {
+//       if (err) {
+//         console.log("Error creating table: " + err);
+//       } else {
+//         console.log("Table created successfully or already exists");
+//       }
+//     }
+//   );
+// }
+// createTables();
 
 /*Controlla se un utente ha gia quello username e/o email nel database di utenti confirm*/
 function existInDatabase(db, nickname, email, operator) {
