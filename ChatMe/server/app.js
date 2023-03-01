@@ -34,9 +34,9 @@ io.on("connection", (socket) => {
     confirm.confirmUserDataViaCode(email, password, nickname, verification_code, socket);
   });
   
-  socket.on("getAnotherVerificationCode", () => {
-    confirm.getAnotherVerificationCode(socket);
+
+  socket.on("getCodeViaNickname", (crypted_nickname, crypted_password) => {
+    confirm.sendCodeViaNickname(socket, crypted_nickname, crypted_password);
   });
 });
-
 setInterval(database.cleanDatabase, 60000);

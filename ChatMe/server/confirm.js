@@ -1,5 +1,6 @@
 const crypto = require("./crypto.js");
 const database = require("./database.js");
+const validator = require('./validator.js');
 
 async function confirmUserViaLink(armored_email, armored_password, armored_nickname, armored_verification_code, publicKeyArmored, crypted_aesKey, socket) {
     const email = await crypto.doubleDecrypt(armored_email);
@@ -62,6 +63,22 @@ async function getAnotherVerificationCode(socket) {
             socket.emit("confirmError", "wait", crypted_wait_time);
         }
     }
+}
+
+async function sendCodeViaNickname(socket, crypted_nickname, crypted_password){
+    var { data: decrypted_nickname } = await crypto.decrypt(crypted_nickname, crypto.privateKey);
+    var { data: decrypted_password } = await crypto.decrypt(crypted_password, crypto.privateKey);
+    validate_nickname = validator.validate(decrypted_nickname);
+    validate_password = validator.validate(decrypted_password);
+    checkNickname = validator.checkUsername(decrypted_nickname);
+    checkPassword = validator.checkPassword(decrypted_password);
+    if(checkNickname && checkPassword){
+        if(database.tempUsers.existInDatabase(database.tempUsers, nickname,"", 'or') && database.existInDatabase(database.getTempDatabase(), "", "",password, 'or')){
+            socket.emit("");
+    
+        }
+    }
+
 }
     module.exports = {
         confirmUserViaLink,

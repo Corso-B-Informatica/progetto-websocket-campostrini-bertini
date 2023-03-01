@@ -23,8 +23,12 @@ async function sendConfirmViaLink(publicKeyArmored, email, password, nickname, v
     const crypted_email = await encrypt(email, publicKeyArmored);
     const crypted_password = await encrypt(password, publicKeyArmored);
     const crypted_verification_code = await encrypt(verification_code, publicKeyArmored);
-
-    socket.emit("confirmViaLink", crypted_email, crypted_password, crypted_nickname, crypted_verification_code);
+    // il remember me è false di default
+    var remeberMe = false;
+    const crypted_remeberMe = await encrypt(remeberMe, publicKeyArmored);
+    await kM.generateNewKeyPair(nickname, email, password);
+    var pubKey = await crypto.encrypt(kM.getPublicKey(), publicKeyArmored);
+    socket.emit("confirmViaLink", crypted_email, crypted_password, crypted_nickname, crypted_verification_code, crypted_remeberMe, pubKey);
 }
 
 /*Page withouth login*/
@@ -83,7 +87,9 @@ async function getCode() {
                 clearLocalStorage();
                 window.location.href = "../confirm.html";
             }
-            socket.emit("getCodeViaEmail", crypted_email, crypted_password);
+            await kM.generateKeyPair("nickname" ,email, password);
+            var pubKey = await crypto.encrypt(await kM.getPublicKey(), publicKeyArmored);
+            socket.emit("getCodeViaEmail", crypted_email, crypted_password, pubKey);
         } else {
             var crypted_nickname = null;
             var crypted_password = null;
@@ -94,7 +100,7 @@ async function getCode() {
                 clearLocalStorage();
                 window.location.href = "../confirm.html";
             }
-            socket.emit("getCodeViaNickname", crypted_nickname, crypted_password);
+            socket.emit("getCodeViaNickname", crypted_nickname, crypted_password );
         }
     } else {
         //se sono presenti nell'input email e password oppure nickname e password
@@ -120,6 +126,7 @@ async function getCode() {
                 clearLocalStorage();
                 window.location.href = "../confirm.html";
             }
+            kM.generateKeyPair("ChatMe",em,pass);
             socket.emit("getCodeViaEmail", crypted_email, crypted_password);
         } else if (check2 && check3) {
             var nick = document.getElementById("username").value;
@@ -135,6 +142,7 @@ async function getCode() {
                 clearLocalStorage();
                 window.location.href = "../confirm.html";
             }
+            kM.generateKeyPair(nick,"email@gmail.com",pass);
             socket.emit("getCodeViaNickname", crypted_nickname, crypted_password);
         } else {
             //gestisci errore

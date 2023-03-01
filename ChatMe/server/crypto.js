@@ -109,7 +109,7 @@ module.exports = {
   decryptAES,
   doubleDecrypt,
   generateRandomKey,
-  getPublicKey,
-  getPrivateKey,
+  publicKey,
+  privateKey,
   getPassphrase,
 };

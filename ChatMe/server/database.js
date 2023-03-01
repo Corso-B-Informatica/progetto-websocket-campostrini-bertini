@@ -87,6 +87,23 @@ function existInDatabase(db, nickname, email, operator) {
       });
   });
 }
+
+
+function existInDatabase(db, nickname, email,password, operator) {
+  return new Promise((resolve, reject) => {
+    db.all(
+      `select * from users where nickname = ? ` + operator + ` email = ?` + operator + ` password = ?`,
+      [nickname, email, password],
+      (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(rows.length > 0);
+        }
+      });
+  });
+}
 /*Inserisce un utente nel database di utenti confirm*/
 function insertTempUsers(
   nickname,
