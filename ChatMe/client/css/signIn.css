@@ -211,6 +211,24 @@ label {
   }
 }
 
+@media (max-width: 320px) {
+  .label-checkbox {
+    font-size: 10px !important;
+  }
+  .forgotpassword {
+    font-size: 10px !important;
+  }
+}
+
+@media (max-width: 280px) {
+  .label-checkbox {
+    font-size: 9px !important;
+  }
+  .forgotpassword {
+    font-size: 9px !important;
+  }
+}
+
 @media (max-height: 1000px) {
   #footer {
     display: none !important;
@@ -241,7 +259,7 @@ label {
   }
 }
 
-@media (max-height: 680px) {
+@media (max-height: 690px) {
   .p-t-155 {
     padding-top: 30px;
   }
@@ -255,7 +273,7 @@ label {
   }
 }
 
-@media (max-height: 650px) {
+@media (max-height: 610px) {
   .login {
     border-radius: 0px !important;
   }

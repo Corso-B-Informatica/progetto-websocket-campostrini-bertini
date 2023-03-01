@@ -22,8 +22,8 @@ io.on("connection", (socket) => {
     socket.emit("publicKey", crypto.getPublicKey());
   });
 
-  socket.on("register", (armored_email, armored_password, armored_nickname, armored_remember, publicKeyArmored) => {
-    register.checkUserData(armored_email, armored_password, armored_nickname, armored_remember, publicKeyArmored, socket);
+  socket.on("register", (armored_email, armored_password, armored_nickname, publicKeyArmored) => {
+    register.checkUserData(armored_email, armored_password, armored_nickname, publicKeyArmored, socket);
   });
 
   socket.on("confirmViaLink", (email, password, nickname, verification_code, publicKeyArmored, aesKey) => {
@@ -31,8 +31,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on("confirmViaCode", (email, password, nickname, verification_code) => {
-    confirmUserDataViaCode(email, password, nickname, verification_code, socket);
+    confirm.confirmUserDataViaCode(email, password, nickname, verification_code, socket);
+  });
+  
+  socket.on("getAnotherVerificationCode", () => {
+    confirm.getAnotherVerificationCode(socket);
   });
 });
 
-setInterval(database.cleanDatabase, 300000);
+setInterval(database.cleanDatabase, 60000);

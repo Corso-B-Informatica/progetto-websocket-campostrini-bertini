@@ -84,10 +84,14 @@ function getErrors(nickname, password, check1, check2, check3) {
     } else if (username.includes("@")) {
       errors += "Username must not contain '@'\n";
     }
+  } else {
+    errors += "\n";
   }
 
   if (!check2) {
     errors += "Email must be valid\n";
+  } else {
+    errors += "\n";
   }
 
   if (!check3) {
@@ -106,6 +110,8 @@ function getErrors(nickname, password, check1, check2, check3) {
     } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
       errors += "Password must contain at least one special character\n";
     }
+  } else {
+    errors += "\n";
   }
 
   return errors;

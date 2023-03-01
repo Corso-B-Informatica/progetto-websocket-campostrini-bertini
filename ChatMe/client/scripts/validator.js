@@ -1,5 +1,4 @@
 /*Letters and signs*/
-var alertMessage = "";
 var less = /</g;
 var greater = />/g;
 var apostrofe = /'/g;
@@ -14,25 +13,25 @@ function checkUsername() {
     if (username.length == 0) {
         var containerUsername = document.getElementById("container-username");
         containerUsername.classList.add("error");
-        alertMessage += "Username must be filled out\n";
+        containerUsername.setAttribute("error-message", "Username must be filled out");
         return false;
     }
     if (username.length > 30) {
         var containerUsername = document.getElementById("container-username");
         containerUsername.classList.add("error");
-        alertMessage += "Username must be at most 30 characters long\n";
+        containerUsername.setAttribute("error-message", "Username must be at most 30 characters long");
         return false;
     }
     if (!/[a-zA-Z0-9]/.test(username)) {
         var containerUsername = document.getElementById("container-username");
         containerUsername.classList.add("error");
-        alertMessage += "Username must contain at least one letter or number\n";
+        containerUsername.setAttribute("error-message", "Username must contain at least one letter or number");
         return false;
     }
     if (username.includes("@")) {
         var containerUsername = document.getElementById("container-username");
         containerUsername.classList.add("error");
-        alertMessage += "Username must not contain '@'\n";
+        containerUsername.setAttribute("error-message", "Username must not contain '@'");
         return false;
     }
     return true;
@@ -50,7 +49,7 @@ function checkEmail() {
     ) {
         var containerEmail = document.getElementById("container-email");
         containerEmail.classList.add("error");
-        alertMessage += "Email must be valid\n";
+        containerEmail.setAttribute("error-message", "Email must be valid");
         return false;
     }
     return true;
@@ -63,48 +62,95 @@ function checkPassword() {
     if (password.length == 0) {
         var containerPassword = document.getElementById("container-password");
         containerPassword.classList.add("error");
-        alertMessage += "Password must be filled out";
+        containerPassword.setAttribute("error-message", "Password must be filled out");
         return false;
     }
     if (password.length < 8) {
         var containerPassword = document.getElementById("container-password");
         containerPassword.classList.add("error");
-        alertMessage += "Password must be at least 8 characters long";
+        containerPassword.setAttribute("error-message", "Password must be at least 8 characters long");
         return false;
     }
     if (password.length > 50) {
         var containerPassword = document.getElementById("container-password");
         containerPassword.classList.add("error");
-        alertMessage += "Password must be at most 50 characters long";
+        containerPassword.setAttribute("error-message", "Password must be at most 50 characters long");
         return false;
     }
     if (!/[a-z]/.test(password)) {
         var containerPassword = document.getElementById("container-password");
         containerPassword.classList.add("error");
-        alertMessage += "Password must contain at least one lowercase letter";
+        containerPassword.setAttribute("error-message", "Password must contain at least one lowercase letter");
         return false;
     }
     if (!/[A-Z]/.test(password)) {
         var containerPassword = document.getElementById("container-password");
         containerPassword.classList.add("error");
-        alertMessage += "Password must contain at least one uppercase letter";
+        containerPassword.setAttribute("error-message", "Password must contain at least one uppercase letter");
         return false;
     }
     if (!/[0-9]/.test(password)) {
         var containerPassword = document.getElementById("container-password");
         containerPassword.classList.add("error");
-        alertMessage += "Password must contain at least one number";
+        containerPassword.setAttribute("error-message", "Password must contain at least one number");
         return false;
     }
     if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
         var containerPassword = document.getElementById("container-password");
         containerPassword.classList.add("error");
-        alertMessage += "Password must contain at least one special character";
+        containerPassword.setAttribute("error-message", "Password must contain at least one special character");
         return false;
     }
     return true;
 }
 
+/*Controlla se l'email è valida*/
+function checkUE_Email() {
+    var username = document.getElementById("username").value;
+    if (
+        username
+            .trim()
+            .match(
+                /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/
+            ) == null
+    ) {
+        var containerEmail = document.getElementById("container-username-email");
+        containerEmail.classList.add("error");
+        containerEmail.setAttribute("error-message", "Email must be valid");
+        return false;
+    }
+    return true;
+}
+
+/*Controlla se l'username è valido*/
+function checkUE_Username() {
+    var username = document.getElementById("username").value;
+    if (username.length == 0) {
+        var containerUsername = document.getElementById("container-username-email");
+        containerUsername.classList.add("error");
+        containerUsername.setAttribute("error-message", "Username must be filled out");
+        return false;
+    }
+    if (username.length > 30) {
+        var containerUsername = document.getElementById("container-username-email");
+        containerUsername.classList.add("error");
+        containerUsername.setAttribute("error-message", "Username must be at most 30 characters long");
+        return false;
+    }
+    if (!/[a-zA-Z0-9]/.test(username)) {
+        var containerUsername = document.getElementById("container-username-email");
+        containerUsername.classList.add("error");
+        containerUsername.setAttribute("error-message", "Username must contain at least one letter or number");
+        return false;
+    }
+    if (username.includes("@")) {
+        var containerUsername = document.getElementById("container-username-email");
+        containerUsername.classList.add("error");
+        containerUsername.setAttribute("error-message", "Username must not contain '@'");
+        return false;
+    }
+    return true;
+}
 /*Rimpiazza i caratteri speciali con i rispettivi codici html*/
 function validate(data) {
     return data

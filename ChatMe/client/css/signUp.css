@@ -109,12 +109,6 @@ label {
   width: 100%;
 }
 
-.container-checkbox {
-  padding-left: 5px;
-  padding-top: 5px;
-  padding-bottom: 35px;
-}
-
 .input:focus {
   padding-left: 5px;
 }
@@ -127,46 +121,6 @@ label {
 
 .input:focus + .focus-input::before {
   width: 100%;
-}
-
-.label-checkbox {
-  font-size: 12px;
-  line-height: 1.2;
-  color: #333;
-  padding-left: 26px;
-  cursor: pointer;
-}
-
-.label-checkbox::before {
-  content: "\f26b";
-  font-family: Material-Design-Iconic-Font;
-  font-size: 13px;
-  color: transparent;
-  font-weight: bold;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border: 2px solid #a64bf4;
-  border-radius: 2px;
-  background: #fff;
-  left: 0;
-  top: 50%;
-  -webkit-transform: translateY(-50%);
-  -moz-transform: translateY(-50%);
-  -ms-transform: translateY(-50%);
-  -o-transform: translateY(-50%);
-  transform: translateY(-50%);
-}
-
-.input-checkbox:checked + .label-checkbox::before {
-  color: #a64bf4;
 }
 
 @media (max-width: 880px) {
@@ -274,13 +228,9 @@ label {
   }
 }
 
-@media (max-height: 680px) {
+@media (max-height: 690px) {
   .p-t-155 {
     padding-top: 30px;
-  }
-
-  .container-checkbox {
-    padding-bottom: 25px;
   }
 
   .container-input {
@@ -288,7 +238,7 @@ label {
   }
 }
 
-@media (max-height: 650px) {
+@media (max-height: 610px) {
   .login {
     border-radius: 0px !important;
   }

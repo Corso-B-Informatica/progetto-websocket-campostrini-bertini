@@ -92,16 +92,16 @@ function insertTempUsers(
   nickname,
   email,
   password,
-  remember,
   verification_code,
   expiration_time,
-  attempts
+  attempts,
+  times
 ) {
   return new Promise((resolve, reject) => {
     tempUsers.run(
-      ` INSERT INTO users (nickname, email, password, remember, verification_code, expiration_time, attempts, wait_time)
+      ` INSERT INTO users (nickname, email, password, verification_code, expiration_time, attempts, wait_time, times)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
-      [nickname, email, password, remember, verification_code, expiration_time, attempts, 0],
+      [nickname, email, password, verification_code, expiration_time, attempts, 0, times],
       (err) => {
         if (err) {
           console.log("Error inserting user: " + err);
@@ -231,6 +231,24 @@ function increaseConfirmAttempts(email, password) {
   });
 }
 
+/*Aumenta di 1 il numero di tentativi di conferma*/
+function increaseTimes(email, password) {
+  return new Promise((resolve, reject) => {
+    tempUsers.run(
+      "UPDATE users SET times = times + 1 WHERE email = ? and password = ?",
+      [email, password],
+      (err) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      }
+    );
+  });
+}
+
 /*Ritorna l'expiration_time*/
 function getExipirationTime(email, password) {
   return new Promise((resolve, reject) => {
@@ -267,7 +285,7 @@ function setWaitTime(email, password, wait_time) {
   });
 }
 
-/*Ritorna il wait_time*/
+/*Ritorna il wait_time (millisecondi)*/
 function getWaitTime(email, password) {
   return new Promise((resolve, reject) => {
     tempUsers.all(
@@ -285,6 +303,23 @@ function getWaitTime(email, password) {
   });
 }
 
+/*Ritorna times*/
+function getTimes(email, password) {
+  return new Promise((resolve, reject) => {
+    tempUsers.all(
+      "SELECT * FROM users WHERE email = ? and password = ?",
+      [email, password],
+      (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(rows[0].wait_time);
+        }
+      }
+    );
+  });
+}
 module.exports = {
   existInDatabase,
   insertTempUsers,
@@ -297,6 +332,7 @@ module.exports = {
   setWaitTime,
   getWaitTime,
   hasAttempts,
+  increaseTimes,
   Users,
   tempUsers,
 };

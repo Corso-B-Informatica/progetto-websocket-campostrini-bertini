@@ -12,12 +12,15 @@ socket.on("registerError", (message, error) => {
   manageRegisterError(message, error);
 });
 
-socket.on("registerDataError", (check1, check2, check3, error) => {
-  manageRegisterDataError(check1, check2, check3, error);
-});
+socket.on(
+  "registerDataError",
+  (check1, check2, check3, data1, data2, data3) => {
+    manageRegisterDataError(check1, check2, check3, data1, data2, data3);
+  }
+);
 
-socket.on("registerSuccess", (email, password, nickname, remeber) => {
-  manageRegisterSuccess(email, password, nickname, remeber);
+socket.on("registerSuccess", (email, password, nickname) => {
+  manageRegisterSuccess(email, password, nickname);
 });
 
 /*Register*/
@@ -32,9 +35,6 @@ async function register() {
       document.getElementById("password").value
     );
     socket.emit("getPublicKey");
-  } else {
-    alert(alertMessage);
-    alertMessage = "";
   }
 }
 
@@ -55,11 +55,6 @@ async function sendRegister(publicKeyArmored) {
     publicKeyArmored
   );
 
-  const crypted_remember = await encrypt(
-    validate(document.getElementById("checkbox").checked.toString()),
-    publicKeyArmored
-  );
-
   const crypted_publicKeyArmored = await encrypt(
     kM.getPublicKey(),
     publicKeyArmored
@@ -70,7 +65,6 @@ async function sendRegister(publicKeyArmored) {
     crypted_email,
     crypted_password,
     crypted_nickname,
-    crypted_remember,
     crypted_publicKeyArmored
   );
 }
@@ -114,7 +108,7 @@ async function manageRegisterError(msg, err) {
       var containerEmail = document.getElementById("container-email");
       containerEmail.classList.add("error");
       containerEmail.setAttribute("error-message", "Email already used");
-    } else if (error == "username") {
+    } else if (error == "nickname") {
       var containerUsername = document.getElementById("container-username");
       containerUsername.classList.add("error");
       containerUsername.setAttribute("error-message", "Username already used");
@@ -152,7 +146,7 @@ async function manageRegisterError(msg, err) {
       var containerEmail = document.getElementById("container-email");
       containerEmail.classList.add("error");
       containerEmail.setAttribute("error-message", "Email already used");
-    } else if (error == "username") {
+    } else if (error == "nickname") {
       var containerUsername = document.getElementById("container-username");
       containerUsername.classList.add("error");
       containerUsername.setAttribute("error-message", "Username already used");
@@ -165,7 +159,12 @@ async function manageRegisterError(msg, err) {
       containerUsername.setAttribute("error-message", "Username already used");
     }
   } else {
-    alert(message);
+    var containerEmail = document.getElementById("container-email");
+    containerEmail.classList.add("error");
+    containerEmail.setAttribute("error-message", "Email already used");
+    var containerUsername = document.getElementById("container-username");
+    containerUsername.classList.add("error");
+    containerUsername.setAttribute("error-message", "Username already used");
   }
 }
 
@@ -173,72 +172,79 @@ async function manageRegisterDataError(
   crypted_check1,
   crypted_check2,
   crypted_check3,
-  crypted_error
+  crypted_data1,
+  crypted_data2,
+  crypted_data3
 ) {
   var { data: check1 } = await decrypt(
     crypted_check1,
-    kM.getMyPrivateKey(),
+    kM.getPrivateKey(),
     kM.getPassphrase()
   );
   var { data: check2 } = await decrypt(
     crypted_check2,
-    kM.getMyPrivateKey(),
+    kM.getPrivateKey(),
     kM.getPassphrase()
   );
   var { data: check3 } = await decrypt(
     crypted_check3,
-    kM.getMyPrivateKey(),
+    kM.getPrivateKey(),
     kM.getPassphrase()
   );
-  var { data: error } = await decrypt(
-    crypted_error,
-    kM.getMyPrivateKey(),
+  var { data: data1 } = await decrypt(
+    crypted_data1,
+    kM.getPrivateKey(),
+    kM.getPassphrase()
+  );
+  var { data: data2 } = await decrypt(
+    crypted_data2,
+    kM.getPrivateKey(),
+    kM.getPassphrase()
+  );
+  var { data: data3 } = await decrypt(
+    crypted_data3,
+    kM.getPrivateKey(),
     kM.getPassphrase()
   );
 
   if (!check1) {
     var containerUsername = document.getElementById("container-username");
     containerUsername.classList.add("error");
+    containerUsername.setAttribute("error-message", data1);
   }
 
   if (!check2) {
     var containerEmail = document.getElementById("container-email");
     containerEmail.classList.add("error");
+    containerEmail.setAttribute("error-message", data2);
   }
 
   if (!check3) {
     var containerPassword = document.getElementById("container-password");
     containerPassword.classList.add("error");
+    containerPassword.setAttribute("error-message", data3);
   }
-
-  alert(error);
 }
 
 /*Managa success*/
 async function manageRegisterSuccess(
   crypted_email,
   crypted_password,
-  crypted_nickname,
-  crypted_remember
+  crypted_nickname
 ) {
   var { data: email } = await decrypt(
     crypted_email,
-    kM.getMyPrivateKey(),
+    kM.getPrivateKey(),
     kM.getPassphrase()
   );
   var { data: password } = await decrypt(
     crypted_password,
-    kM.getMyPrivateKey(),
+    kM.getPrivateKey(),
     kM.getPassphrase()
   );
   var { data: nickname } = await decrypt(
     crypted_nickname,
-    kM.getMyPrivateKey(),
-    kM.getPassphrase()
-  );
-  var { data: remember } = await decrypt(
-    crypted_remember,
-    kM.getMyPrivateKey(),
+    kM.getPrivateKey(),
     kM.getPassphrase()
   );
 
@@ -246,7 +252,6 @@ async function manageRegisterSuccess(
   localStorage.setItem("email", email);
   localStorage.setItem("password", password);
   localStorage.setItem("nickname", nickname);
-  localStorage.setItem("rememberMe", remember);
 }
 
 /*Reset errori*/
