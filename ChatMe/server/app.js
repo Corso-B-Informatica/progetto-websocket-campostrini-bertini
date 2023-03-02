@@ -19,15 +19,15 @@ const io = socketio(server);
 
 io.on("connection", (socket) => {
   socket.on("getPublicKey", () => {
-    socket.emit("publicKey", crypto.getPublicKey());
+    socket.emit("publicKey", crypto.publicKey);
   });
 
   socket.on("register", (armored_email, armored_password, armored_nickname, publicKeyArmored) => {
     register.checkUserData(armored_email, armored_password, armored_nickname, publicKeyArmored, socket);
   });
 
-  socket.on("confirmViaLink", (email, password, nickname, verification_code, publicKeyArmored, aesKey) => {
-    confirm.confirmUserViaLink(email, password, nickname, verification_code, publicKeyArmored, aesKey, socket);
+  socket.on("confirmViaLink", (email, password, nickname, verification_code, rememberMe, publicKeyArmored, aesKey) => {
+    confirm.confirmUserViaLink(email, password, nickname, verification_code, rememberMe, publicKeyArmored, aesKey, socket);
   });
 
   socket.on("confirmViaCode", (email, password, nickname, verification_code) => {

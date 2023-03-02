@@ -10,10 +10,10 @@ async function checkUserData(
     publicKeyArmored,
     socket
 ) {
-    const { data: validate_email } = await crypto.decrypt(armored_email, crypto.getPrivateKey());
-    const { data: validate_password } = await crypto.decrypt(armored_password, crypto.getPrivateKey());
-    const { data: validate_nickname } = await crypto.decrypt(armored_nickname, crypto.getPrivateKey());
-    const { data: pubKey } = await crypto.decrypt(publicKeyArmored, crypto.getPrivateKey());
+    const { data: validate_email } = await crypto.decrypt(armored_email, crypto.privateKey);
+    const { data: validate_password } = await crypto.decrypt(armored_password, crypto.privateKey);
+    const { data: validate_nickname } = await crypto.decrypt(armored_nickname, crypto.privateKey);
+    const { data: pubKey } = await crypto.decrypt(publicKeyArmored, crypto.privateKey);
 
     const email = validator.validate(validate_email);
     const password = validator.validate(validate_password);

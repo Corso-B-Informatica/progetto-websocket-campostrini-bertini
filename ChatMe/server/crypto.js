@@ -66,21 +66,6 @@ async function decrypt(data, key) {
   });
 }
 
-/*Restituisce la chiave pubblica*/
-function getPublicKey() {
-  return publicKey;
-}
-
-/*Restituisce la chiave privata*/
-function getPrivateKey() {
-  return privateKey;
-}
-
-/*Restituisce la passphrase*/
-function getPassphrase() {
-  return passphrase;
-}
-
 /*Cripta un messaggio con la chiave AES*/
 function encryptAES(data) {
   return CryptoJS.AES.encrypt(data, AESKey).toString();
@@ -111,5 +96,5 @@ module.exports = {
   generateRandomKey,
   publicKey,
   privateKey,
-  getPassphrase,
+  passphrase,
 };

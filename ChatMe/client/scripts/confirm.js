@@ -1,3 +1,7 @@
+if (checkLocalstorageForLogin()) {
+    window.location.href = "../signIn.html";
+}
+
 /*keyManager*/
 const kM = new keyManager();
 
@@ -13,33 +17,7 @@ socket.on("publicKey", (publicKeyArmored) => {
 
 socket.on("confirmSuccess", (error) => { });
 
-function isUrlConfirmed(url, email, password, nickname, verification_code) {
-    //il controllo va fatto meglio
-    return url.includes("/confirm.html#") && email != null && password != null && nickname != null && verification_code != null;
-}
-
-async function sendConfirmViaLink(publicKeyArmored, email, password, nickname, verification_code) {
-    const crypted_nickname = await encrypt(nickname, publicKeyArmored);
-    const crypted_email = await encrypt(email, publicKeyArmored);
-    const crypted_password = await encrypt(password, publicKeyArmored);
-    const crypted_verification_code = await encrypt(verification_code, publicKeyArmored);
-    // il remember me è false di default
-    var remeberMe = false;
-    const crypted_remeberMe = await encrypt(remeberMe, publicKeyArmored);
-    await kM.generateNewKeyPair(nickname, email, password);
-    var pubKey = await crypto.encrypt(kM.getPublicKey(), publicKeyArmored);
-    socket.emit("confirmViaLink", crypted_email, crypted_password, crypted_nickname, crypted_verification_code, crypted_remeberMe, pubKey);
-}
-
-/*Page withouth login*/
-function setPageWithoutLogin() {
-    var containerUsernameEmail = document.getElementById("container-username-email");
-    containerUsernameEmail.style.display = "none";
-    var containerPassword = document.getElementById("container-password");
-    containerPassword.style.display = "none";
-}
-
-/*On page load*/
+/*Confirm via link*/
 async function tryConfirmViaLink(publicKeyArmored) {
     var url = window.location.href;
     url = url.substring(url.indexOf("/confirm.html#") + 1);
@@ -57,7 +35,7 @@ async function tryConfirmViaLink(publicKeyArmored) {
         var email = localStorage.getItem("email");
         var password = localStorage.getItem("password");
         var nickname = localStorage.getItem("nickname");
-        
+
         if ((email != null || nickname != null) && password != null) {
             setPageWithoutLogin();
         } else {
@@ -66,8 +44,31 @@ async function tryConfirmViaLink(publicKeyArmored) {
     }
 }
 
-function clearLocalStorage() {
-    localStorage.clear();
+function isUrlConfirmed(url, email, password, nickname, verification_code) {
+    //il controllo va fatto meglio ma per ora va bene così
+    return url.includes("/confirm.html#") && email != null && password != null && nickname != null && verification_code != null;
+}
+
+async function sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored) {
+    const crypted_nickname = await encrypt(nickname, publicKeyArmored);
+    const crypted_email = await encrypt(email, publicKeyArmored);
+    const crypted_password = await encrypt(password, publicKeyArmored);
+    const crypted_verification_code = await encrypt(verification_code, publicKeyArmored);
+    // il remember me è false di default
+    var remeberMe = false;
+    const crypted_remeberMe = await encrypt(remeberMe, publicKeyArmored);
+    await kM.generateNewKeyPair(nickname, email, password);
+    var pubKey = await crypto.encrypt(kM.getPublicKey(), publicKeyArmored);
+    var aesKey = await crypto.encrypt(crypto.generateRandomKey(10), publicKeyArmored);
+    socket.emit("confirmViaLink", crypted_email, crypted_password, crypted_nickname, crypted_verification_code, crypted_remeberMe, aesKey, pubKey);
+}
+
+/*Page withouth login*/
+function setPageWithoutLogin() {
+    var containerUsernameEmail = document.getElementById("container-username-email");
+    containerUsernameEmail.style.display = "none";
+    var containerPassword = document.getElementById("container-password");
+    containerPassword.style.display = "none";
 }
 
 async function getCode() {
@@ -152,3 +153,8 @@ async function getCode() {
 }
 
 //fare la parte del confirm con codice
+async function confirmCode() {
+    //controllo se nel localstorage sono presenti i dati
+
+    //se sono presenti 
+}

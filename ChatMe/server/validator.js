@@ -1,5 +1,4 @@
 /*Letters and signs*/
-var alertMessage = "";
 var less = /</g;
 var greater = />/g;
 var apostrofe = /'/g;

@@ -171,11 +171,6 @@ label {
 }
 
 @media (max-width: 350px) {
-  #prompt {
-    width: 100%;
-  }
-}
-@media (max-width: 350px) {
   .login {
     border-radius: 0 !important;
   }
@@ -186,6 +181,9 @@ label {
 
   #footer {
     display: none !important;
+  }
+  #prompt {
+    width: 100%;
   }
 }
 

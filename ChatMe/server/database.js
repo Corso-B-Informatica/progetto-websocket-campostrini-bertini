@@ -89,7 +89,7 @@ function existInDatabase(db, nickname, email, operator) {
 }
 
 
-function existInDatabase(db, nickname, email,password, operator) {
+/*function existInDatabase(db, nickname, email, password, operator) {
   return new Promise((resolve, reject) => {
     db.all(
       `select * from users where nickname = ? ` + operator + ` email = ?` + operator + ` password = ?`,
@@ -103,7 +103,7 @@ function existInDatabase(db, nickname, email,password, operator) {
         }
       });
   });
-}
+}*/
 /*Inserisce un utente nel database di utenti confirm*/
 function insertTempUsers(
   nickname,
