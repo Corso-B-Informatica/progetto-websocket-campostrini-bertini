@@ -1,13 +1,3 @@
-function checkLocalstorage() {
-    if (checkLocalstorageForLogin()) {
-        window.location.href = "../signIn.html";
-    } else if (checkLocalstorageForConfirm()) {
-        window.location.href = "../confirm.html";
-    } else {
-        clearLocalStorage();
-    }
-}
-
 function checkLocalstorageForLogin() {
     var login = localStorage.getItem("login");
     if (login == "true") {

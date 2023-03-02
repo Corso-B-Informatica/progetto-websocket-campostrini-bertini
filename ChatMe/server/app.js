@@ -19,15 +19,12 @@ const server = app.listen(config.port, () => {
 const io = socketio(server);
 
 io.on("connection", (socket) => {
-  socket.on("getPublicKey", () => {
-    socket.emit("publicKey", crypto.publicKey);
+  socket.on("getPublicKey", (str) => {
+    socket.emit("publicKey", crypto.publicKey, str);
   });
 
-  socket.on("Login", (c_email, c_password, c_RememberMe, c_publicKey) => {
-    if(login.Login(c_email,c_password)){
-      var publicKey = crypto.decrypt(c_publicKey, crypto.privateKey);
-      
-    }
+  socket.on("login", (email, nickname, password, rememberMe, publicKey) => {
+    login.login(email, nickname, password, rememberMe, publicKey, socket);
   });
 
   socket.on("register", (armored_email, armored_password, armored_nickname, publicKeyArmored) => {
@@ -38,13 +35,14 @@ io.on("connection", (socket) => {
     confirm.confirmUserViaLink(email, password, nickname, verification_code, rememberMe, publicKeyArmored, aesKey, socket);
   });
 
-  socket.on("confirmViaCode", (email, password, nickname, verification_code) => {
-    confirm.confirmUserDataViaCode(email, password, nickname, verification_code, socket);
+  socket.on("confirmViaCode", (email, nickname, password, verification_code, rememberMe, publicKeyArmored, aesKey) => {
+    confirm.confirmUserDataViaCode(email, nickname, password, verification_code, rememberMe, publicKeyArmored, aesKey, socket);
   });
   
 
-  socket.on("getCodeViaNickname", (crypted_nickname, crypted_password) => {
-    confirm.sendCodeViaNickname(socket, crypted_nickname, crypted_password);
+  socket.on("getCode", (email, nickname, password, publicKeyArmored) => {
+    confirm.sendCode(socket, email, nickname, password, publicKeyArmored);
   });
 });
+
 setInterval(database.cleanDatabase, 60000);

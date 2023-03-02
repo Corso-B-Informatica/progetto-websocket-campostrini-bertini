@@ -40,6 +40,7 @@ function checkUsername() {
 /*Controlla se l'email è valida*/
 function checkEmail() {
     var email = document.getElementById("email").value;
+
     if (
         email
             .trim()
@@ -104,49 +105,42 @@ function checkPassword() {
     return true;
 }
 
-/*Controlla se l'email è valida*/
-function checkUE_Email(email) {
-    if (
-        email
-            .trim()
-            .match(
-                /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/
-            ) == null
-    ) {
+function checkVerificationCode() {
+    var code = document.getElementById("code").value;
+
+    if (code.length != 10) {
+        var containerCode = document.getElementById("container-code");
+        containerCode.classList.add("error");
+        containerCode.setAttribute("error-message", "Code must be 10 characters long");
+        return false;
+    }
+    if (!/^[a-z0-9]+$/.test(code)) {
+        var containerCode = document.getElementById("container-code");
+        containerCode.classList.add("error");
+        containerCode.setAttribute("error-message", "Invalid code");
         return false;
     }
     return true;
 }
 
-/*Controlla se l'username è valido*/
-function checkUE_Username() {
-    var username = document.getElementById("username").value;
-    if (username.length == 0) {
-        var containerUsername = document.getElementById("container-username-email");
-        containerUsername.classList.add("error");
-        containerUsername.setAttribute("error-message", "Username must be filled out");
-        return false;
-    }
-    if (username.length > 30) {
-        var containerUsername = document.getElementById("container-username-email");
-        containerUsername.classList.add("error");
-        containerUsername.setAttribute("error-message", "Username must be at most 30 characters long");
-        return false;
-    }
-    if (!/[a-zA-Z0-9]/.test(username)) {
-        var containerUsername = document.getElementById("container-username-email");
-        containerUsername.classList.add("error");
-        containerUsername.setAttribute("error-message", "Username must contain at least one letter or number");
-        return false;
-    }
-    if (username.includes("@")) {
-        var containerUsername = document.getElementById("container-username-email");
-        containerUsername.classList.add("error");
-        containerUsername.setAttribute("error-message", "Username must not contain '@'");
+
+function checkUsernameOrEmail() {
+    var ue = document.getElementById("username").value;
+
+    if (
+        ue.trim()
+            .match(
+                /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/
+            ) == null && (username.length == 0 || username.length > 30 || !/[a-zA-Z0-9]/.test(username) || username.includes("@"))
+    ) {
+        var containerEmail = document.getElementById("container-username-email");
+        containerEmail.classList.add("error");
+        containerEmail.setAttribute("error-message", "Invalid username or email");
         return false;
     }
     return true;
 }
+
 /*Rimpiazza i caratteri speciali con i rispettivi codici html*/
 function validate(data) {
     return data

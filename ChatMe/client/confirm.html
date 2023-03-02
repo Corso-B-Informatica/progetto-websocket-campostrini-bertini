@@ -51,7 +51,7 @@
                     error-message="Invalid verification code">
                     <input id="code" class="input text-dark d-block w-100 bg-transparent" type="text"
                         placeholder="Verification code" required>
-                    <span id="span-username" class="focus-input position-absolute d-block w-100 h-100"
+                    <span id="span-code" class="focus-input position-absolute d-block w-100 h-100"
                         data-placeholder="&#xf207;"></span>
                 </div>
     
@@ -77,6 +77,16 @@
                 </div>
             </form>
         </div>
+        
+        <div id="prompt" class="rounded-5">
+            <p id="prompt-error"></p>
+            <p id="prompt-text"></p>
+            <div id="button-container" class="d-flex flex-wrap align-items-center justify-content-evenly w-100">
+                <button id="yes-button">Yes</button>
+                <button id="no-button">No</button>
+            </div>
+        </div>
+
         <footer id="footer" class="footer fixed-bottom p-3">
             <div class="text-center d-flex justify-content-between align-items-center">
                 <span class="text-white h5 copyright">Copyright &copy; ChatMe 2023</span>

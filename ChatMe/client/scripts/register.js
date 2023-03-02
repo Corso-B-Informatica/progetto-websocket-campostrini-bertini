@@ -22,7 +22,6 @@ if (checkLocalstorageForConfirm()) {
   document.getElementById("yes-button").addEventListener("click", () => {
     window.location.href = "../confirm.html";
   });
-
 }
   
 /*keyManager*/
@@ -31,7 +30,7 @@ const kM = new keyManager();
 /*Socket.io*/
 var socket = io();
 
-socket.on("publicKey", (publicKeyArmored) => {
+socket.on("publicKey", (publicKeyArmored, str) => {
   sendRegister(publicKeyArmored);
 });
 
@@ -52,16 +51,9 @@ socket.on("registerSuccess", (email, password, nickname) => {
 
 /*Register*/
 async function register() {
-  var check1 = checkUsername();
-  var check2 = checkEmail();
-  var check3 = checkPassword();
-  if (check1 && check2 && check3) {
-    await kM.generateNewKeyPair(
-      document.getElementById("username").value,
-      document.getElementById("email").value,
-      document.getElementById("password").value
-    );
-    socket.emit("getPublicKey");
+  if (checkUsername() && checkEmail() && checkPassword()) {
+    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+    socket.emit("getPublicKey", "");
   }
 }
 
