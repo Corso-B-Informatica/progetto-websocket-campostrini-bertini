@@ -5,6 +5,7 @@ const crypto = require('./crypto.js');
 const database = require('./database.js');
 const register = require('./register.js');
 const confirm = require('./confirm.js');
+const login = require('./login.js');
 
 /*Express*/
 const app = express();
@@ -20,6 +21,13 @@ const io = socketio(server);
 io.on("connection", (socket) => {
   socket.on("getPublicKey", () => {
     socket.emit("publicKey", crypto.publicKey);
+  });
+
+  socket.on("Login", (c_email, c_password, c_RememberMe, c_publicKey) => {
+    if(login.Login(c_email,c_password)){
+      var publicKey = crypto.decrypt(c_publicKey, crypto.privateKey);
+      
+    }
   });
 
   socket.on("register", (armored_email, armored_password, armored_nickname, publicKeyArmored) => {

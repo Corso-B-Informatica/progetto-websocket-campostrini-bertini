@@ -105,18 +105,14 @@ function checkPassword() {
 }
 
 /*Controlla se l'email è valida*/
-function checkUE_Email() {
-    var username = document.getElementById("username").value;
+function checkUE_Email(email) {
     if (
-        username
+        email
             .trim()
             .match(
                 /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/
             ) == null
     ) {
-        var containerEmail = document.getElementById("container-username-email");
-        containerEmail.classList.add("error");
-        containerEmail.setAttribute("error-message", "Email must be valid");
         return false;
     }
     return true;
@@ -160,5 +156,6 @@ function validate(data) {
         .replace(quotation, "&#34;")
         .replace(and, "&#38;")
         .replace(grave, "&#96;")
-        .replace(slash, "&#47;");
+        .replace(slash, "&#47;")
+        .trim();
 }
