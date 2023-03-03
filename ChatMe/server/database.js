@@ -88,45 +88,10 @@ function existInDatabase(db, nickname, email, operator) {
   });
 }
 
-async function LoginDatabase(username,password){
-  if(checkUE_Email(username)){
-    Users.all(`select * from users where email = ? and password = ?`, [username, password], (err, rows) => {
-      if (err) {
-        console.log(err);
-      } else {
-        if(rows.length > 0){
-          console.log("Login success");
-          return (true,rows[0].nickname, rows[0].key);
-
-        }
-        else{
-          return false;
-        }
-      }
-    });
-  }
-  else{
-    Users.all(`select * from users where nickname = ? and password = ?`, [username, password], (err, rows) => {
-      if (err) {
-        console.log(err);
-      } else {
-        if(rows.length > 0){
-          console.log("Login success");
-          return (true,rows[0].email, rows[0].key);
-        }
-        else{
-          return false;
-        }
-      }
-    });
-  }
-}
-
-
-/*function existInDatabase(db, nickname, email, password, operator) {
+async function checkDatabase(db, nickname, email, password) {
   return new Promise((resolve, reject) => {
     db.all(
-      `select * from users where nickname = ? ` + operator + ` email = ?` + operator + ` password = ?`,
+      `select * from users where nickname = ? or email = ? and password = ?`,
       [nickname, email, password],
       (err, rows) => {
         if (err) {
@@ -137,7 +102,8 @@ async function LoginDatabase(username,password){
         }
       });
   });
-}*/
+}
+
 /*Inserisce un utente nel database di utenti confirm*/
 function insertTempUsers(nickname,email,password,verification_code,expiration_time,attempts,times) {
   return new Promise((resolve, reject) => {
@@ -376,7 +342,7 @@ module.exports = {
   getWaitTime,
   hasAttempts,
   increaseTimes,
-  LoginDatabase,
+  checkDatabase,
   getTimes,
   Users,
   tempUsers,

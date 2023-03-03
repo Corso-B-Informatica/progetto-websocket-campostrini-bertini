@@ -1,4 +1,7 @@
-if (!checkLocalstorageForLogin() && checkLocalstorageForConfirmation()) {
+if (checkLocalstorageForLogin()) {
+    window.location.href = "../chat.html";
+}
+if (checkLocalstorageForConfirm()) {
     var prompt = document.getElementById("prompt");
 
     // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
@@ -19,6 +22,7 @@ if (!checkLocalstorageForLogin() && checkLocalstorageForConfirmation()) {
     document.getElementById("yes-button").addEventListener("click", () => {
         window.location.href = "../confirm.html";
     });
+
 }
 
 /*keyManager*/
@@ -31,6 +35,11 @@ socket.on("publicKey", (publicKeyArmored, str) => {
     if (str == "0") {
         sendLogin(publicKeyArmored);
     }
+});
+
+
+socket.on("loginDataError", (crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4) => {
+
 });
 
 function Login() {

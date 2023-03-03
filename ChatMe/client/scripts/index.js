@@ -1,5 +1,5 @@
 if (checkLocalstorageForLogin()) {
-    window.location.href = "../signIn.html";
+    window.location.href = "../chat.html";
 }
 if (checkLocalstorageForConfirm()) {
     var prompt = document.getElementById("prompt");

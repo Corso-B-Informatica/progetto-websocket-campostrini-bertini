@@ -26,8 +26,6 @@ async function checkUserData(
     //se i dati sono validi
     if (check1 && check2 && check3) {
         if (await database.existInDatabase(database.Users, nickname, email, "or")) {
-            //se l'utente è già registrato
-            //mando all'utente che la mail è già stata utilizzata o il nickname è già stato utilizzato o entrambi
             console.log("Utente già registrato");
 
             const message = await crypto.encrypt("User already registered", pubKey);
@@ -62,7 +60,7 @@ async function checkUserData(
         const crypted_check1 = await crypto.encrypt(check1, pubKey);
         const crypted_check2 = await crypto.encrypt(check2, pubKey);
         const crypted_check3 = await crypto.encrypt(check3, pubKey);
-        const errors = validator.getErrors(nickname, password, check1, check2, check3).split("\n");
+        const errors = validator.getErrors(nickname, password, check1, check2, check3, false).split("\n");
         const crypted_data1 = await crypto.encrypt(errors[0], pubKey);
         const crypted_data2 = await crypto.encrypt(errors[1], pubKey);
         const crypted_data3 = await crypto.encrypt(errors[2], pubKey);

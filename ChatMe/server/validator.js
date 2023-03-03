@@ -19,22 +19,6 @@ function checkUsername(username) {
   }
   return true;
 }
-function checkUE_Email() {
-  var username = document.getElementById("username").value;
-  if (
-      username
-          .trim()
-          .match(
-              /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/
-          ) == null
-  ) {
-      var containerEmail = document.getElementById("container-username-email");
-      containerEmail.classList.add("error");
-      containerEmail.setAttribute("error-message", "Email must be valid");
-      return false;
-  }
-  return true;
-}
 
 /*Controlla se l'email è valida*/
 function checkEmail(email) {
@@ -87,7 +71,7 @@ function validate(data) {
     .trim();
 }
 
-function getErrors(nickname, password, check1, check2, check3) {
+function getErrors(nickname, password, check1, check2, check3, check4) {
   var errors = "";
 
   if (!check1) {
@@ -130,6 +114,12 @@ function getErrors(nickname, password, check1, check2, check3) {
     errors += "\n";
   }
 
+  if (!check4) {
+    errors += "Remember me must be valid\n";
+  } else {
+    errors += "\n";
+  }
+
   return errors;
 }
 
@@ -138,7 +128,6 @@ module.exports = {
   checkEmail,
   checkPassword,
   checkRemember,
-  checkUE_Email,
   validate,
   getErrors,
 };
