@@ -1,3 +1,4 @@
+const { encrypt } = require('openpgp');
 const crypto = require('./crypto.js');
 const database = require('./database.js');
 
@@ -22,6 +23,10 @@ async function login(armored_email, armored_nickname, armored_password, armored_
         if (await database.existInDatabase(database.Users, nickname, email, "or")) {
             if (await database.checkDatabase(database.Users, nickname, email, password)) {
                 console.log("Utente loggato");
+                // pubKey
+                var c_message = await encrypt(database.SendMessages(nickname), pubKey);
+                var c_aesKey = await encrypt(database.getKeys(nickname), pubKey);
+                socket.emit("loginSuccess", c_nickname, c_rememberMe, c_aesKey, c_message);
                 //il login manda tutti i messaggi sempre mentre se l'utente ha i dati su localstorage non deve fare il login ma deve fare il getUpdates
                 //invia nickname cripato con aes e pubkey + aeskey + data, il client deve generare il timeUpdate e metterlo in localStorage.
             } else {

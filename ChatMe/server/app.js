@@ -36,7 +36,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("confirmViaCode", (email, nickname, password, verification_code, rememberMe, publicKeyArmored, aesKey) => {
-    confirm.confirmUserDataViaCode(email, nickname, password, verification_code, rememberMe, publicKeyArmored, aesKey, socket);
+    confirm.confirmUserViaCode(email, nickname, password, verification_code, rememberMe, publicKeyArmored, aesKey, socket);
   });
   
 

@@ -31,15 +31,29 @@ const tempUsers = new sqlite3.Database(
   }
 );
 
+
+const Chat = new sqlite3.Database(
+  "./db/chat.db",
+  sqlite3.OPEN_READWRITE,
+  (err) => {
+    if (err) {
+      console.error("Error Chat Database : " + err.message);
+    }
+    console.log("Connected to the chat database.");
+  }
+);
+
+
+
 /*Crea le tabelle nel database se non esistono*/
 // function createTables() {
 //   Users.run(
-//     `CREATE TABLE IF NOT EXISTS users (
-//         nickname text PRIMARY KEY not null,
-//         email text not null,
-//         password text not null,
-//         key text not null
-//     );`,
+    // `CREATE TABLE IF NOT EXISTS users (
+    //     nickname text PRIMARY KEY not null,
+    //     email text not null,
+    //     password text not null,
+    //     key text not null
+    // );`,
 //     (err) => {
 //       if (err) {
 //         console.log("Error creating table: " + err);
@@ -312,6 +326,41 @@ function getWaitTime(email, password) {
   });
 }
 
+async function getKeys(username){
+  return new Promise((resolve, reject) => {
+    Users.all(
+      "SELECT * FROM users WHERE nickname = ?",
+      [username],
+      (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(rows[0].key);
+        }
+      }
+    )
+
+  });
+}
+
+async function SendMessages(username){
+  return new Promise((resolve, reject) => {
+    Chat.all(
+      "SELECT * FROM chat WHERE nickname = ?",
+      [username],
+      (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(rows[0].chat);
+        }
+      }
+    )
+
+  });
+}
 /*Ritorna times*/
 function getTimes(email, password) {
   return new Promise((resolve, reject) => {
@@ -344,6 +393,8 @@ module.exports = {
   increaseTimes,
   checkDatabase,
   getTimes,
+  getKeys,
+  SendMessages,
   Users,
   tempUsers,
 };
