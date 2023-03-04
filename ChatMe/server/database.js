@@ -4,6 +4,7 @@ const sqlite3 = require("sqlite3").verbose();
 // function crateDatabase() {
 //   const Users = new sqlite3.Database("./db/users.db");
 //   const tempUsers = new sqlite3.Database("./db/temp-users.db");
+//   const chat = new sqlite3.Database("./db/chat.db");
 // }
 // crateDatabase();
 
@@ -48,12 +49,12 @@ const Chat = new sqlite3.Database(
 /*Crea le tabelle nel database se non esistono*/
 // function createTables() {
 //   Users.run(
-    // `CREATE TABLE IF NOT EXISTS users (
-    //     nickname text PRIMARY KEY not null,
-    //     email text not null,
-    //     password text not null,
-    //     key text not null
-    // );`,
+//     `CREATE TABLE IF NOT EXISTS users (
+//         nickname text PRIMARY KEY not null,
+//         email text not null,
+//         password text not null,
+//         key text not null
+//     );`,
 //     (err) => {
 //       if (err) {
 //         console.log("Error creating table: " + err);
@@ -64,16 +65,30 @@ const Chat = new sqlite3.Database(
 //   );
 
 //   tempUsers.run(
-    // `CREATE TABLE IF NOT EXISTS users (
-    //     nickname text PRIMARY KEY not null,
-    //     email text not null,
-    //     password text not null,
-    //     verification_code text not null,
-    //     expiration_time text not null,
-    //     attempts integer not null,
-    //     wait_time integer not null,
-    //     times integer not null
-    // );`,
+//     `CREATE TABLE IF NOT EXISTS users (
+//         nickname text PRIMARY KEY not null,
+//         email text not null,
+//         password text not null,
+//         verification_code text not null,
+//         expiration_time text not null,
+//         attempts integer not null,
+//         wait_time integer not null,
+//         wait_time_code integer not null,
+//         times integer not null
+//     );`,
+//     (err) => {
+//       if (err) {
+//         console.log("Error creating table: " + err);
+//       } else {
+//         console.log("Table created successfully or already exists");
+//       }
+//     }
+//   );
+//   Chat.run(
+//     `CREATE TABLE IF NOT EXISTS chat (
+//         nickname text PRIMARY KEY not null,
+//         chat text not null
+//     );`,
 //     (err) => {
 //       if (err) {
 //         console.log("Error creating table: " + err);
@@ -119,12 +134,12 @@ function checkDatabase(db, nickname, email, password) {
 }
 
 /*Inserisce un utente nel database di utenti confirm*/
-function insertTempUsers(nickname,email,password,verification_code,expiration_time,attempts,times) {
+function insertTempUsers(nickname, email, password, verification_code, expiration_time, attempts, times) {
   return new Promise((resolve, reject) => {
     tempUsers.run(
-      ` INSERT INTO users (nickname, email, password, verification_code, expiration_time, attempts, wait_time, times)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
-      [nickname, email, password, verification_code, expiration_time, attempts, 0, times],
+      ` INSERT INTO users (nickname, email, password, verification_code, expiration_time, attempts, wait_time, wait_time_code, times)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+      [nickname, email, password, verification_code, expiration_time, attempts, 0, 0, times],
       (err) => {
         if (err) {
           console.log("Error inserting user: " + err);
@@ -222,14 +237,32 @@ function hasAttempts(email, password) {
 function checkVerificationCode(email, nickname, password, verification_code) {
   return new Promise((resolve, reject) => {
     tempUsers.all(
-      "SELECT * FROM users WHERE email = ? or nickname = ? and password = ?",
-      [email, nickname, password],
+      "SELECT * FROM users WHERE email = ? or nickname = ?",
+      [email, nickname],
       (err, rows) => {
         if (err) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].verification_code == verification_code);
+          console.log(rows[0].verification_code)
+          resolve(rows[0].verification_code == verification_code && rows[0].password == password);
+        }
+      }
+    );
+  });
+}
+
+/*Setta il verification_code di un utente*/
+function setVerificationCode(email, password, verification_code) {
+  return new Promise((resolve, reject) => {
+    tempUsers.run(
+      "UPDATE users SET verification_code = ? WHERE email = ? and password = ?", [verification_code, email, password],
+      (err) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(true);
         }
       }
     );
@@ -343,6 +376,24 @@ function setWaitTime(email, password, wait_time) {
   });
 }
 
+/*Setta il wait_time_code*/
+function setWaitTimeCode(email, password, wait_time) {
+  return new Promise((resolve, reject) => {
+    tempUsers.run(
+      "UPDATE users SET wait_time_code = ? WHERE email = ? and password = ?",
+      [wait_time, email, password],
+      (err) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      }
+    );
+  });
+}
+
 /*Ritorna il wait_time (millisecondi)*/
 function getWaitTime(email, password) {
   return new Promise((resolve, reject) => {
@@ -361,7 +412,25 @@ function getWaitTime(email, password) {
   });
 }
 
-function getKeys(username){
+/*Ritorna il wait_time_code (millisecondi)*/
+function getWaitTimeCode(email, password) {
+  return new Promise((resolve, reject) => {
+    tempUsers.all(
+      "SELECT * FROM users WHERE email = ? and password = ?",
+      [email, password],
+      (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(rows[0].wait_time_code);
+        }
+      }
+    );
+  });
+}
+
+function getKeys(username) {
   return new Promise((resolve, reject) => {
     Users.all(
       "SELECT * FROM users WHERE nickname = ?",
@@ -379,7 +448,7 @@ function getKeys(username){
   });
 }
 
-function getRow(username){
+function getRow(username) {
   return new Promise((resolve, reject) => {
     Chat.all(
       "SELECT * FROM chat WHERE nickname = ?",
@@ -410,6 +479,19 @@ function getNickname(email) {
   });
 }
 
+function getEmail(nickname) {
+  return new Promise((resolve, reject) => {
+    Users.all("SELECT * FROM users WHERE nickname = ?", [nickname], (err, rows) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(rows[0].email);
+      }
+    });
+  });
+}
+
 /*Ritorna times*/
 function getTimes(email, password) {
   return new Promise((resolve, reject) => {
@@ -428,6 +510,34 @@ function getTimes(email, password) {
   });
 }
 
+function updateWaitTime() {
+  tempUsers.all("SELECT * FROM users", [], (err, rows) => {
+    if (err) {
+      console.log(err);
+    } else {
+      rows.forEach((row) => {
+        if (row.wait_time > 0) {
+          setWaitTime(row.email.toString(), row.password.toString(), parseInt(row.wait_time.toString()) - 1000);
+        }
+      });
+    }
+  });
+}
+
+function updateWaitTimeCode() {
+  tempUsers.all("SELECT * FROM users", [], (err, rows) => {
+    if (err) {
+      console.log(err);
+    } else {
+      rows.forEach((row) => {
+        if (row.wait_time_code > 0) {
+          setWaitTimeCode(row.email, row.password, parseInt(row.wait_time_code.toString()) - 1000);
+        }
+      });
+    }
+  });
+}
+
 module.exports = {
   existInDatabase,
   insertTempUsers,
@@ -436,11 +546,16 @@ module.exports = {
   cleanDatabase,
   removeTempUsers,
   increaseConfirmAttempts,
+  updateWaitTime,
+  updateWaitTimeCode,
   resetAttempts,
   getExipirationTime,
   checkVerificationCode,
+  setVerificationCode,
   setWaitTime,
   getWaitTime,
+  setWaitTimeCode,
+  getWaitTimeCode,
   hasAttempts,
   increaseTimes,
   checkDatabase,
@@ -448,6 +563,7 @@ module.exports = {
   getKeys,
   getRow,
   getNickname,
+  getEmail,
   Users,
   tempUsers,
   Chat

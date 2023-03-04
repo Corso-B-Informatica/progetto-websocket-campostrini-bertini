@@ -350,6 +350,7 @@ document.getElementById("yes-button").addEventListener("click", () => {
 
   var noButton = document.getElementById("no-button");
   noButton.style.display = "none";
+  noButton.innerHTML = "No";
 });
 
 /*Reset error message*/

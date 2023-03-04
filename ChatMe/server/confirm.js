@@ -28,7 +28,7 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
         if (await database.existInDatabase(database.tempUsers, nickname, email, "and")) {
             if (await database.hasAttempts(email, password) && await database.getWaitTime(email, password) == 0) {
                 if (await database.checkVerificationCode(email, nickname, password, verification_code)) {
-                    await database.insertUser(email, password, nickname, aesKey);
+                    await database.insertUser(nickname, email, password, aesKey);
                     await database.removeTempUsers(email, password);
                     await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "chats": []}`);
 
@@ -66,16 +66,17 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
                                     database.removeTempUsers(email, password);
                             }
                         }
-                        var message = await crypto.encrypt("Wrong verification code", pubKey);
-
-                        socket.emit("confirmError", message);
                     }
+                    var message = await crypto.encrypt("Wrong verification code", pubKey);
+
+                    socket.emit("confirmError", message);
                 }
             } else {
                 console.log("Numero di tentativi superato");
-                //se il numero di tentativi è maggiore di 3 invio un messaggio di errore
-                var wait_time = await crypto.encrypt(await database.getWaitTime(email, password), pubKey);
-                //var message = await crypto.encrypt("You have exceeded the number of attempts.", pubKey);
+
+                var time = await database.getWaitTime(email, password);
+                var wait_time = await crypto.encrypt(time.toString(), pubKey);
+
                 socket.emit("confirmError", wait_time);
             }
         } else if (await database.existInDatabase(database.Users, nickname, email, "or")) {
@@ -130,20 +131,27 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
 
     const { data: pubKey } = await crypto.decrypt(publicKeyArmored, crypto.privateKey);
 
-    const email = validator.validate(validate_email);
+    const e_mail = validator.validate(validate_email);
     const password = validator.validate(validate_password);
     const nickname = validator.validate(validate_nickname);
 
     var check1 = validator.checkUsername(nickname);
-    var check2 = validator.checkEmail(email);
+    var check2 = validator.checkEmail(e_mail);
     var check3 = validator.checkPassword(password);
     var check4 = await crypto.isValid(pubKey);
 
     if ((check1 || check2) && check3 && check4) {
+        var email = e_mail;
+        if (e_mail.length == 0) {
+            email = await database.getEmail(nickname);
+        }
+
         if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
-            if (await database.getWaitTime(email, password) == 0) {
+            if (await database.getWaitTimeCode(email, password) == 0) {
                 if (await database.getTimes(email, password) <= 5) {
                     const verification_code = crypto.generateRandomKey(10);
+
+                    database.setVerificationCode(email, password, verification_code);
 
                     var mail = email;
                     if (email.length == 0) {
@@ -158,18 +166,25 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
 
                     emailer.sendConfirmCodeViaEmail(crypted_email, crypted_nickname, crypted_password, verification_code, expiration_time);
 
+                    var wait_time = await database.getWaitTimeCode(email, password)
+                    if (wait_time == 0) {
+                        await database.setWaitTimeCode(email, password, 600000);
+                    }
+
                     socket.emit("requestCodeSuccess");
                 } else {
                     console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
 
-                    var wait_time = await crypto.encrypt(await database.getWaitTime(email, password), pubKey);
+                    var time = await database.getWaitTimeCode(email, password);
+                    var wait_time = await crypto.encrypt(time.toString(), pubKey);
 
-                    socket.emit("requestCodeError", wait_time);
+                    socket.emit("requestCodeError", "User deleted");
                 }
             } else {
                 console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
 
-                var wait_time = await crypto.encrypt(await database.getWaitTime(email, password), pubKey);
+                var time = await database.getWaitTimeCode(email, password);
+                var wait_time = await crypto.encrypt(time.toString(), pubKey);
 
                 socket.emit("requestCodeError", wait_time);
             }
@@ -220,7 +235,7 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
     }
 
     const { data: verification_code } = await crypto.decrypt(armored_verification_code, crypto.privateKey);
-    const { data: validate_rememberMe } = await crypto.decrypt(armored_rememberMe);
+    const { data: validate_rememberMe } = await crypto.decrypt(armored_rememberMe, crypto.privateKey);
     const { data: pubKey } = await crypto.decrypt(publicKeyArmored, crypto.privateKey);
     const { data: aesKey } = await crypto.decrypt(crypted_aesKey, crypto.privateKey);
 
@@ -237,10 +252,14 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
     var check6 = validator.checkVerificationCode(verification_code);
 
     if ((check1 || check2) && check3 && check4 && check5 && check6) {
+        console.log("1")
         if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
+            console.log("1")
             if (await database.hasAttempts(email, password) && await database.getWaitTime(email, password) == 0) {
+                console.log("1")
                 if (await database.checkVerificationCode(email, nickname, password, verification_code)) {
-                    await database.insertUser(email, password, nickname, aesKey);
+                    console.log("1")
+                    await database.insertUser(nickname, email, password, aesKey);
                     await database.removeTempUsers(email, password);
                     await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "chats": []}`);
 
@@ -286,9 +305,10 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
                 }
             } else {
                 console.log("Numero di tentativi superato");
-                //se il numero di tentativi è maggiore di 3 invio un messaggio di errore
-                var wait_time = await crypto.encrypt(await database.getWaitTime(email, password), pubKey);
-                //var message = await crypto.encrypt("You have exceeded the number of attempts.", pubKey);
+
+                var time = await database.getWaitTime(email, password);
+                var wait_time = await crypto.encrypt(time.toString(), pubKey);
+
                 socket.emit("confirmError", wait_time);
             }
         } else if (await database.existInDatabase(database.Users, nickname, email, "or")) {

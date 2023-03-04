@@ -53,3 +53,5 @@ io.on("connection", (socket) => {
 });
 
 setInterval(database.cleanDatabase, 60000);
+setInterval(database.updateWaitTime, 1000);
+setInterval(database.updateWaitTimeCode, 1000);

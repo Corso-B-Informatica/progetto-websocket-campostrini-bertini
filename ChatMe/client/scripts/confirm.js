@@ -6,30 +6,97 @@ if (checkLocalstorageForLogin()) {
 var e_mail = "";
 var pass_word = "";
 var nick_name = "";
+var waitSeconds = 0;
+
+/*Update time global*/
+function updateTimeGlobal() {
+    var prompt = document.getElementById("prompt");
+
+    if (document.getElementById("prompt-error").innerText == "Number of attempts exceeded" && document.getElementById("no-button").innerText == "Ok") {
+        if (waitSeconds > 0) {
+            waitSeconds -= 1;
+            var time = new Date();
+            time.setSeconds(time.getSeconds() + waitSeconds);
+            var currentDate = new Date();
+            var timeToWait = time - currentDate;
+            var hoursToWait = Math.floor(timeToWait / (1000 * 60 * 60));
+            if (hoursToWait > 0) {
+                hoursToWait += " hours, ";
+            } else {
+                hoursToWait = "";
+            }
+            var minutesToWait = Math.floor((timeToWait % (1000 * 60 * 60)) / (1000 * 60));
+            if (minutesToWait > 0) {
+                minutesToWait += " minutes and ";
+            } else {
+                minutesToWait = "";
+            }
+            var secondsToWait = Math.floor((timeToWait % (1000 * 60)) / 1000);
+            if (secondsToWait > 0) {
+                secondsToWait += " seconds ";
+            } else {
+                secondsToWait = "";
+            }
+
+            document.getElementById("prompt-text").innerText =
+                "You need to wait " + hoursToWait + minutesToWait + secondsToWait + " before trying again";
+        } else {
+            var prompt = document.getElementById("prompt");
+            prompt.style.display = "none";
+
+            var yesButton = document.getElementById("yes-button");
+            yesButton.style.display = "none";
+
+            var noButton = document.getElementById("no-button");
+            noButton.style.display = "none";
+            noButton.innerText = "No";
+        }
+    }
+}
+
+setInterval(updateTimeGlobal, 1000);
 
 /*Controllo il localStorage ogni 500ms per vedere se ci sono i dati e se non ci sono mette la pagina Without Login*/
 function checkLocalstorage() {
     var email = localStorage.getItem("email");
     var password = localStorage.getItem("password");
     var nickname = localStorage.getItem("nickname");
-
-    if ((email.length > 0 || nickname.length > 0) && password.length > 0) {
-        e_mail = email;
-        pass_word = password;
-        nick_name = nickname;
-        setPageWithoutLogin();
-    } else {
-        if ((e_mail.length > 0 || nick_name.length > 0) && pass_word.length > 0) {
-            localStorage.setItem("email", e_mail);
-            localStorage.setItem("password", pass_word);
-            localStorage.setItem("nickname", nick_name);
-            setPageWithoutLogin();
+    var remeberMe = localStorage.getItem("rememberMe");
+    if (remeberMe == null) {
+        if (email != null && nickname != null && password != null) {
+            if (email.length > 0 && nickname.length > 0 && password.length > 0) {
+                e_mail = email;
+                pass_word = password;
+                nick_name = nickname;
+                setPageWithoutLogin();
+            } else {
+                if (e_mail.length > 0 && nick_name.length > 0 && pass_word.length > 0) {
+                    localStorage.setItem("email", e_mail);
+                    localStorage.setItem("password", pass_word);
+                    localStorage.setItem("nickname", nick_name);
+                    setPageWithoutLogin();
+                } else {
+                    setPageWithLogin();
+                    var publicKey = localStorage.getItem("publicKeyArmored");
+                    clearLocalStorage();
+                    localStorage.setItem("publicKeyArmored", publicKey);
+                }
+            }
         } else {
-            setPageWithLogin();
-            var publicKey = localStorage.getItem("publicKeyArmored");
-            clearLocalStorage();
-            localStorage.setItem("publicKeyArmored", publicKey);
+            if (e_mail.length > 0 && nick_name.length > 0 && pass_word.length > 0) {
+                localStorage.setItem("email", e_mail);
+                localStorage.setItem("password", pass_word);
+                localStorage.setItem("nickname", nick_name);
+                setPageWithoutLogin();
+            } else {
+                setPageWithLogin();
+                var publicKey = localStorage.getItem("publicKeyArmored");
+                clearLocalStorage();
+                localStorage.setItem("publicKeyArmored", publicKey);
+            }
         }
+    } else if (remeberMe == "false") {
+        clearLocalStorage();
     }
 }
 
@@ -37,6 +104,12 @@ setInterval(checkLocalstorage, 500);
 
 /*keyManager*/
 const kM = new keyManager();
+
+async function genKey() {
+    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+}
+
+genKey();
 
 /*Socket.io*/
 var socket = io();
@@ -91,7 +164,7 @@ async function tryConfirmViaLink(publicKeyArmored) {
     var password = url.substring(0, url.indexOf("&"));
     url = url.replace(password + "&code=", "");
     var verification_code = url;
-    url =  window.location.href;
+    url = window.location.href;
 
     if (isUrlConfirmed(url, email, password, nickname, verification_code)) {
         sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored);
@@ -106,7 +179,7 @@ function isUrlConfirmed(url, email, password, nickname, verification_code) {
 }
 
 async function sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored) {
-    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+
 
     const crypted_nickname = await encrypt(nickname, publicKeyArmored);
     const crypted_email = await encrypt(email, publicKeyArmored);
@@ -129,9 +202,9 @@ function setPageWithoutLogin() {
 
 function setPageWithLogin() {
     var containerUsernameEmail = document.getElementById("container-username-email");
-    containerUsernameEmail.style.display = "none";
+    containerUsernameEmail.style.display = "block";
     var containerPassword = document.getElementById("container-password");
-    containerPassword.style.display = "none";
+    containerPassword.style.display = "block";
 }
 
 async function getCode() {
@@ -141,31 +214,137 @@ async function getCode() {
     var publicKey = localStorage.getItem("publicKeyArmored");
 
     if (publicKey != null) {
-        if ((email.length > 0 || nickname.length > 0) && password.length > 0) {
+        if ((email != null || nickname != null) && password != null) {
             if (email != null && nickname != null) {
-                await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+                if (email.length > 0 && nickname.length > 0 && password.length > 0) {
 
-                var crypted_email = await encrypt(email, publicKey);
-                var crypted_nickname = await encrypt(nickname, publicKey);
-                var crypted_password = await encrypt(password, publicKey);
-                var pubKey = await encrypt(kM.getPublicKey(), publicKey);
-                socket.emit("getCodeByStorage", crypted_email, crypted_nickname, crypted_password, pubKey);
+
+                    var crypted_email = await encrypt(email, publicKey);
+                    var crypted_nickname = await encrypt(nickname, publicKey);
+                    var crypted_password = await encrypt(password, publicKey);
+                    var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                    socket.emit("getCodeByStorage", crypted_email, crypted_nickname, crypted_password, pubKey);
+                } else if (email.length > 0 && password.length > 0) {
+
+
+                    var crypted_email = await encrypt(email, publicKey);
+                    var crypted_password = await encrypt(password, publicKey);
+                    var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+
+                    socket.emit("getCodeByStorage", crypted_email, "", crypted_password, pubKey);
+                } else if (nickname.length > 0 && password.length > 0) {
+
+
+                    var crypted_nickname = await encrypt(nickname, publicKey);
+                    var crypted_password = await encrypt(password, publicKey);
+                    var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+
+                    socket.emit("getCodeByStorage", "", crypted_nickname, crypted_password, pubKey);
+                } else {
+                    clearLocalStorage();
+                    localStorage.setItem("publicKeyArmored", publicKey);
+
+                    var check1 = checkUsernameOrEmail();
+                    var check2 = checkPassword();
+                    var check3 = checkVerificationCode();
+
+                    if (check1 && check2 && check3) {
+                        var ue = document.getElementById("username").value;
+                        if (ue.toString().contains("@")) {
+
+
+                            var crypted_email = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+
+                            socket.emit("getCodeByInput", crypted_email, "", crypted_password, pubKey);
+                        } else {
+
+
+                            var crypted_username = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+
+                            socket.emit("getCodeByInput", "", crypted_username, crypted_password, pubKey);
+                        }
+                    }
+                }
             } else if (email != null) {
-                await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+                if (email.length > 0 && password.length > 0) {
 
-                var crypted_email = await encrypt(email, publicKey);
-                var crypted_password = await encrypt(password, publicKey);
-                var pubKey = await encrypt(kM.getPublicKey(), publicKey);
 
-                socket.emit("getCodeByStorage", crypted_email, "", crypted_password, pubKey);
+                    var crypted_email = await encrypt(email, publicKey);
+                    var crypted_password = await encrypt(password, publicKey);
+                    var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+
+                    socket.emit("getCodeByStorage", crypted_email, "", crypted_password, pubKey);
+                } else {
+                    clearLocalStorage();
+                    localStorage.setItem("publicKeyArmored", publicKey);
+
+                    var check1 = checkUsernameOrEmail();
+                    var check2 = checkPassword();
+                    var check3 = checkVerificationCode();
+
+                    if (check1 && check2 && check3) {
+                        var ue = document.getElementById("username").value;
+                        if (ue.toString().contains("@")) {
+
+
+                            var crypted_email = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+
+                            socket.emit("getCodeByInput", crypted_email, "", crypted_password, pubKey);
+                        } else {
+
+
+                            var crypted_username = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+
+                            socket.emit("getCodeByInput", "", crypted_username, crypted_password, pubKey);
+                        }
+                    }
+                }
             } else {
-                await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+                if (nickname.length > 0 && password.length > 0) {
 
-                var crypted_nickname = await encrypt(nickname, publicKey);
-                var crypted_password = await encrypt(password, publicKey);
-                var pubKey = await encrypt(kM.getPublicKey(), publicKey);
 
-                socket.emit("getCodeByStorage", "", crypted_nickname, crypted_password, pubKey);
+                    var crypted_nickname = await encrypt(nickname, publicKey);
+                    var crypted_password = await encrypt(password, publicKey);
+                    var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+
+                    socket.emit("getCodeByStorage", "", crypted_nickname, crypted_password, pubKey);
+                } else {
+                    clearLocalStorage();
+                    localStorage.setItem("publicKeyArmored", publicKey);
+
+                    var check1 = checkUsernameOrEmail();
+                    var check2 = checkPassword();
+                    var check3 = checkVerificationCode();
+
+                    if (check1 && check2 && check3) {
+                        var ue = document.getElementById("username").value;
+                        if (ue.toString().contains("@")) {
+
+
+                            var crypted_email = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+
+                            socket.emit("getCodeByInput", crypted_email, "", crypted_password, pubKey);
+                        } else {
+
+
+                            var crypted_username = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+
+                            socket.emit("getCodeByInput", "", crypted_username, crypted_password, pubKey);
+                        }
+                    }
+                }
             }
         } else {
             clearLocalStorage();
@@ -178,7 +357,7 @@ async function getCode() {
             if (check1 && check2 && check3) {
                 var ue = document.getElementById("username").value;
                 if (ue.toString().contains("@")) {
-                    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+
 
                     var crypted_email = await encrypt(validate(ue), publicKey);
                     var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
@@ -186,7 +365,7 @@ async function getCode() {
 
                     socket.emit("getCodeByInput", crypted_email, "", crypted_password, pubKey);
                 } else {
-                    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+
 
                     var crypted_username = await encrypt(validate(ue), publicKey);
                     var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
@@ -210,41 +389,171 @@ async function confirmCode() {
     var remeberMe = document.getElementById("checkbox").checked;
 
     if (publicKey != null && checkVerificationCode()) {
-        if ((email.length > 0 || nickname.length > 0) && password.length > 0) {
+        if ((email != null || nickname != null) && password != null) {
             if (email != null && nickname != null) {
-                await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+                if (email.length > 0 && nickname.length > 0 && password.length > 0) {
 
-                var crypted_email = await encrypt(email, publicKey);
-                var crypted_nickname = await encrypt(nickname, publicKey);
-                var crypted_password = await encrypt(password, publicKey);
-                var crypted_verification_code = await encrypt(verification_code, publicKey);
-                var crypted_remeberMe = await encrypt(remeberMe, publicKey);
-                var pubKey = await encrypt(kM.getPublicKey(), publicKey);
-                var aesKey = await encrypt(generateRandomKey(10), publicKey);
 
-                socket.emit("confirmViaCodeByStorage", crypted_email, crypted_nickname, crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                    var crypted_email = await encrypt(email, publicKey);
+                    var crypted_nickname = await encrypt(nickname, publicKey);
+                    var crypted_password = await encrypt(password, publicKey);
+                    var crypted_verification_code = await encrypt(verification_code, publicKey);
+                    var crypted_remeberMe = await encrypt(remeberMe.toString(), publicKey);
+                    var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                    var aesKey = await encrypt(generateRandomKey(10), publicKey);
+
+                    socket.emit("confirmViaCodeByStorage", crypted_email, crypted_nickname, crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                } else if (email.length > 0 && password.length > 0) {
+
+
+                    var crypted_email = await encrypt(email, publicKey);
+                    var crypted_password = await encrypt(password, publicKey);
+                    var crypted_verification_code = await encrypt(verification_code, publicKey);
+                    var crypted_remeberMe = await encrypt(remeberMe, publicKey);
+                    var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                    var aesKey = await encrypt(generateRandomKey(10), publicKey);
+
+                    socket.emit("confirmViaCodeByStorage", crypted_email, "", crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                } else if (nickname.length > 0 && password.length > 0) {
+
+
+                    var crypted_nickname = await encrypt(nickname, publicKey);
+                    var crypted_password = await encrypt(password, publicKey);
+                    var crypted_verification_code = await encrypt(verification_code, publicKey);
+                    var crypted_remeberMe = await encrypt(remeberMe, publicKey);
+                    var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                    var aesKey = await encrypt(generateRandomKey(10), publicKey);
+
+                    socket.emit("confirmViaCodeByStorage", "", crypted_nickname, crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                } else {
+                    clearLocalStorage();
+                    localStorage.setItem("publicKeyArmored", publicKey);
+
+                    var check1 = checkUsernameOrEmail();
+                    var check2 = checkPassword();
+                    var check3 = checkVerificationCode();
+
+                    if (check1 && check2 && check3) {
+                        var ue = document.getElementById("username").value;
+                        if (ue.toString().contains("@")) {
+
+
+                            var crypted_email = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_verification_code = await encrypt(verification_code, publicKey);
+                            var crypted_remeberMe = await encrypt(remeberMe, publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                            var aesKey = await encrypt(generateRandomKey(10), publicKey);
+
+                            socket.emit("confirmViaCodeByInput", crypted_email, "", crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                        } else {
+
+
+                            var crypted_username = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_verification_code = await encrypt(verification_code, publicKey);
+                            var crypted_remeberMe = await encrypt(remeberMe, publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                            var aesKey = await encrypt(generateRandomKey(10), publicKey);
+
+                            socket.emit("confirmViaCodeByInput", "", crypted_username, crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                        }
+                    }
+                }
             } else if (email != null) {
-                await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+                if (email.length > 0 && password.length > 0) {
 
-                var crypted_email = await encrypt(email, publicKey);
-                var crypted_password = await encrypt(password, publicKey);
-                var crypted_verification_code = await encrypt(verification_code, publicKey);
-                var crypted_remeberMe = await encrypt(remeberMe, publicKey);
-                var pubKey = await encrypt(kM.getPublicKey(), publicKey);
-                var aesKey = await encrypt(generateRandomKey(10), publicKey);
 
-                socket.emit("confirmViaCodeByStorage", crypted_email, "", crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                    var crypted_email = await encrypt(email, publicKey);
+                    var crypted_password = await encrypt(password, publicKey);
+                    var crypted_verification_code = await encrypt(verification_code, publicKey);
+                    var crypted_remeberMe = await encrypt(remeberMe, publicKey);
+                    var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                    var aesKey = await encrypt(generateRandomKey(10), publicKey);
+
+                    socket.emit("confirmViaCodeByStorage", crypted_email, "", crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                } else {
+                    clearLocalStorage();
+                    localStorage.setItem("publicKeyArmored", publicKey);
+
+                    var check1 = checkUsernameOrEmail();
+                    var check2 = checkPassword();
+                    var check3 = checkVerificationCode();
+
+                    if (check1 && check2 && check3) {
+                        var ue = document.getElementById("username").value;
+                        if (ue.toString().contains("@")) {
+
+
+                            var crypted_email = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_verification_code = await encrypt(verification_code, publicKey);
+                            var crypted_remeberMe = await encrypt(remeberMe, publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                            var aesKey = await encrypt(generateRandomKey(10), publicKey);
+
+                            socket.emit("confirmViaCodeByInput", crypted_email, "", crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                        } else {
+
+
+                            var crypted_username = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_verification_code = await encrypt(verification_code, publicKey);
+                            var crypted_remeberMe = await encrypt(remeberMe, publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                            var aesKey = await encrypt(generateRandomKey(10), publicKey);
+
+                            socket.emit("confirmViaCodeByInput", "", crypted_username, crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                        }
+                    }
+                }
             } else {
-                await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+                if (nickname.length > 0 && password.length > 0) {
 
-                var crypted_nickname = await encrypt(nickname, publicKey);
-                var crypted_password = await encrypt(password, publicKey);
-                var crypted_verification_code = await encrypt(verification_code, publicKey);
-                var crypted_remeberMe = await encrypt(remeberMe, publicKey);
-                var pubKey = await encrypt(kM.getPublicKey(), publicKey);
-                var aesKey = await encrypt(generateRandomKey(10), publicKey);
 
-                socket.emit("confirmViaCodeByStorage", "", crypted_nickname, crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                    var crypted_nickname = await encrypt(nickname, publicKey);
+                    var crypted_password = await encrypt(password, publicKey);
+                    var crypted_verification_code = await encrypt(verification_code, publicKey);
+                    var crypted_remeberMe = await encrypt(remeberMe, publicKey);
+                    var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                    var aesKey = await encrypt(generateRandomKey(10), publicKey);
+
+                    socket.emit("confirmViaCodeByStorage", "", crypted_nickname, crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                } else {
+                    clearLocalStorage();
+                    localStorage.setItem("publicKeyArmored", publicKey);
+
+                    var check1 = checkUsernameOrEmail();
+                    var check2 = checkPassword();
+                    var check3 = checkVerificationCode();
+
+                    if (check1 && check2 && check3) {
+                        var ue = document.getElementById("username").value;
+                        if (ue.toString().contains("@")) {
+
+
+                            var crypted_email = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_verification_code = await encrypt(verification_code, publicKey);
+                            var crypted_remeberMe = await encrypt(remeberMe, publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                            var aesKey = await encrypt(generateRandomKey(10), publicKey);
+
+                            socket.emit("confirmViaCodeByInput", crypted_email, "", crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                        } else {
+
+
+                            var crypted_username = await encrypt(validate(ue), publicKey);
+                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_verification_code = await encrypt(verification_code, publicKey);
+                            var crypted_remeberMe = await encrypt(remeberMe, publicKey);
+                            var pubKey = await encrypt(kM.getPublicKey(), publicKey);
+                            var aesKey = await encrypt(generateRandomKey(10), publicKey);
+
+                            socket.emit("confirmViaCodeByInput", "", crypted_username, crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
+                        }
+                    }
+                }
             }
         } else {
             clearLocalStorage();
@@ -257,7 +566,7 @@ async function confirmCode() {
             if (check1 && check2 && check3) {
                 var ue = document.getElementById("username").value;
                 if (ue.toString().contains("@")) {
-                    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+
 
                     var crypted_email = await encrypt(validate(ue), publicKey);
                     var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
@@ -268,7 +577,7 @@ async function confirmCode() {
 
                     socket.emit("confirmViaCodeByInput", crypted_email, "", crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
                 } else {
-                    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+
 
                     var crypted_username = await encrypt(validate(ue), publicKey);
                     var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
@@ -285,7 +594,6 @@ async function confirmCode() {
         socket.emit("getPublicKey", "1");
     }
 }
-
 
 /*Manage response*/
 async function manageConfirmDataError(crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_check5, crypted_check6, crypted_data1, crypted_data2, crypted_data3, crypted_data4, crypted_data5, crypted_data6) {
@@ -319,16 +627,6 @@ async function manageConfirmDataError(crypted_check1, crypted_check2, crypted_ch
         kM.getPrivateKey(),
         kM.getPassphrase()
     );
-    var { data: data1 } = await decrypt(
-        crypted_data1,
-        kM.getPrivateKey(),
-        kM.getPassphrase()
-    );
-    var { data: data2 } = await decrypt(
-        crypted_data2,
-        kM.getPrivateKey(),
-        kM.getPassphrase()
-    );
     var { data: data3 } = await decrypt(
         crypted_data3,
         kM.getPrivateKey(),
@@ -349,7 +647,7 @@ async function manageConfirmDataError(crypted_check1, crypted_check2, crypted_ch
         kM.getPrivateKey(),
         kM.getPassphrase()
     );
-    
+
     if (!check1 || !check2) {
         var containerUsername = document.getElementById("container-username-email");
         containerUsername.classList.add("error");
@@ -397,7 +695,7 @@ async function manageConfirmDataError(crypted_check1, crypted_check2, crypted_ch
 
         document.getElementById("no-button").innerText = "Ok";
     }
-    
+
     if (!check6) {
         var containerCode = document.getElementById("container-code");
         containerCode.classList.add("error");
@@ -471,10 +769,10 @@ async function manageConfirmError(message) {
 
         document.getElementById("prompt-error").innerText =
             "Number of attempts exceeded";
-        
-        var seconds = int(msg) / 1000;
+
+        waitSeconds = parseInt(msg.toString()) / 1000;
         var time = new Date();
-        time.setSeconds(time.getSeconds() + seconds);
+        time.setSeconds(time.getSeconds() + waitSeconds);
         var currentDate = new Date();
         var timeToWait = time - currentDate;
         var hoursToWait = Math.floor(timeToWait / (1000 * 60 * 60));
@@ -485,20 +783,19 @@ async function manageConfirmError(message) {
         }
         var minutesToWait = Math.floor((timeToWait % (1000 * 60 * 60)) / (1000 * 60));
         if (minutesToWait > 0) {
-            minutesToWait += " minutes, ";
+            minutesToWait += " minutes and ";
         } else {
             minutesToWait = "";
         }
         var secondsToWait = Math.floor((timeToWait % (1000 * 60)) / 1000);
         if (secondsToWait > 0) {
-            secondsToWait += " seconds, ";
+            secondsToWait += " seconds ";
         } else {
             secondsToWait = "";
         }
-        var millisecondsToWait = Math.floor(timeToWait % 1000);
 
         document.getElementById("prompt-text").innerText =
-            "You need to wait " + hoursToWait + minutesToWait + secondsToWait + millisecondsToWait + " milliseconds before trying again"
+            "You need to wait " + hoursToWait + minutesToWait + secondsToWait + " before trying again";
 
         document.getElementById("no-button").innerText = "Ok";
     }
@@ -546,16 +843,6 @@ async function manageRequestCodeDataError(crypted_check1, crypted_check2, crypte
     );
     var { data: check4 } = await decrypt(
         crypted_check4,
-        kM.getPrivateKey(),
-        kM.getPassphrase()
-    );
-    var { data: data1 } = await decrypt(
-        crypted_data1,
-        kM.getPrivateKey(),
-        kM.getPassphrase()
-    );
-    var { data: data2 } = await decrypt(
-        crypted_data2,
         kM.getPrivateKey(),
         kM.getPassphrase()
     );
@@ -608,7 +895,23 @@ async function manageRequestCodeError(message) {
         kM.getPassphrase()
     );
 
-    if (msg == "User already confirmed") {
+    if (msg == "User deleted") {
+        var prompt = document.getElementById("prompt");
+
+        // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
+        prompt.style.display = "block";
+
+        var noButton = document.getElementById("no-button");
+        noButton.style.display = "block";
+
+        document.getElementById("prompt-error").innerText =
+            "Number of attempts exceeded";
+        
+        document.getElementById("prompt-text").innerText =
+            "User has been deleted";
+
+        document.getElementById("no-button").innerText = "Ok";
+    } else if (msg == "User already confirmed") {
         clearLocalStorage();
         var prompt = document.getElementById("prompt");
 
@@ -664,9 +967,9 @@ async function manageRequestCodeError(message) {
         document.getElementById("prompt-error").innerText =
             "Number of attempts exceeded";
 
-        var seconds = int(msg) / 1000;
+        waitSeconds = parseInt(msg.toString()) / 1000;
         var time = new Date();
-        time.setSeconds(time.getSeconds() + seconds);
+        time.setSeconds(time.getSeconds() + waitSeconds);
         var currentDate = new Date();
         var timeToWait = time - currentDate;
         var hoursToWait = Math.floor(timeToWait / (1000 * 60 * 60));
@@ -677,20 +980,19 @@ async function manageRequestCodeError(message) {
         }
         var minutesToWait = Math.floor((timeToWait % (1000 * 60 * 60)) / (1000 * 60));
         if (minutesToWait > 0) {
-            minutesToWait += " minutes, ";
+            minutesToWait += " minutes and ";
         } else {
             minutesToWait = "";
         }
         var secondsToWait = Math.floor((timeToWait % (1000 * 60)) / 1000);
         if (secondsToWait > 0) {
-            secondsToWait += " seconds, ";
+            secondsToWait += " seconds ";
         } else {
             secondsToWait = "";
         }
-        var millisecondsToWait = Math.floor(timeToWait % 1000);
 
         document.getElementById("prompt-text").innerText =
-            "You need to wait " + hoursToWait + minutesToWait + secondsToWait + millisecondsToWait + " milliseconds before trying again"
+            "You need to wait " + hoursToWait + minutesToWait + secondsToWait + " before trying again";
 
         document.getElementById("no-button").innerText = "Ok";
     }
