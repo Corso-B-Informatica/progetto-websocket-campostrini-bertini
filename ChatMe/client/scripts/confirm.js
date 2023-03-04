@@ -591,7 +591,7 @@ async function manageRequestCodeDataError(crypted_check1, crypted_check2, crypte
         noButton.style.display = "block";
 
         document.getElementById("prompt-error").innerText =
-            data5;
+            data4;
 
         document.getElementById("prompt-text").innerText =
             "";
