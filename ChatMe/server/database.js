@@ -64,16 +64,16 @@ const Chat = new sqlite3.Database(
 //   );
 
 //   tempUsers.run(
-//     `CREATE TABLE IF NOT EXISTS users (
-//         nickname text PRIMARY KEY not null,
-//         email text not null,
-//         password text not null,
-//         remember text not null,
-//         verification_code text not null,
-//         expiration_time text not null,
-//         attempts integer not null,
-//         wait_time integer not null
-//     );`,
+    // `CREATE TABLE IF NOT EXISTS users (
+    //     nickname text PRIMARY KEY not null,
+    //     email text not null,
+    //     password text not null,
+    //     verification_code text not null,
+    //     expiration_time text not null,
+    //     attempts integer not null,
+    //     wait_time integer not null,
+    //     times integer not null
+    // );`,
 //     (err) => {
 //       if (err) {
 //         console.log("Error creating table: " + err);
@@ -160,7 +160,7 @@ function insertChat(nickname, chat) {
   return new Promise((resolve, reject) => {
     Chat.run(
       ` INSERT INTO chat (nickname, chat)
-      VALUES (?);`,
+      VALUES (?, ?);`,
       [nickname, chat],
       (err) => {
         if (err) {

@@ -17,9 +17,9 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
   const decrypted_email = crypto.decryptAES(email);
 
   const crypted_code = crypto.encryptAES(code);
-
+  //l url va cambiato a seconda della persona che lo usa
   const url =
-    "https://andreacampostrini-jubilant-engine-56vgx5p5644fj44-3000.preview.app.github.dev/confirm.html#email=" +
+    "https://gabrielbertini-bug-free-acorn-j6gj7rrg794c5wgg-3000.preview.app.github.dev/confirm.html#email=" +
     email +
     "&nickname=" +
     nickname +

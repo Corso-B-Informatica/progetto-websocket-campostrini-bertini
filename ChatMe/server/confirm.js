@@ -8,7 +8,7 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
     const validate_password = await crypto.doubleDecrypt(armored_password);
     const validate_nickname = await crypto.doubleDecrypt(armored_nickname);
     const verification_code = await crypto.doubleDecrypt(armored_verification_code);
-    const { data: validate_rememberMe } = await crypto.decrypt(armored_rememberMe);
+    const { data: validate_rememberMe } = await crypto.decrypt(armored_rememberMe, crypto.privateKey);
     const { data: pubKey } = await crypto.decrypt(publicKeyArmored, crypto.privateKey);
     const { data: aesKey } = await crypto.decrypt(crypted_aesKey, crypto.privateKey);
 
@@ -35,7 +35,6 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
                     var c_rememberMe = await crypto.encrypt(rememberMe, pubKey);
                     var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "chats": []}`, pubKey);
                     var c_aesKey = await crypto.encrypt(aesKey, pubKey);
-
                     socket.emit("confirmSuccess", c_rememberMe, c_aesKey, c_row);
                 } else {
                     await database.increaseConfirmAttempts(email, password);
@@ -115,9 +114,9 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
 }
 
 async function sendCode(armored_email, armored_nickname, armored_password, publicKeyArmored, socket, method) {
-    const validate_email = null;
-    const validate_nickname = null;
-    const validate_password = null;
+    var validate_email = null;
+    var validate_nickname = null;
+    var validate_password = null;
 
     if (method == "input") {
         validate_email = await crypto.decrypt(armored_email, crypto.privateKey).data;
@@ -151,7 +150,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                         mail = nickname;
                     }
 
-                    const expiration_time = await database.getExpirationTime(mail, password);
+                    const expiration_time = await database.getExipirationTime(mail, password);
 
                     var crypted_email = crypto.encryptAES(email);
                     var crypted_password = crypto.encryptAES(password);
@@ -206,9 +205,9 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
 }
 
 async function confirmUserViaCode(armored_email, armored_nickname, armored_password, armored_verification_code, armored_rememberMe, publicKeyArmored, crypted_aesKey, socket, method) {
-    const validate_email = null;
-    const validate_nickname = null;
-    const validate_password = null;
+    var validate_email = null;
+    var validate_nickname = null;
+    var validate_password = null;
 
     if (method == "input") {
         validate_email = await crypto.decrypt(armored_email, crypto.privateKey).data;
