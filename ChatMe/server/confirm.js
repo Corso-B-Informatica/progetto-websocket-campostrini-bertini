@@ -252,13 +252,9 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
     var check6 = validator.checkVerificationCode(verification_code);
 
     if ((check1 || check2) && check3 && check4 && check5 && check6) {
-        console.log("1")
         if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
-            console.log("1")
             if (await database.hasAttempts(email, password) && await database.getWaitTime(email, password) == 0) {
-                console.log("1")
                 if (await database.checkVerificationCode(email, nickname, password, verification_code)) {
-                    console.log("1")
                     await database.insertUser(nickname, email, password, aesKey);
                     await database.removeTempUsers(email, password);
                     await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "chats": []}`);

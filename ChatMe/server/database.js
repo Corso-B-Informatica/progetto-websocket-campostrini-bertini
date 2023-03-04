@@ -244,7 +244,6 @@ function checkVerificationCode(email, nickname, password, verification_code) {
           console.log(err);
           reject(err);
         } else {
-          console.log(rows[0].verification_code)
           resolve(rows[0].verification_code == verification_code && rows[0].password == password);
         }
       }
