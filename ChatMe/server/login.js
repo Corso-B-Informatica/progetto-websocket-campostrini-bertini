@@ -1,4 +1,3 @@
-const { encrypt } = require('openpgp');
 const crypto = require('./crypto.js');
 const database = require('./database.js');
 
@@ -18,21 +17,31 @@ async function login(armored_email, armored_nickname, armored_password, armored_
     var check2 = validator.checkEmail(email);
     var check3 = validator.checkPassword(password);
     var check4 = validator.checkRemember(rememberMe);
+    var check5 = await crypto.isValid(pubKey);
 
-    if ((check1 || check2) && check3 && check4) {
+    if ((check1 || check2) && check3 && check4 && check5) {
         if (await database.existInDatabase(database.Users, nickname, email, "or")) {
             if (await database.checkDatabase(database.Users, nickname, email, password)) {
                 console.log("Utente loggato");
-                // pubKey
-                var c_message = await encrypt(database.SendMessages(nickname), pubKey);
-                var c_aesKey = await encrypt(database.getKeys(nickname), pubKey);
-                socket.emit("loginSuccess", c_nickname, c_rememberMe, c_aesKey, c_message);
-                //il login manda tutti i messaggi sempre mentre se l'utente ha i dati su localstorage non deve fare il login ma deve fare il getUpdates
-                //invia nickname cripato con aes e pubkey + aeskey + data, il client deve generare il timeUpdate e metterlo in localStorage.
+                if (nickname == "") {
+                    var nick = await database.getNickname(email);
+
+                    var c_rememberMe = await crypto.encrypt(rememberMe, pubKey);
+                    var c_row = await crypto.encrypt(JSON.stringify(await database.getRow(nick).chat), pubKey);
+                    var c_aesKey = await crypto.encrypt(await database.getKeys(nick), pubKey);
+
+                    socket.emit("loginSuccess", c_rememberMe, c_aesKey, c_row);
+                } else {
+                    var c_rememberMe = await crypto.encrypt(rememberMe, pubKey);
+                    var c_row = await crypto.encrypt(JSON.stringify(await database.getRow(nickname).chat), pubKey);
+                    var c_aesKey = await crypto.encrypt(await database.getKeys(nickname), pubKey);
+
+                    socket.emit("loginSuccess", c_rememberMe, c_aesKey, c_row);
+                }
             } else {
                 console.log("Password non valida");
 
-                const message = await crypto.encrypt("Invalid Password", pubKey);
+                const message = await crypto.encrypt("Wrong password", pubKey);
                 
                 socket.emit("loginError", message);
             }
@@ -57,13 +66,15 @@ async function login(armored_email, armored_nickname, armored_password, armored_
         const crypted_check2 = await crypto.encrypt(check2, pubKey);
         const crypted_check3 = await crypto.encrypt(check3, pubKey);
         const crypted_check4 = await crypto.encrypt(check4, pubKey);
-        const errors = validator.getErrors(nickname, password, check1, check2, check3, check4).split("\n");
+        const crypted_check5 = await crypto.encrypt(check5, pubKey);
+        const errors = validator.getErrors(nickname, password, "", check1, check2, check3, check4, check5, true).split("\n");
         const crypted_data1 = await crypto.encrypt(errors[0], pubKey);
         const crypted_data2 = await crypto.encrypt(errors[1], pubKey);
         const crypted_data3 = await crypto.encrypt(errors[2], pubKey);
         const crypted_data4 = await crypto.encrypt(errors[3], pubKey);
+        const crypted_data5 = await crypto.encrypt(errors[4], pubKey);
 
-        socket.emit("loginDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4);
+        socket.emit("loginDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_check5, crypted_data1, crypted_data2, crypted_data3, crypted_data4, crypted_data5);
     }
 }
 

@@ -41,8 +41,8 @@ socket.on("registerError", (message, error) => {
 
 socket.on(
   "registerDataError",
-  (check1, check2, check3, data1, data2, data3) => {
-    manageRegisterDataError(check1, check2, check3, data1, data2, data3);
+  (crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4) => {
+    manageRegisterDataError(crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4);
   }
 );
 
@@ -189,12 +189,7 @@ async function manageRegisterError(msg, err) {
 }
 
 async function manageRegisterDataError(
-  crypted_check1,
-  crypted_check2,
-  crypted_check3,
-  crypted_data1,
-  crypted_data2,
-  crypted_data3
+  crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4
 ) {
   var { data: check1 } = await decrypt(
     crypted_check1,
@@ -211,6 +206,11 @@ async function manageRegisterDataError(
     kM.getPrivateKey(),
     kM.getPassphrase()
   );
+  var { data: check4 } = await decrypt(
+    crypted_check4,
+    kM.getPrivateKey(),
+    kM.getPassphrase()
+  );
   var { data: data1 } = await decrypt(
     crypted_data1,
     kM.getPrivateKey(),
@@ -223,6 +223,11 @@ async function manageRegisterDataError(
   );
   var { data: data3 } = await decrypt(
     crypted_data3,
+    kM.getPrivateKey(),
+    kM.getPassphrase()
+  );
+  var { data: data4 } = await decrypt(
+    crypted_data4,
     kM.getPrivateKey(),
     kM.getPassphrase()
   );
@@ -243,6 +248,24 @@ async function manageRegisterDataError(
     var containerPassword = document.getElementById("container-password");
     containerPassword.classList.add("error");
     containerPassword.setAttribute("error-message", data3);
+  }
+
+  if(!check4) {
+    var prompt = document.getElementById("prompt");
+
+    // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
+    prompt.style.display = "block";
+
+    var noButton = document.getElementById("no-button");
+    noButton.style.display = "block";
+
+    document.getElementById("prompt-error").innerText =
+      data4;
+
+    document.getElementById("prompt-text").innerText =
+      "";
+
+    document.getElementById("no-button").innerText = "Ok";
   }
 }
 
@@ -315,6 +338,7 @@ document.getElementById("no-button").addEventListener("click", () => {
 
   var noButton = document.getElementById("no-button");
   noButton.style.display = "none";
+  noButton.innerText = "No";
 });
 
 document.getElementById("yes-button").addEventListener("click", () => {
@@ -338,3 +362,8 @@ document.getElementById("username").oninput = function () {
   var containerUsername = document.getElementById("container-username");
   containerUsername.setAttribute("error-message", "Invalid username");
 };
+
+document.getElementById("password").oninput = function () {
+  var containerPassword = document.getElementById("container-password");
+  containerPassword.setAttribute("error-message", "Invalid password");
+}

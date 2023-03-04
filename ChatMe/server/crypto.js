@@ -87,6 +87,17 @@ async function doubleDecrypt(data) {
   return decryptAES(message);
 }
 
+/*Controlla se la chiave è valida*/
+async function isValid(key) {
+  return await openpgp.readKey({ armoredKey: key})
+    .then((key) => {
+      return true;
+    })
+    .catch((err) => {
+      return false;
+    });
+}
+
 module.exports = {
   encrypt,
   decrypt,
@@ -94,6 +105,7 @@ module.exports = {
   decryptAES,
   doubleDecrypt,
   generateRandomKey,
+  isValid,
   publicKey,
   privateKey,
   passphrase,

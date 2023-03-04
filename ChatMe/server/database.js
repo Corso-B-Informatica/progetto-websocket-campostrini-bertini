@@ -102,7 +102,7 @@ function existInDatabase(db, nickname, email, operator) {
   });
 }
 
-async function checkDatabase(db, nickname, email, password) {
+function checkDatabase(db, nickname, email, password) {
   return new Promise((resolve, reject) => {
     db.all(
       `select * from users where nickname = ? or email = ? and password = ?`,
@@ -144,6 +144,24 @@ function insertUser(nickname, email, password, key) {
       ` INSERT INTO users (nickname, email, password, key)
       VALUES (?, ?, ?, ?);`,
       [nickname, email, password, key],
+      (err) => {
+        if (err) {
+          console.log("Error inserting user: " + err);
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      }
+    );
+  });
+}
+
+function insertChat(nickname, chat) {
+  return new Promise((resolve, reject) => {
+    Chat.run(
+      ` INSERT INTO chat (nickname, chat)
+      VALUES (?);`,
+      [nickname, chat],
       (err) => {
         if (err) {
           console.log("Error inserting user: " + err);
@@ -201,11 +219,11 @@ function hasAttempts(email, password) {
 }
 
 /*Ritorna true se il codice di verifica e' corretto*/
-function checkVerificationCodeViaEmail(email, password, verification_code) {
+function checkVerificationCode(email, nickname, password, verification_code) {
   return new Promise((resolve, reject) => {
     tempUsers.all(
-      "SELECT * FROM users WHERE email = ? and password = ?",
-      [email, password],
+      "SELECT * FROM users WHERE email = ? or nickname = ? and password = ?",
+      [email, nickname, password],
       (err, rows) => {
         if (err) {
           console.log(err);
@@ -241,6 +259,23 @@ function increaseConfirmAttempts(email, password) {
   return new Promise((resolve, reject) => {
     tempUsers.run(
       "UPDATE users SET attempts = attempts + 1 WHERE email = ? and password = ?",
+      [email, password],
+      (err) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      }
+    );
+  });
+}
+
+function resetAttempts(email, password) {
+  return new Promise((resolve, reject) => {
+    tempUsers.run(
+      "UPDATE users SET attempts = 0 WHERE email = ? and password = ?",
       [email, password],
       (err) => {
         if (err) {
@@ -326,7 +361,7 @@ function getWaitTime(email, password) {
   });
 }
 
-async function getKeys(username){
+function getKeys(username){
   return new Promise((resolve, reject) => {
     Users.all(
       "SELECT * FROM users WHERE nickname = ?",
@@ -344,7 +379,7 @@ async function getKeys(username){
   });
 }
 
-async function SendMessages(username){
+function getRow(username){
   return new Promise((resolve, reject) => {
     Chat.all(
       "SELECT * FROM chat WHERE nickname = ?",
@@ -354,13 +389,27 @@ async function SendMessages(username){
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].chat);
+          resolve(rows[0]);
         }
       }
     )
 
   });
 }
+
+function getNickname(email) {
+  return new Promise((resolve, reject) => {
+    Users.all("SELECT * FROM users WHERE email = ?", [email], (err, rows) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(rows[0].nickname);
+      }
+    });
+  });
+}
+
 /*Ritorna times*/
 function getTimes(email, password) {
   return new Promise((resolve, reject) => {
@@ -378,15 +427,18 @@ function getTimes(email, password) {
     );
   });
 }
+
 module.exports = {
   existInDatabase,
   insertTempUsers,
   insertUser,
+  insertChat,
   cleanDatabase,
   removeTempUsers,
   increaseConfirmAttempts,
+  resetAttempts,
   getExipirationTime,
-  checkVerificationCodeViaEmail,
+  checkVerificationCode,
   setWaitTime,
   getWaitTime,
   hasAttempts,
@@ -394,7 +446,9 @@ module.exports = {
   checkDatabase,
   getTimes,
   getKeys,
-  SendMessages,
+  getRow,
+  getNickname,
   Users,
   tempUsers,
+  Chat
 };

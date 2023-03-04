@@ -31,17 +31,24 @@ io.on("connection", (socket) => {
     register.checkUserData(armored_email, armored_password, armored_nickname, publicKeyArmored, socket);
   });
 
-  socket.on("confirmViaLink", (email, password, nickname, verification_code, rememberMe, publicKeyArmored, aesKey) => {
-    confirm.confirmUserViaLink(email, password, nickname, verification_code, rememberMe, publicKeyArmored, aesKey, socket);
+  socket.on("confirmViaLink", (email, password, nickname, verification_code, rememberMe, pubKey, aesKey) => {
+    confirm.confirmUserViaLink(email, password, nickname, verification_code, rememberMe, pubKey, aesKey, socket);
   });
 
-  socket.on("confirmViaCode", (email, nickname, password, verification_code, rememberMe, publicKeyArmored, aesKey) => {
-    confirm.confirmUserViaCode(email, nickname, password, verification_code, rememberMe, publicKeyArmored, aesKey, socket);
+  socket.on("confirmViaCodeByStorage", (email, nickname, password, verification_code, rememberMe, pubKey, aesKey) => {
+    confirm.confirmUserViaCode(email, nickname, password, verification_code, rememberMe, pubKey, aesKey, socket, "storage");
   });
-  
 
-  socket.on("getCode", (email, nickname, password, publicKeyArmored) => {
-    confirm.sendCode(socket, email, nickname, password, publicKeyArmored);
+  socket.on("confirmViaCodeByInput", (email, nickname, password, verification_code, rememberMe, pubKey, aesKey) => {
+    confirm.confirmUserViaCode(email, nickname, password, verification_code, rememberMe, pubKey, aesKey, socket, "input");
+  });
+
+  socket.on("getCodeByStorage", (email, nickname, password, publicKeyArmored) => {
+    confirm.sendCode(email, nickname, password, publicKeyArmored, socket, "storage");
+  });
+
+  socket.on("getCodeByInput", (email, nickname, password, publicKeyArmored) => {
+    confirm.sendCode(email, nickname, password, publicKeyArmored, socket, "input");
   });
 });
 

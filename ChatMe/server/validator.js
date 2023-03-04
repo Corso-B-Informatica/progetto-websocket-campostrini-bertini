@@ -58,6 +58,10 @@ function checkRemember(remember) {
   return false;
 }
 
+function checkVerificationCode(code) {
+  return code.length == 10 && /^[a-z0-9]+$/.test(code);
+}
+
 /*Rimpiazza i caratteri speciali con i rispettivi codici html*/
 function validate(data) {
   return data.toString()
@@ -71,7 +75,7 @@ function validate(data) {
     .trim();
 }
 
-function getErrors(nickname, password, check1, check2, check3, check4) {
+function getErrors(nickname, password, code, check1, check2, check3, check4, check5, check6) {
   var errors = "";
 
   if (!check1) {
@@ -81,8 +85,10 @@ function getErrors(nickname, password, check1, check2, check3, check4) {
       errors += "Username must be at most 30 characters long\n";
     } else if (!/[a-zA-Z0-9]/.test(nickname)) {
       errors += "Username must contain at least one letter or number\n";
-    } else if (username.includes("@")) {
+    } else if (nickname.includes("@")) {
       errors += "Username must not contain '@'\n";
+    } else {
+      errors += "\n";
     }
   } else {
     errors += "\n";
@@ -109,6 +115,8 @@ function getErrors(nickname, password, check1, check2, check3, check4) {
       errors += "Password must contain at least one number\n";
     } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
       errors += "Password must contain at least one special character\n";
+    } else {
+      errors += "\n";
     }
   } else {
     errors += "\n";
@@ -116,6 +124,24 @@ function getErrors(nickname, password, check1, check2, check3, check4) {
 
   if (!check4) {
     errors += "Remember me must be valid\n";
+  } else {
+    errors += "\n";
+  }
+
+  if (!check5) {
+    errors += "PublicKey must be valid\n";
+  } else {
+    errors += "\n";
+  }
+  
+  if (!check6) {
+    if (code.length != 10) {
+      errors += "Verification code must be 10 characters long\n";
+    } else if (!/^[a-z0-9]+$/.test(code)) {
+      errors += "Verification code must contain only letters and numbers\n";
+    } else {
+      errors += "\n";
+    }
   } else {
     errors += "\n";
   }
@@ -128,6 +154,7 @@ module.exports = {
   checkEmail,
   checkPassword,
   checkRemember,
+  checkVerificationCode,
   validate,
   getErrors,
 };

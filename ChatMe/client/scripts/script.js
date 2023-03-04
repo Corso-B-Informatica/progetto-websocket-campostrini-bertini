@@ -1,3 +1,4 @@
+var socket = io();
 function checkLocalstorageForLogin() {
     var login = localStorage.getItem("login");
     if (login == "true") {
