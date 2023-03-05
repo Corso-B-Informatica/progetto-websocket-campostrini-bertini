@@ -48,9 +48,9 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
         aesKey = "";
     }
 
-    const email = validator.validate(validate_email);
-    const password = validator.validate(validate_password);
-    const nickname = validator.validate(validate_nickname);
+    const email = validate_email == undefined ? "" : validator.validate(validate_email);
+    const password = validate_password == undefined ? "" : validator.validate(validate_password);
+    const nickname = validate_nickname == undefined ? "" : validator.validate(validate_nickname);
     const rememberMe = validate_rememberMe.data == undefined ? "" : validator.validate(validate_rememberMe.data);
     const publicKey = pubKey.data == undefined ? "" : pubKey.data;
     const keyAES = aesKey.data == undefined ? "" : aesKey.data;
@@ -155,9 +155,6 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
     }
 }
 
-// fino a qua apposto
-
-
 async function sendCode(armored_email, armored_nickname, armored_password, publicKeyArmored, socket, method) {
     var { data: pubKey } = "";
 
@@ -167,6 +164,8 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
         pubKey = "";
     }
 
+    var publicKey = pubKey.data == undefined ? "" : pubKey.data;
+    
     if (method == "input") {
         var { data: validate_email } = "";
         var { data: validate_nickname } = "";
@@ -188,14 +187,14 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
             validate_nickname = "";
         }
 
-        const e_mail = validator.validate(validate_email.data);
-        const password = validator.validate(validate_password.data);
-        const nickname = validator.validate(validate_nickname.data);
+        const e_mail = validate_email.data == undefined ? "" : validator.validate(validate_email.data);
+        const password = validate_password.data == undefined ? "" : validator.validate(validate_password.data);
+        const nickname = validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(e_mail);
         var check3 = validator.checkPassword(password);
-        var check4 = await crypto.isValid(pubKey.data);
+        var check4 = await crypto.isValid(publicKey);
 
         if ((check1 || check2) && check3 && check4) {
             var email = e_mail;
@@ -210,12 +209,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
 
                         database.setVerificationCode(email, password, verification_code);
 
-                        var mail = email;
-                        if (email.length == 0) {
-                            mail = nickname;
-                        }
-
-                        const expiration_time = await database.getExipirationTime(mail, password);
+                        const expiration_time = await database.getExipirationTime(email, password);
 
                         var crypted_email = crypto.encryptAES(email);
                         var crypted_password = crypto.encryptAES(password);
@@ -254,7 +248,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                         console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
 
                         var time = await database.getWaitTimeCode(email, password);
-                        var wait_time = await crypto.encrypt(time.toString(), pubKey.data);
+                        var wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                         socket.emit("requestCodeError", "User deleted");
                     }
@@ -262,20 +256,20 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                     console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
 
                     var time = await database.getWaitTimeCode(email, password);
-                    var wait_time = await crypto.encrypt(time.toString(), pubKey.data);
+                    var wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                     socket.emit("requestCodeError", wait_time);
                 }
             } else if (await database.existInDatabase(database.Users, nickname, email, "or")) {
                 console.log("Utente già confermato");
 
-                const message = await crypto.encrypt("User already confirmed", pubKey.data);
+                const message = await crypto.encrypt("User already confirmed", publicKey);
 
                 socket.emit("requestCodeError", message);
             } else {
                 console.log("Utente non registrato");
 
-                const message = await crypto.encrypt("User not registered", pubKey.data);
+                const message = await crypto.encrypt("User not registered", publicKey);
 
                 socket.emit("requestCodeError", message);
             }
@@ -283,15 +277,15 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
             //dati non validi
             console.log("Dati non validi");
 
-            const crypted_check1 = await crypto.encrypt(check1, pubKey.data);
-            const crypted_check2 = await crypto.encrypt(check2, pubKey.data);
-            const crypted_check3 = await crypto.encrypt(check3, pubKey.data);
-            const crypted_check4 = await crypto.encrypt(check4, pubKey.data);
+            const crypted_check1 = await crypto.encrypt(check1, publicKey);
+            const crypted_check2 = await crypto.encrypt(check2, publicKey);
+            const crypted_check3 = await crypto.encrypt(check3, publicKey);
+            const crypted_check4 = await crypto.encrypt(check4, publicKey);
             const errors = validator.getErrors(nickname, password, "", check1, check2, check3, true, check4, true).split("\n");
-            const crypted_data1 = await crypto.encrypt(errors[0], pubKey.data);
-            const crypted_data2 = await crypto.encrypt(errors[1], pubKey.data);
-            const crypted_data3 = await crypto.encrypt(errors[2], pubKey.data);
-            const crypted_data4 = await crypto.encrypt(errors[4], pubKey.data);
+            const crypted_data1 = await crypto.encrypt(errors[0], publicKey);
+            const crypted_data2 = await crypto.encrypt(errors[1], publicKey);
+            const crypted_data3 = await crypto.encrypt(errors[2], publicKey);
+            const crypted_data4 = await crypto.encrypt(errors[4], publicKey);
 
             socket.emit("requestCodeDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4);
         }
@@ -316,14 +310,14 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
             validate_nickname = "";
         }
 
-        const e_mail = validator.validate(validate_email);
-        const password = validator.validate(validate_password);
-        const nickname = validator.validate(validate_nickname);
+        const e_mail = validate_email == undefined ? "" : validator.validate(validate_email);
+        const password = validate_password == undefined ? "" : validator.validate(validate_password);
+        const nickname = validate_nickname == undefined ? "" : validator.validate(validate_nickname);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(e_mail);
         var check3 = validator.checkPassword(password);
-        var check4 = await crypto.isValid(pubKey.data);
+        var check4 = await crypto.isValid(publicKey);
 
         if ((check1 || check2) && check3 && check4) {
             var email = e_mail;
@@ -338,12 +332,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
 
                         database.setVerificationCode(email, password, verification_code);
 
-                        var mail = email;
-                        if (email.length == 0) {
-                            mail = nickname;
-                        }
-
-                        const expiration_time = await database.getExipirationTime(mail, password);
+                        const expiration_time = await database.getExipirationTime(email, password);
 
                         var crypted_email = crypto.encryptAES(email);
                         var crypted_password = crypto.encryptAES(password);
@@ -382,7 +371,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                         console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
 
                         var time = await database.getWaitTimeCode(email, password);
-                        var wait_time = await crypto.encrypt(time.toString(), pubKey.data);
+                        var wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                         socket.emit("requestCodeError", "User deleted");
                     }
@@ -390,20 +379,20 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                     console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
 
                     var time = await database.getWaitTimeCode(email, password);
-                    var wait_time = await crypto.encrypt(time.toString(), pubKey.data);
+                    var wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                     socket.emit("requestCodeError", wait_time);
                 }
             } else if (await database.existInDatabase(database.Users, nickname, email, "or")) {
                 console.log("Utente già confermato");
 
-                const message = await crypto.encrypt("User already confirmed", pubKey.data);
+                const message = await crypto.encrypt("User already confirmed", publicKey);
 
                 socket.emit("requestCodeError", message);
             } else {
                 console.log("Utente non registrato");
 
-                const message = await crypto.encrypt("User not registered", pubKey.data);
+                const message = await crypto.encrypt("User not registered", publicKey);
 
                 socket.emit("requestCodeError", message);
             }
@@ -411,15 +400,15 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
             //dati non validi
             console.log("Dati non validi");
 
-            const crypted_check1 = await crypto.encrypt(check1, pubKey.data);
-            const crypted_check2 = await crypto.encrypt(check2, pubKey.data);
-            const crypted_check3 = await crypto.encrypt(check3, pubKey.data);
-            const crypted_check4 = await crypto.encrypt(check4, pubKey.data);
+            const crypted_check1 = await crypto.encrypt(check1, publicKey);
+            const crypted_check2 = await crypto.encrypt(check2, publicKey);
+            const crypted_check3 = await crypto.encrypt(check3, publicKey);
+            const crypted_check4 = await crypto.encrypt(check4, publicKey);
             const errors = validator.getErrors(nickname, password, "", check1, check2, check3, true, check4, true).split("\n");
-            const crypted_data1 = await crypto.encrypt(errors[0], pubKey.data);
-            const crypted_data2 = await crypto.encrypt(errors[1], pubKey.data);
-            const crypted_data3 = await crypto.encrypt(errors[2], pubKey.data);
-            const crypted_data4 = await crypto.encrypt(errors[4], pubKey.data);
+            const crypted_data1 = await crypto.encrypt(errors[0], publicKey);
+            const crypted_data2 = await crypto.encrypt(errors[1], publicKey);
+            const crypted_data3 = await crypto.encrypt(errors[2], publicKey);
+            const crypted_data4 = await crypto.encrypt(errors[4], publicKey);
 
             socket.emit("requestCodeDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4);
         }
@@ -453,6 +442,10 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
         aesKey = "";
     }
 
+    var code = verification_code.data === undefined ? "" : verification_code.data;
+    var publicKey = pubKey.data == undefined ? "" : pubKey.data;
+    var keyAES = aesKey.data == undefined ? "" : aesKey.data;
+    
     if (method == "input") {
         var { data: validate_email } = "";
         var { data: validate_password } = "";
@@ -474,31 +467,31 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
             validate_nickname = "";
         }
 
-        const email = validator.validate(validate_email.data);
-        const password = validator.validate(validate_password.data);
-        const nickname = validator.validate(validate_nickname.data);
-        const rememberMe = validator.validate(validate_rememberMe.data);
+        const email = validate_email.data == undefined ? "" : validator.validate(validate_email.data);
+        const password = validate_password.data == undefined ? "" : validator.validate(validate_password.data);
+        const nickname = validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
+        const rememberMe = validate_rememberMe.data == undefined ? "" : validator.validate(validate_rememberMe.data);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(email);
         var check3 = validator.checkPassword(password);
         var check4 = validator.checkRemember(rememberMe);
-        var check5 = await crypto.isValid(pubKey.data);
-        var check6 = validator.checkVerificationCode(verification_code.data);
+        var check5 = await crypto.isValid(publicKey);
+        var check6 = validator.checkVerificationCode(code);
 
         if ((check1 || check2) && check3 && check4 && check5 && check6) {
             if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
                 if (await database.hasAttempts(email, password) && await database.getWaitTime(email, password) == 0) {
-                    if (await database.checkVerificationCode(email, nickname, password, verification_code.data)) {
+                    if (await database.checkVerificationCode(email, nickname, password, code)) {
                         console.log("Utente confermato");
 
-                        await database.insertUser(nickname, email, password, aesKey.data);
+                        await database.insertUser(nickname, email, password, keyAES);
                         await database.removeTempUsers(email, password);
                         await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "chats": []}`);
 
-                        var c_rememberMe = await crypto.encrypt(rememberMe, pubKey.data);
-                        var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "chats": []}`, pubKey.data);
-                        var c_aesKey = await crypto.encrypt(aesKey.data, pubKey.data);
+                        var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
+                        var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "chats": []}`, publicKey);
+                        var c_aesKey = await crypto.encrypt(keyAES, publicKey);
 
                         socket.emit("confirmSuccess", c_rememberMe, c_aesKey, c_row);
                     } else {
@@ -506,7 +499,7 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
 
                         await database.increaseConfirmAttempts(email, password);
 
-                        var message = await crypto.encrypt("Wrong verification code", pubKey.data);
+                        var message = await crypto.encrypt("Wrong verification code", publicKey);
 
                         socket.emit("confirmError", message);
                     }
@@ -548,20 +541,20 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
                     }
 
                     var time = await database.getWaitTime(email, password);
-                    var wait_time = await crypto.encrypt(time.toString(), pubKey.data);
+                    var wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                     socket.emit("confirmError", wait_time);
                 }
             } else if (await database.existInDatabase(database.Users, nickname, email, "or")) {
                 console.log("Utente già confermato");
 
-                const message = await crypto.encrypt("User already confirmed", pubKey.data);
+                const message = await crypto.encrypt("User already confirmed", publicKey);
 
                 socket.emit("confirmError", message);
             } else {
                 console.log("Utente non registrato");
 
-                const message = await crypto.encrypt("User not registered", pubKey.data);
+                const message = await crypto.encrypt("User not registered", publicKey);
 
                 socket.emit("confirmError", message);
             }
@@ -569,19 +562,19 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
             //dati non validi
             console.log("Dati non validi");
 
-            const crypted_check1 = await crypto.encrypt(check1, pubKey.data);
-            const crypted_check2 = await crypto.encrypt(check2, pubKey.data);
-            const crypted_check3 = await crypto.encrypt(check3, pubKey.data);
-            const crypted_check4 = await crypto.encrypt(check4, pubKey.data);
-            const crypted_check5 = await crypto.encrypt(check5, pubKey.data);
-            const crypted_check6 = await crypto.encrypt(check6, pubKey.data);
-            const errors = validator.getErrors(nickname, password, verification_code.data, check1, check2, check3, check4, check5, check6).split("\n");
-            const crypted_data1 = await crypto.encrypt(errors[0], pubKey.data);
-            const crypted_data2 = await crypto.encrypt(errors[1], pubKey.data);
-            const crypted_data3 = await crypto.encrypt(errors[2], pubKey.data);
-            const crypted_data4 = await crypto.encrypt(errors[3], pubKey.data);
-            const crypted_data5 = await crypto.encrypt(errors[4], pubKey.data);
-            const crypted_data6 = await crypto.encrypt(errors[5], pubKey.data);
+            const crypted_check1 = await crypto.encrypt(check1, publicKey);
+            const crypted_check2 = await crypto.encrypt(check2, publicKey);
+            const crypted_check3 = await crypto.encrypt(check3, publicKey);
+            const crypted_check4 = await crypto.encrypt(check4, publicKey);
+            const crypted_check5 = await crypto.encrypt(check5, publicKey);
+            const crypted_check6 = await crypto.encrypt(check6, publicKey);
+            const errors = validator.getErrors(nickname, password, code, check1, check2, check3, check4, check5, check6).split("\n");
+            const crypted_data1 = await crypto.encrypt(errors[0], publicKey);
+            const crypted_data2 = await crypto.encrypt(errors[1], publicKey);
+            const crypted_data3 = await crypto.encrypt(errors[2], publicKey);
+            const crypted_data4 = await crypto.encrypt(errors[3], publicKey);
+            const crypted_data5 = await crypto.encrypt(errors[4], publicKey);
+            const crypted_data6 = await crypto.encrypt(errors[5], publicKey);
 
             socket.emit("confirmDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_check5, crypted_check6, crypted_data1, crypted_data2, crypted_data3, crypted_data4, crypted_data5, crypted_data6);
         }
@@ -606,31 +599,31 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
             validate_nickname = "";
         }
 
-        const email = validator.validate(validate_email);
-        const password = validator.validate(validate_password);
-        const nickname = validator.validate(validate_nickname);
-        const rememberMe = validator.validate(validate_rememberMe.data);
+        const email = validate_email == undefined ? "" : validator.validate(validate_email);
+        const password = validate_password == undefined ? "" : validator.validate(validate_password);
+        const nickname = validate_nickname == undefined ? "" : validator.validate(validate_nickname);
+        const rememberMe = validate_rememberMe.data == undefined ? "" : validator.validate(validate_rememberMe.data);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(email);
         var check3 = validator.checkPassword(password);
         var check4 = validator.checkRemember(rememberMe);
-        var check5 = await crypto.isValid(pubKey.data);
-        var check6 = validator.checkVerificationCode(verification_code.data);
+        var check5 = await crypto.isValid(publicKey);
+        var check6 = validator.checkVerificationCode(code);
 
         if ((check1 || check2) && check3 && check4 && check5 && check6) {
             if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
                 if (await database.hasAttempts(email, password) && await database.getWaitTime(email, password) == 0) {
-                    if (await database.checkVerificationCode(email, nickname, password, verification_code.data)) {
+                    if (await database.checkVerificationCode(email, nickname, password, code)) {
                         console.log("Utente confermato");
 
-                        await database.insertUser(nickname, email, password, aesKey.data);
+                        await database.insertUser(nickname, email, password, keyAES);
                         await database.removeTempUsers(email, password);
                         await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "chats": []}`);
 
-                        var c_rememberMe = await crypto.encrypt(rememberMe, pubKey.data);
-                        var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "chats": []}`, pubKey.data);
-                        var c_aesKey = await crypto.encrypt(aesKey.data, pubKey.data);
+                        var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
+                        var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "chats": []}`, publicKey);
+                        var c_aesKey = await crypto.encrypt(keyAES, publicKey);
 
                         socket.emit("confirmSuccess", c_rememberMe, c_aesKey, c_row);
                     } else {
@@ -638,7 +631,7 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
 
                         await database.increaseConfirmAttempts(email, password);
 
-                        var message = await crypto.encrypt("Wrong verification code", pubKey.data);
+                        var message = await crypto.encrypt("Wrong verification code", publicKey);
 
                         socket.emit("confirmError", message);
                     }
@@ -680,20 +673,20 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
                     }
 
                     var time = await database.getWaitTime(email, password);
-                    var wait_time = await crypto.encrypt(time.toString(), pubKey.data);
+                    var wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                     socket.emit("confirmError", wait_time);
                 }
             } else if (await database.existInDatabase(database.Users, nickname, email, "or")) {
                 console.log("Utente già confermato");
 
-                const message = await crypto.encrypt("User already confirmed", pubKey.data);
+                const message = await crypto.encrypt("User already confirmed", publicKey);
 
                 socket.emit("confirmError", message);
             } else {
                 console.log("Utente non registrato");
 
-                const message = await crypto.encrypt("User not registered", pubKey.data);
+                const message = await crypto.encrypt("User not registered", publicKey);
 
                 socket.emit("confirmError", message);
             }
@@ -701,19 +694,19 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
             //dati non validi
             console.log("Dati non validi");
 
-            const crypted_check1 = await crypto.encrypt(check1.toString(), pubKey.data);
-            const crypted_check2 = await crypto.encrypt(check2.toString(), pubKey.data);
-            const crypted_check3 = await crypto.encrypt(check3.toString(), pubKey.data);
-            const crypted_check4 = await crypto.encrypt(check4.toString(), pubKey.data);
-            const crypted_check5 = await crypto.encrypt(check5.toString(), pubKey.data);
-            const crypted_check6 = await crypto.encrypt(check6.toString(), pubKey.data);
-            const errors = validator.getErrors(nickname, password, verification_code.data, check1.toString(), check2.toString(), check3.toString(), check4.toString(), check5.toString(), check6.toString()).split("\n");
-            const crypted_data1 = await crypto.encrypt(errors[0], pubKey.data);
-            const crypted_data2 = await crypto.encrypt(errors[1], pubKey.data);
-            const crypted_data3 = await crypto.encrypt(errors[2], pubKey.data);
-            const crypted_data4 = await crypto.encrypt(errors[3], pubKey.data);
-            const crypted_data5 = await crypto.encrypt(errors[4], pubKey.data);
-            const crypted_data6 = await crypto.encrypt(errors[5], pubKey.data);
+            const crypted_check1 = await crypto.encrypt(check1.toString(), publicKey);
+            const crypted_check2 = await crypto.encrypt(check2.toString(), publicKey);
+            const crypted_check3 = await crypto.encrypt(check3.toString(), publicKey);
+            const crypted_check4 = await crypto.encrypt(check4.toString(), publicKey);
+            const crypted_check5 = await crypto.encrypt(check5.toString(), publicKey);
+            const crypted_check6 = await crypto.encrypt(check6.toString(), publicKey);
+            const errors = validator.getErrors(nickname, password, code, check1, check2, check3, check4, check5, check6).split("\n");
+            const crypted_data1 = await crypto.encrypt(errors[0], publicKey);
+            const crypted_data2 = await crypto.encrypt(errors[1], publicKey);
+            const crypted_data3 = await crypto.encrypt(errors[2], publicKey);
+            const crypted_data4 = await crypto.encrypt(errors[3], publicKey);
+            const crypted_data5 = await crypto.encrypt(errors[4], publicKey);
+            const crypted_data6 = await crypto.encrypt(errors[5], publicKey);
 
             socket.emit("confirmDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_check5, crypted_check6, crypted_data1, crypted_data2, crypted_data3, crypted_data4, crypted_data5, crypted_data6);
         }
