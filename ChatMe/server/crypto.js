@@ -84,6 +84,11 @@ function decryptAES(data) {
 /*Effettua una doppia decriptazione*/
 async function doubleDecrypt(data) {
   const { data: message } = await decrypt(data, privateKey);
+
+  if (message == undefined) {
+    return "";
+  }
+  
   return decryptAES(message);
 }
 

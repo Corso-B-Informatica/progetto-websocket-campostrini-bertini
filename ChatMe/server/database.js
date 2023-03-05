@@ -1,12 +1,12 @@
 const sqlite3 = require("sqlite3").verbose();
 
 /*Crea il database se non esiste*/
-// function crateDatabase() {
+// function createDatabase() {
 //   const Users = new sqlite3.Database("./db/users.db");
 //   const tempUsers = new sqlite3.Database("./db/temp-users.db");
 //   const chat = new sqlite3.Database("./db/chat.db");
 // }
-// crateDatabase();
+// createDatabase();
 
 /*Inizializzazione database utenti*/
 const Users = new sqlite3.Database(
@@ -502,7 +502,7 @@ function getTimes(email, password) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].wait_time);
+          resolve(rows[0].times);
         }
       }
     );

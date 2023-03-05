@@ -1,7 +1,6 @@
 if (checkLocalstorageForLogin()) {
     window.location.href = "../chat.html";
-}
-if (checkLocalstorageForConfirm()) {
+} else if (checkLocalstorageForConfirm()) {
     var prompt = document.getElementById("prompt");
 
     // Mostra la sezione di sfondo bianco con la scritta e i due bottoni

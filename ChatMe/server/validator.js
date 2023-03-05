@@ -133,7 +133,7 @@ function getErrors(nickname, password, code, check1, check2, check3, check4, che
   } else {
     errors += "\n";
   }
-  
+
   if (!check6) {
     if (code.length != 10) {
       errors += "Verification code must be 10 characters long\n";

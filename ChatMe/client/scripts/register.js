@@ -1,7 +1,6 @@
 if (checkLocalstorageForLogin()) {
     window.location.href = "../chat.html";
-}
-if (checkLocalstorageForConfirm()) {
+} else if (checkLocalstorageForConfirm()) {
     var prompt = document.getElementById("prompt");
 
     // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
@@ -22,7 +21,6 @@ if (checkLocalstorageForConfirm()) {
     document.getElementById("yes-button").addEventListener("click", () => {
         window.location.href = "../confirm.html";
     });
-
 }
   
 /*keyManager*/
@@ -160,6 +158,7 @@ async function manageRegisterError(msg, err) {
 
       // Aggiungi un event listener al bottone "Yes"
       document.getElementById("yes-button").addEventListener("click", () => {
+        
         window.location.href = "../confirm.html";
       });
     } else if (error == "email") {

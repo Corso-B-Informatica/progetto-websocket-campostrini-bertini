@@ -10,63 +10,85 @@ async function checkUserData(
     publicKeyArmored,
     socket
 ) {
-    const { data: validate_email } = await crypto.decrypt(armored_email, crypto.privateKey);
-    const { data: validate_password } = await crypto.decrypt(armored_password, crypto.privateKey);
-    const { data: validate_nickname } = await crypto.decrypt(armored_nickname, crypto.privateKey);
-    const { data: pubKey } = await crypto.decrypt(publicKeyArmored, crypto.privateKey);
+    var { data: validate_email } = "";
+    var { data: validate_password } = "";
+    var { data: validate_nickname } = "";
+    var { data: pubKey } = "";
 
-    const email = validator.validate(validate_email);
-    const password = validator.validate(validate_password);
-    const nickname = validator.validate(validate_nickname);
+    try {
+        validate_email = await crypto.decrypt(armored_email, crypto.privateKey);
+    } catch (error) {
+        validate_email = "";
+    }
+    try {
+        validate_password = await crypto.decrypt(armored_password, crypto.privateKey);
+    } catch (error) {
+        validate_password = "";
+    }
+    try {
+        validate_nickname = await crypto.decrypt(armored_nickname, crypto.privateKey);
+    } catch (error) {
+        validate_nickname = "";
+    }
+    try {
+        pubKey = await crypto.decrypt(publicKeyArmored, crypto.privateKey);
+    } catch (error) {
+        pubKey = "";
+    }
+
+    const email = validate_email.data == undefined ? "" : validator.validate(validate_email.data);
+    const password = validate_password.data == undefined ? "" : validator.validate(validate_password.data);
+    const nickname = validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
+    const publicKey = pubKey.data == undefined ? "" : pubKey.data;
 
     var check1 = validator.checkUsername(nickname);
     var check2 = validator.checkEmail(email);
     var check3 = validator.checkPassword(password);
-    var check4 = await crypto.isValid(pubKey);
+    var check4 = await crypto.isValid(publicKey);
 
     //se i dati sono validi
     if (check1 && check2 && check3 && check4) {
         if (await database.existInDatabase(database.Users, nickname, email, "or")) {
             console.log("Utente già registrato");
 
-            const message = await crypto.encrypt("User already registered", pubKey);
+            const message = await crypto.encrypt("User already registered", publicKey);
 
             var first = await database.existInDatabase(database.Users, nickname, email, "and");
             var second = await database.existInDatabase(database.Users, "", email, "or");
             var third = await database.existInDatabase(database.Users, nickname, "", "or");
             var who = first ? "both" : second ? "email" : third ? "nickname" : "both";
-            var error = await crypto.encrypt(who, pubKey);
+            var error = await crypto.encrypt(who, publicKey);
 
             socket.emit("registerError", message, error);
         } else if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
             console.log("Utente già registrato");
 
-            const message = await crypto.encrypt("User must confirm his account", pubKey);
+            const message = await crypto.encrypt("User must confirm his account", publicKey);
 
             var first = await database.existInDatabase(database.tempUsers, nickname, email, "and");
             var second = await database.existInDatabase(database.tempUsers, "", email, "or");
             var third = await database.existInDatabase(database.tempUsers, nickname, "", "or");
             var who = first ? "both" : second ? "email" : third ? "nickname" : "both";
-            var error = await crypto.encrypt(who, pubKey);
+            var error = await crypto.encrypt(who, publicKey);
 
             socket.emit("registerError", message, error);
         } else {
             console.log("Utente non registrato");
 
-            registerUser(email, password, nickname, pubKey, socket);
+            registerUser(email, password, nickname, publicKey, socket);
         }
     } else {
         console.log("Dati non validi");
 
-        const crypted_check1 = await crypto.encrypt(check1, pubKey);
-        const crypted_check2 = await crypto.encrypt(check2, pubKey);
-        const crypted_check3 = await crypto.encrypt(check3, pubKey);
-        const crypted_check4 = await crypto.encrypt(check4, pubKey);
+        const crypted_check1 = await crypto.encrypt(check1, publicKey);
+        const crypted_check2 = await crypto.encrypt(check2, publicKey);
+        const crypted_check3 = await crypto.encrypt(check3, publicKey);
+        const crypted_check4 = await crypto.encrypt(check4, publicKey);
         const errors = validator.getErrors(nickname, password, "", check1, check2, check3, true, check4, true).split("\n");
-        const crypted_data1 = await crypto.encrypt(errors[0], pubKey);
-        const crypted_data2 = await crypto.encrypt(errors[1], pubKey);
-        const crypted_data3 = await crypto.encrypt(errors[2], pubKey);
-        const crypted_data4 = await crypto.encrypt(errors[4], pubKey);
+        const crypted_data1 = await crypto.encrypt(errors[0], publicKey);
+        const crypted_data2 = await crypto.encrypt(errors[1], publicKey);
+        const crypted_data3 = await crypto.encrypt(errors[2], publicKey);
+        const crypted_data4 = await crypto.encrypt(errors[4], publicKey);
 
         socket.emit("registerDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4);
     }

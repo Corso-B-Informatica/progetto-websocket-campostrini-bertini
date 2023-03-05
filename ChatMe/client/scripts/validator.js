@@ -9,7 +9,7 @@ var slash = /\//g;
 
 /*Controlla se l'username è valido*/
 function checkUsername() {
-    var username = document.getElementById("username").value;
+    var username = document.getElementById("username").value.toString();
     if (username.length == 0) {
         var containerUsername = document.getElementById("container-username");
         containerUsername.classList.add("error");
@@ -39,7 +39,7 @@ function checkUsername() {
 
 /*Controlla se l'email è valida*/
 function checkEmail() {
-    var email = document.getElementById("email").value;
+    var email = document.getElementById("email").value.toString();
 
     if (
         email
@@ -58,7 +58,7 @@ function checkEmail() {
 
 /*Controlla se la password è valida*/
 function checkPassword() {
-    var password = document.getElementById("password").value;
+    var password = document.getElementById("password").value.toString();
 
     if (password.length == 0) {
         var containerPassword = document.getElementById("container-password");
@@ -106,7 +106,7 @@ function checkPassword() {
 }
 
 function checkVerificationCode() {
-    var code = document.getElementById("code").value;
+    var code = document.getElementById("code").value.toString();
 
     if (code.length != 10) {
         var containerCode = document.getElementById("container-code");
@@ -125,13 +125,13 @@ function checkVerificationCode() {
 
 
 function checkUsernameOrEmail() {
-    var ue = document.getElementById("username").value;
+    var ue = document.getElementById("username").value.toString();
 
     if (
         ue.trim()
             .match(
                 /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/
-            ) == null && (username.length == 0 || username.length > 30 || !/[a-zA-Z0-9]/.test(username) || username.includes("@"))
+        ) == null && (ue.length < 0 || ue.length > 30 || !/[a-zA-Z0-9]/.test(ue) || ue.includes('@'))
     ) {
         var containerEmail = document.getElementById("container-username-email");
         containerEmail.classList.add("error");

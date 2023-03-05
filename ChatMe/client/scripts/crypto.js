@@ -23,7 +23,7 @@ async function decrypt(data, privateKey, passphrase) {
 
 /*Genera una chiave AES casuale*/
 function generateRandomKey(length) {
-    return CryptoJS.lib.WordArray.random(length / 8).toString(CryptoJS.enc.Hex);
+    return CryptoJS.lib.WordArray.random(length).toString(CryptoJS.enc.Hex);
 }
 
 /*Cripta un messaggio con la chiave AES*/

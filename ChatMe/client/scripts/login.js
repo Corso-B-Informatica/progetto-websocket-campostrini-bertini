@@ -1,7 +1,6 @@
 if (checkLocalstorageForLogin()) {
     window.location.href = "../chat.html";
-}
-if (checkLocalstorageForConfirm()) {
+} else if (checkLocalstorageForConfirm()) {
     var prompt = document.getElementById("prompt");
 
     // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
@@ -22,11 +21,16 @@ if (checkLocalstorageForConfirm()) {
     document.getElementById("yes-button").addEventListener("click", () => {
         window.location.href = "../confirm.html";
     });
-
 }
 
 /*keyManager*/
 const kM = new keyManager();
+
+async function genKey() {
+    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+}
+
+genKey();
 
 /*Socket.io*/
 var socket = io();
@@ -37,8 +41,8 @@ socket.on("publicKey", (publicKeyArmored, str) => {
     }
 });
 
-socket.on("loginSuccess", (c_rememberMe, c_aesKey, c_row) => {
-    manageLoginSuccess(c_rememberMe, c_aesKey, c_row);
+socket.on("loginSuccess", (c_nickname, c_email, c_password, c_rememberMe, c_aesKey, c_row) => {
+    manageLoginSuccess(c_nickname, c_email, c_password, c_rememberMe, c_aesKey, c_row);
 });
 
 socket.on("loginError", (msg) => {
@@ -55,11 +59,9 @@ function Login() {
 
 async function sendLogin(publicKeyArmored) {
     if (checkUsernameOrEmail() && checkPassword()) {
-        await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-
         var ue = document.getElementById('username').value.toString();
         var c_password = await encrypt(validate(document.getElementById('password').value.toString()), publicKeyArmored);
-        var c_rememberMe = await encrypt(document.getElementById("rememberMe").checked, publicKeyArmored);
+        var c_rememberMe = await encrypt(document.getElementById("checkbox").checked.toString(), publicKeyArmored);
         var c_publicKey = await encrypt(kM.getPublicKey(), publicKeyArmored);
         var c_email = "";
         var c_nickname = "";
@@ -74,7 +76,22 @@ async function sendLogin(publicKeyArmored) {
     }
 }
 
-async function manageLoginSuccess(c_rememberMe, c_aesKey, c_row) {
+async function manageLoginSuccess(c_nickname, c_email, c_password, c_rememberMe, c_aesKey, c_row) {
+    var { data: nickname } = await decrypt(
+        c_nickname,
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
+    var { data: email } = await decrypt(
+        c_email,
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
+    var { data: password } = await decrypt(
+        c_password,
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
     var { data: rememberMe } = await decrypt(
         c_rememberMe,
         kM.getPrivateKey(),
@@ -90,7 +107,10 @@ async function manageLoginSuccess(c_rememberMe, c_aesKey, c_row) {
         kM.getPrivateKey(),
         kM.getPassphrase()
     );
-
+    
+    localStorage.setItem("nickname", nickname);
+    localStorage.setItem("email", email);
+    localStorage.setItem("password", password);
     localStorage.setItem("rememberMe", rememberMe);
     var data = encryptAES(JSON.stringify(row), aesKey);
     localStorage.setItem("data", data);
