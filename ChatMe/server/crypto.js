@@ -36,11 +36,11 @@ ePPW0Y/+5LEpzNJUDpIbsSVSYoU4Z5k4u5DRI58N
 -----END PGP PRIVATE KEY BLOCK-----`;
 
 /*Passphrase*/
-var passphrase =
+const passphrase =
   'fsrL[yhRbtlES_rOyaYkaz!;XTiC;),w4V.P]zYEp<F@iLTWRk.)Ij`GZ}$u+>92]H]OA}B.)lCfi}tdrZ25cT-Mb~z*NxVH;Yens!OoEj=Nl&TCfzSp0#akDv>{ik%_HC7wX-[bXH<VRMa2Qb$0v~{(2B<lCA<)~X}AcTmp<aCXC7!d>a|pMC.U{;(MmE@X"a7bn/.R=9P)_E[yB0gqgQy(~#RzPLNuxURh@yK(98Mbvo59Tl9ZhNZBAOFnjN9%#dQBv2=p-)IFXHE2p.mP;a+7Ro`_me$!}-w$O3I0Go;z%B0bD7+k=kaWS"^W"xhuvQ{1#=F(jX-1ID(,NU|(=;=a>f,]8%osRE<{p9@.$H-CJh4dv>zT2!lb8/6|hpbFtl]ZQ(dr[X6h@BLc`z|2wHy(@xJ+3g++Sm)Is~?K^-*0!AtSYprX?l6!6~tcxOI:-zyAYib:"C]]32Dd5!v2U7G1t&iksW7g4=xH)6./]$)J[WEY2!u$MjW#gn';
 
 /*AES Key*/
-var AESKey =
+const AESKey =
   "5ef16edae3176232956802e6e138b2df3c20697b71bfba0793e7113a7644c80e63398b6def71f214b96a4c39722d899916830c3d1455f5ad19ceb92473a4210fa67dd4976670c5b42688aa7f04c3adcffb55372a5cdd051d6fc793a8c5f98a2d49e3d4b0a889c155f78da776aaeed10b10d0eff209840147e1bfb7c22f3ed3ef8673e91455f6dcde04db561826cd6e896aa2505224454a001b258e9ee702bcbffa220cc90c0dad4b6883cbdfbce664c957de1346883a2e02d7d6410d87ef73ea6a88e7fab818a4af237deeb7167cdb09766135c61ae357277cbf522ccee5052c1fc5a2025e9d3115f87e3c5ef782eca8659f8627ec08ad2fb9e36e13f84db447";
 
 /*Cripta un messaggio con la chiave pubblica*/
@@ -114,4 +114,5 @@ module.exports = {
   publicKey,
   privateKey,
   passphrase,
+  AESKey,
 };

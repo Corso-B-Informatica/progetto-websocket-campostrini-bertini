@@ -537,6 +537,22 @@ function updateWaitTimeCode() {
   });
 }
 
+function getAesKey(email, nickname, password) {
+  return new Promise((resolve, reject) => {
+    Users.all(
+      `select * from users where nickname = ? or email = ? and password = ?`,
+      [nickname, email, password],
+      (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(rows[0].key);
+        }
+      });
+  });
+}
+
 module.exports = {
   existInDatabase,
   insertTempUsers,
@@ -563,6 +579,7 @@ module.exports = {
   getRow,
   getNickname,
   getEmail,
+  getAesKey,
   Users,
   tempUsers,
   Chat

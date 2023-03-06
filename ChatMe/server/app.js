@@ -6,6 +6,7 @@ const database = require('./database.js');
 const register = require('./register.js');
 const confirm = require('./confirm.js');
 const login = require('./login.js');
+const chat = require('./chat.js');
 
 /*Express*/
 const app = express();
@@ -49,6 +50,10 @@ io.on("connection", (socket) => {
 
   socket.on("getCodeByInput", (email, nickname, password, publicKeyArmored) => {
     confirm.sendCode(email, nickname, password, publicKeyArmored, socket, "input");
+  });
+  
+  socket.on("getAesKey", (email, nickname, password, pubKey) => {
+    chat.sendAesKey(email, nickname, password, pubKey, socket);
   });
 });
 
