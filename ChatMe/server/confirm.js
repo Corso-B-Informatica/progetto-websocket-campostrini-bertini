@@ -73,8 +73,14 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                     var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "chats": []}`, publicKey);
                     var c_aesKey = await crypto.encrypt(keyAES, publicKey);
+                    var crypted_email = crypto.encryptAES(email);
+                    var crypted_password = crypto.encryptAES(password);
+                    var crypted_nickname = crypto.encryptAES(nickname);
+                    var doubleCrypted_email = await crypto.encrypt(crypted_email, publicKey);
+                    var doubleCrypted_password = await crypto.encrypt(crypted_password, publicKey);
+                    var doubleCrypted_nickname = await crypto.encrypt(crypted_nickname, publicKey);
 
-                    socket.emit("confirmSuccess", c_rememberMe, c_aesKey, c_row);
+                    socket.emit("confirmSuccess", doubleCrypted_email, doubleCrypted_nickname, doubleCrypted_password, c_rememberMe, c_aesKey, c_row);
                 } else {
                     await database.increaseConfirmAttempts(email, password);
 
@@ -493,7 +499,25 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
                         var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "chats": []}`, publicKey);
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
 
-                        socket.emit("confirmSuccess", c_rememberMe, c_aesKey, c_row);
+                        var mail = email;
+                        var nick = nickname;
+
+                        if (await database.existInDatabase(database.tempUsers, "", email, "or")) {
+                            nick = await database.getNickname(email);
+                        }
+
+                        if (await database.existInDatabase(database.tempUsers, nickname, "", "or")) {
+                            email = await database.getEmail(nickname);
+                        }
+
+                        var crypted_email = crypto.encryptAES(mail);
+                        var crypted_password = crypto.encryptAES(password);
+                        var crypted_nickname = crypto.encryptAES(nick);
+                        var doubleCrypted_email = await crypto.encrypt(crypted_email, publicKey);
+                        var doubleCrypted_password = await crypto.encrypt(crypted_password, publicKey);
+                        var doubleCrypted_nickname = await crypto.encrypt(crypted_nickname, publicKey);
+
+                        socket.emit("confirmSuccess", doubleCrypted_email, doubleCrypted_nickname, doubleCrypted_password, c_rememberMe, c_aesKey, c_row);
                     } else {
                         console.log("Codice di verifica errato");
 
@@ -625,7 +649,25 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
                         var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "chats": []}`, publicKey);
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
 
-                        socket.emit("confirmSuccess", c_rememberMe, c_aesKey, c_row);
+                        var mail = email;
+                        var nick = nickname;
+
+                        if (await database.existInDatabase(database.tempUsers, "", email, "or")) {
+                            nick = await database.getNickname(email);
+                        }
+
+                        if (await database.existInDatabase(database.tempUsers, nickname, "", "or")) {
+                            email = await database.getEmail(nickname);
+                        }
+
+                        var crypted_email = crypto.encryptAES(mail);
+                        var crypted_password = crypto.encryptAES(password);
+                        var crypted_nickname = crypto.encryptAES(nick);
+                        var doubleCrypted_email = await crypto.encrypt(crypted_email, publicKey);
+                        var doubleCrypted_password = await crypto.encrypt(crypted_password, publicKey);
+                        var doubleCrypted_nickname = await crypto.encrypt(crypted_nickname, publicKey);
+
+                        socket.emit("confirmSuccess", doubleCrypted_email, doubleCrypted_nickname, doubleCrypted_password, c_rememberMe, c_aesKey, c_row);
                     } else {
                         console.log("Codice di verifica errato");
 

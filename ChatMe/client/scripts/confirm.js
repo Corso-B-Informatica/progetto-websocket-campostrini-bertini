@@ -112,8 +112,8 @@ socket.on("confirmError", (msg) => {
     manageConfirmError(msg);
 });
 
-socket.on("confirmSuccess", (c_rememberMe, c_aesKey, c_row) => {
-    manageConfirmSuccess(c_rememberMe, c_aesKey, c_row);
+socket.on("confirmSuccess", (c_email, c_nickname, c_password, c_rememberMe, c_aesKey, c_row) => {
+    manageConfirmSuccess(c_email, c_nickname, c_password, c_rememberMe, c_aesKey, c_row);
 });
 
 
@@ -754,7 +754,22 @@ async function manageConfirmError(message) {
     }
 }
 
-async function manageConfirmSuccess(c_rememberMe, c_aesKey, c_row) {
+async function manageConfirmSuccess(c_email, c_nickname, c_password, c_rememberMe, c_aesKey, c_row) {
+    var { data: email } = await decrypt(
+        c_email,
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
+    var { data: nickname } = await decrypt(
+        c_nickname,
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
+    var { data: password } = await decrypt(
+        c_password,
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
     var { data: rememberMe } = await decrypt(
         c_rememberMe,
         kM.getPrivateKey(),
@@ -770,7 +785,10 @@ async function manageConfirmSuccess(c_rememberMe, c_aesKey, c_row) {
         kM.getPrivateKey(),
         kM.getPassphrase()
     );
-
+    
+    localStorage.setItem("email", email);
+    localStorage.setItem("nickname", nickname);
+    localStorage.setItem("password", password);
     localStorage.setItem("rememberMe", rememberMe);
     var data = encryptAES(JSON.stringify(row), aesKey);
     localStorage.setItem("data", data);

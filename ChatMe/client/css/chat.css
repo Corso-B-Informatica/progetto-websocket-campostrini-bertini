@@ -65,11 +65,11 @@
 }
 
 #typezone {
-  bottom: 0px;
+  bottom: 16px;
 }
 
 #typezone-section {
-    border-radius: 50px;
+    border-radius: 5px;
     background-color: #fff;
 }
 
@@ -138,6 +138,9 @@ p {
   #conversation {
     width: 78%;
   }
+  #typezone {
+    width: 78%;
+  }
 }
 
 @media (max-width: 1650px) {
@@ -145,6 +148,9 @@ p {
     width: 24%;
   }
   #conversation {
+    width: 76%;
+  }
+  #typezone {
     width: 76%;
   }
 }
@@ -156,6 +162,9 @@ p {
   #conversation {
     width: 74%;
   }
+  #typezone {
+    width: 74%;
+  }
 }
 
 @media (max-width: 1350px) {
@@ -163,6 +172,9 @@ p {
     width: 28%;
   }
   #conversation {
+    width: 72%;
+  }
+  #typezone {
     width: 72%;
   }
 }
@@ -174,6 +186,9 @@ p {
   #conversation {
     width: 70%;
   }
+  #typezone {
+    width: 70%;
+  }
 }
 
 @media (max-width: 1050px) {
@@ -183,6 +198,9 @@ p {
   #conversation {
     width: 68%;
   }
+  #typezone {
+    width: 68%;
+  }
 }
 
 @media (max-width: 900px) {
@@ -190,6 +208,9 @@ p {
     width: 100%;
   }
   #conversation {
+    width: 100%;
+  }
+  #typezone {
     width: 100%;
   }
 }

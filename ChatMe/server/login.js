@@ -67,7 +67,7 @@ async function login(armored_email, armored_nickname, armored_password, armored_
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                     var c_row = await crypto.encrypt(JSON.stringify(await database.getRow(nickname)), publicKey);
                     var c_aesKey = await crypto.encrypt(await database.getKeys(nickname), publicKey);
-                    var c_nick = await crypto.encrypt(crypto.encryptAES(nickname), publicKey);
+                    var c_nickname = await crypto.encrypt(crypto.encryptAES(nickname), publicKey);
                     var c_email = await crypto.encrypt(crypto.encryptAES(await database.getEmail(nickname)), publicKey);
                     var c_password = await crypto.encrypt(crypto.encryptAES(password), publicKey);
 
