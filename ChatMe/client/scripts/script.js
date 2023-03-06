@@ -176,6 +176,9 @@ function checkKey() {
     if (key.length == 0) {
         return false;
     }
+    if (!isValid(key)) {
+        return false;
+    }
 
     return true;
 }

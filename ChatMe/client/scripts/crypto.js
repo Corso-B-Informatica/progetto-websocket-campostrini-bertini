@@ -35,3 +35,14 @@ function encryptAES(data, AESKey) {
 function decryptAES(data, AESKey) {
     return CryptoJS.AES.decrypt(data, AESKey).toString(CryptoJS.enc.Utf8);
 }
+
+/*Controlla se la chiave è valida*/
+async function isValid(key) {
+    return await openpgp.readKey({ armoredKey: key })
+        .then((key) => {
+            return true;
+        })
+        .catch((err) => {
+            return false;
+        });
+}
