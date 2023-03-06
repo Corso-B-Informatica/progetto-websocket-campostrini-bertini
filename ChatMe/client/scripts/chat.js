@@ -7,15 +7,27 @@
 //quindi da quel momento in poi dovremmo usare le informazioni di login contenute nella variabile data del localStrorage dentro la chat, la aesKey appena ci arriva la salviamo in una variabile
 //poi controlliamo che abbiamo una chat, se non la abbiamo dobbiamo crearla.
 /*Socket.io*/
+
+const { get } = require("https");
+const { encrypt } = require("../../server/crypto");
+
+const kM = keyManager();
+async function genKey() {
+    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+}
+genKey();
 var socket = io();
 
-/*if (checkData()) {
+if (checkData()) {
     if (checkKey()) {
-        
+       getAesKey(); 
     } else {
         socket.emit("getPublicKey", "0");
     }
 } else {
     clearLocalStorageWithoutKey();
     window.location.href = "../signUp.html";
-}*/
+}
+async function getAesKey(){
+    socket.emit("getAesKey", localStorage.getItem('email'), localStorage.getItem('nickname'), localStorage.getItem('password'),await encrypt(kM.publicKey, localStorage.getItem("publicKeyArmored")));
+}
