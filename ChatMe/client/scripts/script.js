@@ -145,5 +145,40 @@ function restoreStorageData() {
     }
 }
 
+function checkData() {
+    var email = localStorage.getItem("email");
+    var password = localStorage.getItem("password");
+    var nickname = localStorage.getItem("nickname");
+    var remeberMe = localStorage.getItem("rememberMe");
+
+    if ((email == undefined && nickname == undefined) || password == undefined || remeberMe == undefined) {
+        return false;
+    }
+    if ((email == null && nickname == null) || password == null || remeberMe == null) {
+        return false;
+    }
+    if ((email.length == 0 && nickname.length == 0) || password.length == 0 || remeberMe.length == 0) {
+        return false;
+    }
+
+    return true;
+}
+
+function checkKey() {
+    var key = localStorage.getItem("publicKeyArmored");
+
+    if(key == undefined) {
+        return false;
+    }
+    if(key == null) {
+        return false;
+    }
+    if (key.length == 0) {
+        return false;
+    }
+
+    return true;
+}
+
 setInterval(registerStorageData, 10);
 setInterval(restoreStorageData, 10);
