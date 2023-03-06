@@ -18,7 +18,7 @@ genKey();
 /*Socket.io*/
 var socket = io();
 
-/*if (checkData()) {
+if (checkData()) {
     if (checkKey()) {
         getAesKey();
     } else {
@@ -31,4 +31,4 @@ var socket = io();
 
 async function getAesKey(){
     socket.emit("getAesKey", localStorage.getItem('email'), localStorage.getItem('nickname'), localStorage.getItem('password'),await encrypt(kM.publicKey, localStorage.getItem("publicKeyArmored")));
-}*/
+}

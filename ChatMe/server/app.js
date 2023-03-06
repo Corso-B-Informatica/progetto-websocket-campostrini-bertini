@@ -44,12 +44,16 @@ io.on("connection", (socket) => {
     confirm.confirmUserViaCode(email, nickname, password, verification_code, rememberMe, pubKey, aesKey, socket, "input");
   });
 
-  socket.on("getCodeByStorage", (email, nickname, password, publicKeyArmored) => {
-    confirm.sendCode(email, nickname, password, publicKeyArmored, socket, "storage");
+  socket.on("getCodeByStorage", (email, nickname, password, pubKey) => {
+    confirm.sendCode(email, nickname, password, pubKey, socket, "storage");
   });
 
-  socket.on("getCodeByInput", (email, nickname, password, publicKeyArmored) => {
-    confirm.sendCode(email, nickname, password, publicKeyArmored, socket, "input");
+  socket.on("getCodeByInput", (email, nickname, password, pubKey) => {
+    confirm.sendCode(email, nickname, password, pubKey, socket, "input");
+  });
+
+  socket.on("getAesKey", (email,nickname, password, pubKey) => {
+    chat.sendAesKey(email, nickname, password, pubKey, socket);
   });
   
   socket.on("getAesKey", (email, nickname, password, pubKey) => {

@@ -26,11 +26,11 @@ async function sendAesKey(email, nickname, password, pubKey, socket) {
     } catch (err) {
         validate_pubKey = "";
     }
-    if (await database.getAesKey(validate_email, validate_nickname, validate_password) == null) {
+    if(await database.getAesKey(validate_email, validate_nickname, validate_password) == null){
         socket.emit("ErrorAesKey");
     }
-    else {
+    else{
         socket.emit("AesKey", await database.getAesKey(validate_email, validate_nickname, validate_password))
     }
-
+     
 }
