@@ -48,7 +48,8 @@ async function checkUserData(
     const nickname = validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
     const publicKey = pubKey.data == undefined ? "" : pubKey.data;
     const link = url.data == undefined ? "" : url.data;
-    const confirm_link = link.substring(0, url.indexOf("/signUp.html"));
+    const confirm_link = link.substring(0, link.indexOf("/signUp.html"));
+    console.log(confirm_link)
 
     var check1 = validator.checkUsername(nickname);
     var check2 = validator.checkEmail(email);

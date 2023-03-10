@@ -7,10 +7,10 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
-    secure: true,
+    secure: true, // upgrade later with STARTTLS
     auth: {
       user: "service.chatme@gmail.com",
-      pass: "qfdimntkltaapvcv",
+      pass: "sqaglwszkeuowcgk",
     },
   });
 
@@ -19,7 +19,7 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
   const crypted_code = crypto.encryptAES(code);
   //l url va cambiato a seconda della persona che lo usa
   const url =
-    link + 
+    link.toString() + 
     "/confirm.html#email=" +
     email +
     "&nickname=" +
@@ -28,7 +28,7 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
     password +
     "&code=" +
     crypted_code;
-
+  
   const mail =
     `<!DOCTYPE html>
 <html>

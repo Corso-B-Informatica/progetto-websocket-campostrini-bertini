@@ -239,7 +239,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                         const crypted_email = crypto.encryptAES(email);
                         const crypted_password = crypto.encryptAES(password);
                         const crypted_nickname = crypto.encryptAES(nickname);
-                        const confirm_link = link.substring(0, url.indexOf("/confirm.html") + 13);
+                        const confirm_link = link.substring(0, link.indexOf("/confirm.html") + 13);
 
                         emailer.sendConfirmCodeViaEmail(crypted_email, crypted_nickname, crypted_password, verification_code, expiration_time, confirm_link);
 
@@ -250,19 +250,19 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                             switch (times) {
                                 case 0:
                                 case 1:
-                                    await database.setWaitTime(email, password, 600000);
+                                    await database.setWaitTimeCode(email, password, 600000);
                                     break;
                                 case 2:
-                                    await database.setWaitTime(email, password, 1800000);
+                                    await database.setWaitTimeCode(email, password, 1800000);
                                     break;
                                 case 3:
-                                    await database.setWaitTime(email, password, 7200000);
+                                    await database.setWaitTimeCode(email, password, 7200000);
                                     break;
                                 case 4:
-                                    await database.setWaitTime(email, password, 18000000);
+                                    await database.setWaitTimeCode(email, password, 18000000);
                                     break;
                                 case 5:
-                                    await database.setWaitTime(email, password, 36000000);
+                                    await database.setWaitTimeCode(email, password, 36000000);
                                     break;
                                 default:
                                     database.removeTempUsers(email, password);
@@ -364,7 +364,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                         const crypted_email = crypto.encryptAES(email);
                         const crypted_password = crypto.encryptAES(password);
                         const crypted_nickname = crypto.encryptAES(nickname);
-                        const confirm_link = link.substring(0, url.indexOf("/confirm.html"));
+                        const confirm_link = link.substring(0, link.indexOf("/confirm.html"));
 
                         emailer.sendConfirmCodeViaEmail(crypted_email, crypted_nickname, crypted_password, verification_code, expiration_time, confirm_link);
 
@@ -375,19 +375,19 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                             switch (times) {
                                 case 0:
                                 case 1:
-                                    await database.setWaitTime(email, password, 600000);
+                                    await database.setWaitTimeCode(email, password, 600000);
                                     break;
                                 case 2:
-                                    await database.setWaitTime(email, password, 1800000);
+                                    await database.setWaitTimeCode(email, password, 1800000);
                                     break;
                                 case 3:
-                                    await database.setWaitTime(email, password, 7200000);
+                                    await database.setWaitTimeCode(email, password, 7200000);
                                     break;
                                 case 4:
-                                    await database.setWaitTime(email, password, 18000000);
+                                    await database.setWaitTimeCode(email, password, 18000000);
                                     break;
                                 case 5:
-                                    await database.setWaitTime(email, password, 36000000);
+                                    await database.setWaitTimeCode(email, password, 36000000);
                                     break;
                                 default:
                                     database.removeTempUsers(email, password);
