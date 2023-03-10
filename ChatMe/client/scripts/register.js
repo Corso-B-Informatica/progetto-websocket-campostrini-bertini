@@ -392,3 +392,15 @@ document.getElementById("password").oninput = function () {
   var containerPassword = document.getElementById("container-password");
   containerPassword.setAttribute("error-message", "Invalid password");
 };
+
+/*Password toggle*/
+document.getElementById("toggle-password").addEventListener("click", () => {
+  document.getElementById("toggle-password").classList.toggle("fa-eye");
+  document.getElementById("toggle-password").classList.toggle("fa-eye-slash");
+  var password = document.getElementById("password");
+  if (password.type === "password") {
+    password.type = "text";
+  } else {
+    password.type = "password";
+  }
+});

@@ -169,6 +169,13 @@ label {
   color: #a64bf4;
 }
 
+#toggle-password {
+  top: 13.5px;
+  color: #adadad;
+  right: 0px;
+  cursor: pointer;
+}
+
 @media (max-width: 880px) {
   #prompt p {
     font-size: 18px !important;
