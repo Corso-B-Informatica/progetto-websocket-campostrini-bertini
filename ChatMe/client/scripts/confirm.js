@@ -1075,3 +1075,15 @@ document.getElementById("code").oninput = function () {
     var containerCode = document.getElementById("container-code");
     containerCode.setAttribute("error-message", "Invalid verification code");
 }
+
+/*Password toggle*/
+document.getElementById("toggle-password").addEventListener("click", () => {
+    document.getElementById("toggle-password").classList.toggle("fa-eye");
+    document.getElementById("toggle-password").classList.toggle("fa-eye-slash");
+    var password = document.getElementById("password");
+    if (password.type === "password") {
+        password.type = "text";
+    } else {
+        password.type = "password";
+    }
+});

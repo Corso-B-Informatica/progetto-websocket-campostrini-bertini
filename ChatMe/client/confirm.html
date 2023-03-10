@@ -28,9 +28,9 @@
                 <span class="d-flex justify-content-center align-items-center">
                     <img src="./images/logo.png" width="100px" height="100px">
                 </span>
-    
+
                 <span class="h1 fw-bold text-center d-block p-b-34 p-t-27 text-dark">Confirm account</span>
-    
+
                 <div id="container-username-email" class="container-input w-100 position-relative"
                     error-message="Invalid Username or Email">
                     <input id="username" class="input text-dark d-block w-100 bg-transparent" type="text"
@@ -38,13 +38,14 @@
                     <span id="span-username" class="focus-input position-absolute d-block w-100 h-100"
                         data-placeholder="&#xf348;"></span>
                 </div>
-    
+
                 <div id="container-password" class="container-input w-100 position-relative"
                     error-message="Invalid Password">
                     <input id="password" class="input text-dark d-block w-100 bg-transparent" type="password"
                         placeholder="Password">
                     <span id="span-password" class="focus-input position-absolute d-block w-100 h-100"
                         data-placeholder="&#xf191;"></span>
+                    <i class="fa fa-eye-slash text-end position-absolute d-block" id="toggle-password"></i>
                 </div>
 
                 <div id="container-code" class="container-input w-100 position-relative"
@@ -54,7 +55,7 @@
                     <span id="span-code" class="focus-input position-absolute d-block w-100 h-100"
                         data-placeholder="&#xf207;"></span>
                 </div>
-    
+
                 <div class="container-checkbox flex-wrap d-flex align-items-center justify-content-center">
                     <div class="w-50 d-flex align-items-center justify-content-start">
                         <input class="input-checkbox d-none" id="checkbox" type="checkbox">
@@ -65,19 +66,19 @@
                         <a class="getCode" style="cursor: pointer;" onclick="getCode()">Send Another Code</a>
                     </div>
                 </div>
-    
+
                 <div class="w-100 d-flex flex-wrap justify-content-center">
                     <button id="signIn" class="btn w-100" onclick="confirmCode()" type="button">Confirm</button>
                 </div>
-    
+
                 <div class="flex-wrap d-flex align-items-center justify-content-center p-t-155">
                     <span class="user-select-none">Not a member? </span>
-    
+
                     <a href="./signUp.html" class="px-2">Sign Up 🠖</a>
                 </div>
             </form>
         </div>
-        
+
         <div id="prompt" class="rounded-5">
             <p id="prompt-error"></p>
             <p id="prompt-text"></p>
@@ -91,7 +92,8 @@
             <div class="text-center d-flex justify-content-between align-items-center">
                 <span class="text-white h5 copyright">Copyright &copy; ChatMe 2023</span>
                 <div class="d-flex">
-                    <a href="https://github.com/Corso-B-Informatica/progetto-websocket-campostrini-bertini" target="_blank">
+                    <a href="https://github.com/Corso-B-Informatica/progetto-websocket-campostrini-bertini"
+                        target="_blank">
                         <i class="fab fa-github-square fa-2x mx-3 text-dark"></i>
                     </a>
                 </div>
