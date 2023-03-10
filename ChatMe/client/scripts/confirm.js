@@ -143,15 +143,21 @@ async function tryConfirmViaLink(publicKeyArmored) {
     url = window.location.href;
     
     if (isUrlConfirmed(url, email, password, nickname, verification_code)) {
-        sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored, url.substring(0, url.indexOf("/confirm.html#email=")));
+        sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored);
     } else {
         checkLocalstorage();
     }
 }
 
 function isUrlConfirmed(url, email, password, nickname, verification_code) {
-    //il controllo va fatto meglio ma per ora va bene così
-    return url.includes("/confirm.html#") && email.length > 0 && password.length > 0 && nickname.length > 0 && verification_code.length > 0;
+    if (email == null || password == null || nickname == null || verification_code == null) {
+        return false;
+    }
+    if (email == undefined || password == null || nickname == undefined || verification_code == undefined) {
+        return false;
+    }
+
+    return url.includes("/confirm.html#") && email.trim().length > 0 && password.trim().length > 0 && nickname.trim().length > 0 && verification_code.trim().length > 0;
 }
 
 async function sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored, url) {
@@ -162,9 +168,8 @@ async function sendConfirmViaLink(email, password, nickname, verification_code, 
     const crypted_rememberMe = await encrypt(false, publicKeyArmored);
     var pubKey = await encrypt(kM.getPublicKey(), publicKeyArmored);
     var aesKey = await encrypt(generateRandomKey(10), publicKeyArmored);
-    var link = await encrypt(url, publicKeyArmored);
 
-    socket.emit("confirmViaLink", crypted_email, crypted_password, crypted_nickname, crypted_verification_code, crypted_rememberMe, pubKey, aesKey, link);
+    socket.emit("confirmViaLink", crypted_email, crypted_password, crypted_nickname, crypted_verification_code, crypted_rememberMe, pubKey, aesKey);
 }
 
 /*Page format*/
@@ -189,7 +194,7 @@ async function getCode() {
     var publicKey = localStorage.getItem("publicKeyArmored");
 
     if (publicKey != null) {
-        var link = await encrypt(window.location.href.substring(0, url.indexOf("/confirm.html")), publicKey);
+        var link = await encrypt(window.location.href, publicKey);
         if ((email != null || nickname != null) && password != null) {
             if (email != null && nickname != null) {
                 if (email.length > 0 && nickname.length > 0 && password.length > 0) {

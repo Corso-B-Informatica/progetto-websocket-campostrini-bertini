@@ -62,7 +62,7 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
     var check5 = await crypto.isValid(publicKey);
     var check6 = validator.checkVerificationCode(verification_code);
 
-    if (check1 && check2 && check3 && check4 && check5 && check6 && check7) {
+    if (check1 && check2 && check3 && check4 && check5 && check6) {
         if (await database.existInDatabase(database.tempUsers, nickname, email, "and")) {
             if (await database.hasAttempts(email, password) && await database.getWaitTime(email, password) == 0) {
                 if (await database.checkVerificationCode(email, nickname, password, verification_code)) {
@@ -161,9 +161,15 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
     }
 }
 
-function isUrlConfirmed(url, email, password, nickname, verification_code) {
-    //il controllo va fatto meglio ma per ora va bene così
-    return url.includes("/confirm.html#") && email.length > 0 && password.length > 0 && nickname.length > 0 && verification_code.length > 0;
+function isUrlConfirmed(url, email, password, nickname) {
+    if ((email == null && nickname == null) || password == null) {
+        return false;
+    }
+    if ((email == undefined && nickname == undefined) || password == null) {
+        return false;
+    }
+
+    return url.includes("/confirm.html") && (email.trim().length > 0 || nickname.trim().length > 0) && password.trim().length > 0;
 }
 
 async function sendCode(armored_email, armored_nickname, armored_password, publicKeyArmored, crypted_link, socket, method) {
@@ -213,6 +219,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
         var check2 = validator.checkEmail(e_mail);
         var check3 = validator.checkPassword(password);
         var check4 = await crypto.isValid(publicKey);
+        var check5 = isUrlConfirmed(link, e_mail, password, nickname);
 
         if ((check1 || check2) && check3 && check4 && check5) {
             var email = e_mail;
@@ -229,15 +236,16 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
 
                         const expiration_time = await database.getExipirationTime(email, password);
 
-                        var crypted_email = crypto.encryptAES(email);
-                        var crypted_password = crypto.encryptAES(password);
-                        var crypted_nickname = crypto.encryptAES(nickname);
+                        const crypted_email = crypto.encryptAES(email);
+                        const crypted_password = crypto.encryptAES(password);
+                        const crypted_nickname = crypto.encryptAES(nickname);
+                        const confirm_link = link.substring(0, url.indexOf("/confirm.html") + 13);
 
-                        emailer.sendConfirmCodeViaEmail(crypted_email, crypted_nickname, crypted_password, verification_code, expiration_time);
+                        emailer.sendConfirmCodeViaEmail(crypted_email, crypted_nickname, crypted_password, verification_code, expiration_time, confirm_link);
 
-                        var wait_time = await database.getWaitTimeCode(email, password)
+                        const wait_time = await database.getWaitTimeCode(email, password)
                         if (wait_time == 0) {
-                            var times = await database.getTimes(email, password);
+                            const times = await database.getTimes(email, password);
 
                             switch (times) {
                                 case 0:
@@ -265,16 +273,16 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                     } else {
                         console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
 
-                        var time = await database.getWaitTimeCode(email, password);
-                        var wait_time = await crypto.encrypt(time.toString(), publicKey);
+                        const time = await database.getWaitTimeCode(email, password);
+                        const wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                         socket.emit("requestCodeError", "User deleted");
                     }
                 } else {
                     console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
 
-                    var time = await database.getWaitTimeCode(email, password);
-                    var wait_time = await crypto.encrypt(time.toString(), publicKey);
+                    const time = await database.getWaitTimeCode(email, password);
+                    const wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                     socket.emit("requestCodeError", wait_time);
                 }
@@ -336,6 +344,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
         var check2 = validator.checkEmail(e_mail);
         var check3 = validator.checkPassword(password);
         var check4 = await crypto.isValid(publicKey);
+        var check5 = isUrlConfirmed(link, e_mail, password, nickname);
 
         if ((check1 || check2) && check3 && check4 && check5) {
             var email = e_mail;
@@ -352,15 +361,16 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
 
                         const expiration_time = await database.getExipirationTime(email, password);
 
-                        var crypted_email = crypto.encryptAES(email);
-                        var crypted_password = crypto.encryptAES(password);
-                        var crypted_nickname = crypto.encryptAES(nickname);
+                        const crypted_email = crypto.encryptAES(email);
+                        const crypted_password = crypto.encryptAES(password);
+                        const crypted_nickname = crypto.encryptAES(nickname);
+                        const confirm_link = link.substring(0, url.indexOf("/confirm.html"));
 
-                        emailer.sendConfirmCodeViaEmail(crypted_email, crypted_nickname, crypted_password, verification_code, expiration_time);
+                        emailer.sendConfirmCodeViaEmail(crypted_email, crypted_nickname, crypted_password, verification_code, expiration_time, confirm_link);
 
-                        var wait_time = await database.getWaitTimeCode(email, password)
+                        const wait_time = await database.getWaitTimeCode(email, password)
                         if (wait_time == 0) {
-                            var times = await database.getTimes(email, password);
+                            const times = await database.getTimes(email, password);
 
                             switch (times) {
                                 case 0:
@@ -388,16 +398,16 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                     } else {
                         console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
 
-                        var time = await database.getWaitTimeCode(email, password);
-                        var wait_time = await crypto.encrypt(time.toString(), publicKey);
+                        const time = await database.getWaitTimeCode(email, password);
+                        const wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                         socket.emit("requestCodeError", "User deleted");
                     }
                 } else {
                     console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
 
-                    var time = await database.getWaitTimeCode(email, password);
-                    var wait_time = await crypto.encrypt(time.toString(), publicKey);
+                    const time = await database.getWaitTimeCode(email, password);
+                    const wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                     socket.emit("requestCodeError", wait_time);
                 }

@@ -2,7 +2,7 @@ const nodemailer = require("nodemailer");
 const crypto = require("./crypto.js");
 
 /*Invia il codice di conferma all'utente tramite email*/
-function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_time) {
+function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_time, link) {
   // Crea un trasportatore SMTP
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -19,7 +19,8 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
   const crypted_code = crypto.encryptAES(code);
   //l url va cambiato a seconda della persona che lo usa
   const url =
-    "https://andreacampostrini-jubilant-engine-56vgx5p5644fj44-3000.preview.app.github.dev/confirm.html#email=" +
+    link + 
+    "/confirm.html#email=" +
     email +
     "&nickname=" +
     nickname +

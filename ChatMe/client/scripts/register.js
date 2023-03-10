@@ -1,28 +1,27 @@
 if (checkLocalstorageForLogin()) {
-    window.location.href = "../chat.html";
+  window.location.href = "../chat.html";
 } else if (checkLocalstorageForConfirm()) {
-    var prompt = document.getElementById("prompt");
+  var prompt = document.getElementById("prompt");
 
-    // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
-    prompt.style.display = "block";
+  // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
+  prompt.style.display = "block";
 
-    var yesButton = document.getElementById("yes-button");
-    yesButton.style.display = "block";
+  var yesButton = document.getElementById("yes-button");
+  yesButton.style.display = "block";
 
-    var noButton = document.getElementById("no-button");
-    noButton.style.display = "block";
+  var noButton = document.getElementById("no-button");
+  noButton.style.display = "block";
 
-    document.getElementById("prompt-error").innerText =
-        "You have saved data";
-    document.getElementById("prompt-text").innerText =
-        "Do you want to go to the confirmation page?";
+  document.getElementById("prompt-error").innerText = "You have saved data";
+  document.getElementById("prompt-text").innerText =
+    "Do you want to go to the confirmation page?";
 
-    // Aggiungi un event listener al bottone "Yes"
-    document.getElementById("yes-button").addEventListener("click", () => {
-        window.location.href = "../confirm.html";
-    });
+  // Aggiungi un event listener al bottone "Yes"
+  document.getElementById("yes-button").addEventListener("click", () => {
+    window.location.href = "../confirm.html";
+  });
 }
-  
+
 /*keyManager*/
 const kM = new keyManager();
 
@@ -30,6 +29,7 @@ const kM = new keyManager();
 var socket = io();
 
 socket.on("publicKey", (publicKeyArmored, str) => {
+  localStorage.setItem("publicKeyArmored", publicKeyArmored);
   sendRegister(publicKeyArmored);
 });
 
@@ -39,8 +39,26 @@ socket.on("registerError", (message, error) => {
 
 socket.on(
   "registerDataError",
-  (crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4) => {
-    manageRegisterDataError(crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4);
+  (
+    crypted_check1,
+    crypted_check2,
+    crypted_check3,
+    crypted_check4,
+    crypted_data1,
+    crypted_data2,
+    crypted_data3,
+    crypted_data4
+  ) => {
+    manageRegisterDataError(
+      crypted_check1,
+      crypted_check2,
+      crypted_check3,
+      crypted_check4,
+      crypted_data1,
+      crypted_data2,
+      crypted_data3,
+      crypted_data4
+    );
   }
 );
 
@@ -78,12 +96,15 @@ async function sendRegister(publicKeyArmored) {
     publicKeyArmored
   );
 
+  const link = await encrypt(window.location.href, publicKeyArmored);
+
   socket.emit(
     "register",
     crypted_email,
     crypted_password,
     crypted_nickname,
-    crypted_publicKeyArmored
+    crypted_publicKeyArmored,
+    link
   );
 }
 
@@ -158,7 +179,6 @@ async function manageRegisterError(msg, err) {
 
       // Aggiungi un event listener al bottone "Yes"
       document.getElementById("yes-button").addEventListener("click", () => {
-        
         window.location.href = "../confirm.html";
       });
     } else if (error == "email") {
@@ -188,7 +208,14 @@ async function manageRegisterError(msg, err) {
 }
 
 async function manageRegisterDataError(
-  crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4
+  crypted_check1,
+  crypted_check2,
+  crypted_check3,
+  crypted_check4,
+  crypted_data1,
+  crypted_data2,
+  crypted_data3,
+  crypted_data4
 ) {
   var { data: check1 } = await decrypt(
     crypted_check1,
@@ -249,7 +276,7 @@ async function manageRegisterDataError(
     containerPassword.setAttribute("error-message", data3);
   }
 
-  if(!check4) {
+  if (!check4) {
     var prompt = document.getElementById("prompt");
 
     // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
@@ -258,11 +285,9 @@ async function manageRegisterDataError(
     var noButton = document.getElementById("no-button");
     noButton.style.display = "block";
 
-    document.getElementById("prompt-error").innerText =
-      data4;
+    document.getElementById("prompt-error").innerText = data4;
 
-    document.getElementById("prompt-text").innerText =
-      "";
+    document.getElementById("prompt-text").innerText = "";
 
     document.getElementById("no-button").innerText = "Ok";
   }
@@ -366,4 +391,4 @@ document.getElementById("username").oninput = function () {
 document.getElementById("password").oninput = function () {
   var containerPassword = document.getElementById("container-password");
   containerPassword.setAttribute("error-message", "Invalid password");
-}
+};

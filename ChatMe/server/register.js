@@ -8,12 +8,14 @@ async function checkUserData(
     armored_password,
     armored_nickname,
     publicKeyArmored,
+    crypted_link,
     socket
 ) {
     var { data: validate_email } = "";
     var { data: validate_password } = "";
     var { data: validate_nickname } = "";
     var { data: pubKey } = "";
+    var { data: url } = "";
 
     try {
         validate_email = await crypto.decrypt(armored_email, crypto.privateKey);
@@ -35,19 +37,27 @@ async function checkUserData(
     } catch (error) {
         pubKey = "";
     }
+    try {
+        url = await crypto.decrypt(crypted_link, crypto.privateKey);
+    } catch (error) {
+        url = "";
+    }
 
     const email = validate_email.data == undefined ? "" : validator.validate(validate_email.data);
     const password = validate_password.data == undefined ? "" : validator.validate(validate_password.data);
     const nickname = validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
     const publicKey = pubKey.data == undefined ? "" : pubKey.data;
+    const link = url.data == undefined ? "" : url.data;
+    const confirm_link = link.substring(0, url.indexOf("/signUp.html"));
 
     var check1 = validator.checkUsername(nickname);
     var check2 = validator.checkEmail(email);
     var check3 = validator.checkPassword(password);
     var check4 = await crypto.isValid(publicKey);
+    var check5 = isUrlConfirmed(link, email, password, nickname);
 
     //se i dati sono validi
-    if (check1 && check2 && check3 && check4) {
+    if (check1 && check2 && check3 && check4 && check5) {
         if (await database.existInDatabase(database.Users, nickname, email, "or")) {
             console.log("Utente già registrato");
 
@@ -75,7 +85,7 @@ async function checkUserData(
         } else {
             console.log("Utente non registrato");
 
-            registerUser(email, password, nickname, publicKey, socket);
+            registerUser(email, password, nickname, publicKey, confirm_link, socket);
         }
     } else {
         console.log("Dati non validi");
@@ -94,7 +104,18 @@ async function checkUserData(
     }
 }
 
-async function registerUser(email, password, nickname, publicKeyArmored, socket) {
+function isUrlConfirmed(url, email, password, nickname) {
+    if (email == null || nickname == null || password == null) {
+        return false;
+    }
+    if (email == undefined || nickname == undefined || password == null) {
+        return false;
+    }
+
+    return url.includes("/signUp.html") && email.trim().length > 0 && nickname.trim().length > 0 && password.trim().length > 0;
+}
+
+async function registerUser(email, password, nickname, publicKeyArmored, confirm_link, socket) {
     const verification_code = crypto.generateRandomKey(10);
 
     const expiration_time = new Date();
@@ -109,7 +130,7 @@ async function registerUser(email, password, nickname, publicKeyArmored, socket)
     var crypted_password = crypto.encryptAES(password);
     var crypted_nickname = crypto.encryptAES(nickname);
 
-    emailer.sendConfirmCodeViaEmail(crypted_email, crypted_nickname, crypted_password, verification_code, expiration_time);
+    emailer.sendConfirmCodeViaEmail(crypted_email, crypted_nickname, crypted_password, verification_code, expiration_time, confirm_link);
 
     var doubleCrypted_email = await crypto.encrypt(crypted_email, publicKeyArmored);
     var doubleCrypted_password = await crypto.encrypt(crypted_password, publicKeyArmored);

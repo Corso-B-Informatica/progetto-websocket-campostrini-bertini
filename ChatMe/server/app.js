@@ -28,12 +28,12 @@ io.on("connection", (socket) => {
     login.login(email, nickname, password, rememberMe, publicKey, socket);
   });
 
-  socket.on("register", (armored_email, armored_password, armored_nickname, publicKeyArmored) => {
-    register.checkUserData(armored_email, armored_password, armored_nickname, publicKeyArmored, socket);
+  socket.on("register", (armored_email, armored_password, armored_nickname, publicKeyArmored, link) => {
+    register.checkUserData(armored_email, armored_password, armored_nickname, publicKeyArmored, link, socket);
   });
 
-  socket.on("confirmViaLink", (email, password, nickname, verification_code, rememberMe, pubKey, aesKey, link) => {
-    confirm.confirmUserViaLink(email, password, nickname, verification_code, rememberMe, pubKey, aesKey, link, socket);
+  socket.on("confirmViaLink", (email, password, nickname, verification_code, rememberMe, pubKey, aesKey) => {
+    confirm.confirmUserViaLink(email, password, nickname, verification_code, rememberMe, pubKey, aesKey, socket);
   });
 
   socket.on("confirmViaCodeByStorage", (email, nickname, password, verification_code, rememberMe, pubKey, aesKey) => {

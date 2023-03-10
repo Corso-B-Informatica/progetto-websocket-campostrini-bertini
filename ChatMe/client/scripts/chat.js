@@ -46,7 +46,7 @@ async function login() {
     }
 }
 
-//login();
+login();
 
 /*Input limit*/
 document.getElementById("message-input").addEventListener("input", function () {
