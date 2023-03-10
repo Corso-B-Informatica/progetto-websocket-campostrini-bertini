@@ -7,7 +7,7 @@
 //quindi da quel momento in poi dovremmo usare le informazioni di login contenute nella variabile data del localStrorage dentro la chat, la aesKey appena ci arriva la salviamo in una variabile
 //poi controlliamo che abbiamo una chat, se non la abbiamo dobbiamo crearla.
 /*KeyManager*/
-const kM = keyManager();
+const kM = new keyManager();
 
 async function genKey() {
     await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
@@ -18,17 +18,90 @@ genKey();
 /*Socket.io*/
 var socket = io();
 
-if (checkData()) {
-    if (checkKey()) {
+socket.on("publicKey", (publicKey, str) => {
+    localStorage.setItem("publicKeyArmored", publicKey);
+
+    if (str == "0") {
         getAesKey();
-    } else {
-        socket.emit("getPublicKey", "0");
     }
-} else {
-    clearLocalStorageWithoutKey();
-    window.location.href = "../signUp.html";
+});
+
+/*Check if the user is logged in*/
+async function login() {
+    if (checkData()) {
+        if (checkKey()) {
+            socket.emit(
+                "getAesKey",
+                localStorage.getItem("email"),
+                localStorage.getItem("nickname"),
+                localStorage.getItem("password"),
+                await encrypt(kM.publicKey, localStorage.getItem("publicKeyArmored"))
+            );
+        } else {
+            socket.emit("getPublicKey", "0");
+        }
+    } else {
+        clearLocalStorageWithoutKey();
+        window.location.href = "../signUp.html";
+    }
 }
 
-async function getAesKey(){
-    socket.emit("getAesKey", localStorage.getItem('email'), localStorage.getItem('nickname'), localStorage.getItem('password'),await encrypt(kM.publicKey, localStorage.getItem("publicKeyArmored")));
-}
+//login();
+
+/*Input limit*/
+document.getElementById("message-input").addEventListener("input", function () {
+    var text = document.getElementById("message-input").value;
+    if (text.length > 2000) {
+        var prompt = document.getElementById("prompt");
+        prompt.style.display = "block";
+
+        var yesButton = document.getElementById("yes-button");
+        yesButton.style.display = "block";
+        yesButton.innerText = "Upload as file";
+
+        var noButton = document.getElementById("no-button");
+        noButton.style.display = "block";
+        noButton.innerText = "Cancel";
+
+        document.getElementById("prompt-error").innerText =
+            "Your message is too long...";
+        document.getElementById("prompt-text").innerText =
+            "You have exceeded the limit of 2000 characters.";
+
+        // Aggiungi un event listener al bottone "Yes"
+        document.getElementById("yes-button").addEventListener("click", () => {
+            //gestisci la creazione del file
+        });
+
+        document.getElementById("no-button").addEventListener("click", () => {
+            document.getElementById("message-input").value = text.substring(0, 2000);
+        });
+    }
+});
+
+/*Toggle prompt*/
+document.getElementById("no-button").addEventListener("click", () => {
+    var prompt = document.getElementById("prompt");
+    prompt.style.display = "none";
+
+    var yesButton = document.getElementById("yes-button");
+    yesButton.style.display = "none";
+    yesButton.innerText = "Yes";
+
+    var noButton = document.getElementById("no-button");
+    noButton.style.display = "none";
+    noButton.innerText = "No";
+});
+
+document.getElementById("yes-button").addEventListener("click", () => {
+    var prompt = document.getElementById("prompt");
+    prompt.style.display = "none";
+
+    var yesButton = document.getElementById("yes-button");
+    yesButton.style.display = "none";
+    yesButton.innerText = "Yes";
+
+    var noButton = document.getElementById("no-button");
+    noButton.style.display = "none";
+    noButton.innerText = "No";
+});

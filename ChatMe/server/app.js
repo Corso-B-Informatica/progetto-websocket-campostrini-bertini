@@ -32,8 +32,8 @@ io.on("connection", (socket) => {
     register.checkUserData(armored_email, armored_password, armored_nickname, publicKeyArmored, socket);
   });
 
-  socket.on("confirmViaLink", (email, password, nickname, verification_code, rememberMe, pubKey, aesKey) => {
-    confirm.confirmUserViaLink(email, password, nickname, verification_code, rememberMe, pubKey, aesKey, socket);
+  socket.on("confirmViaLink", (email, password, nickname, verification_code, rememberMe, pubKey, aesKey, link) => {
+    confirm.confirmUserViaLink(email, password, nickname, verification_code, rememberMe, pubKey, aesKey, link, socket);
   });
 
   socket.on("confirmViaCodeByStorage", (email, nickname, password, verification_code, rememberMe, pubKey, aesKey) => {
@@ -44,18 +44,14 @@ io.on("connection", (socket) => {
     confirm.confirmUserViaCode(email, nickname, password, verification_code, rememberMe, pubKey, aesKey, socket, "input");
   });
 
-  socket.on("getCodeByStorage", (email, nickname, password, pubKey) => {
-    confirm.sendCode(email, nickname, password, pubKey, socket, "storage");
+  socket.on("getCodeByStorage", (email, nickname, password, pubKey, link) => {
+    confirm.sendCode(email, nickname, password, pubKey, link, socket, "storage");
   });
 
-  socket.on("getCodeByInput", (email, nickname, password, pubKey) => {
-    confirm.sendCode(email, nickname, password, pubKey, socket, "input");
+  socket.on("getCodeByInput", (email, nickname, password, pubKey, link) => {
+    confirm.sendCode(email, nickname, password, pubKey, link, socket, "input");
   });
 
-  socket.on("getAesKey", (email,nickname, password, pubKey) => {
-    chat.sendAesKey(email, nickname, password, pubKey, socket);
-  });
-  
   socket.on("getAesKey", (email, nickname, password, pubKey) => {
     chat.sendAesKey(email, nickname, password, pubKey, socket);
   });

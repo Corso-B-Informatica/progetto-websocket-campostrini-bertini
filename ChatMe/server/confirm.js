@@ -62,7 +62,7 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
     var check5 = await crypto.isValid(publicKey);
     var check6 = validator.checkVerificationCode(verification_code);
 
-    if (check1 && check2 && check3 && check4 && check5 && check6) {
+    if (check1 && check2 && check3 && check4 && check5 && check6 && check7) {
         if (await database.existInDatabase(database.tempUsers, nickname, email, "and")) {
             if (await database.hasAttempts(email, password) && await database.getWaitTime(email, password) == 0) {
                 if (await database.checkVerificationCode(email, nickname, password, verification_code)) {
@@ -161,17 +161,29 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
     }
 }
 
-async function sendCode(armored_email, armored_nickname, armored_password, publicKeyArmored, socket, method) {
+function isUrlConfirmed(url, email, password, nickname, verification_code) {
+    //il controllo va fatto meglio ma per ora va bene così
+    return url.includes("/confirm.html#") && email.length > 0 && password.length > 0 && nickname.length > 0 && verification_code.length > 0;
+}
+
+async function sendCode(armored_email, armored_nickname, armored_password, publicKeyArmored, crypted_link, socket, method) {
     var { data: pubKey } = "";
+    var { data: url } = "";
 
     try {
         pubKey = await crypto.decrypt(publicKeyArmored, crypto.privateKey);
     } catch (err) {
         pubKey = "";
     }
+    try {
+        url = await crypto.decrypt(crypted_link, crypto.privateKey);
+    } catch (err) {
+        url = "";
+    }
 
     var publicKey = pubKey.data == undefined ? "" : pubKey.data;
-    
+    const link = url.data == undefined ? "" : url.data;
+
     if (method == "input") {
         var { data: validate_email } = "";
         var { data: validate_nickname } = "";
@@ -202,7 +214,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
         var check3 = validator.checkPassword(password);
         var check4 = await crypto.isValid(publicKey);
 
-        if ((check1 || check2) && check3 && check4) {
+        if ((check1 || check2) && check3 && check4 && check5) {
             var email = e_mail;
             if (e_mail.length == 0) {
                 email = await database.getEmail(nickname);
@@ -325,7 +337,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
         var check3 = validator.checkPassword(password);
         var check4 = await crypto.isValid(publicKey);
 
-        if ((check1 || check2) && check3 && check4) {
+        if ((check1 || check2) && check3 && check4 && check5) {
             var email = e_mail;
             if (e_mail.length == 0) {
                 email = await database.getEmail(nickname);

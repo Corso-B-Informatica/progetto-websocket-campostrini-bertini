@@ -24,16 +24,16 @@
     <div id="chat" class="w-100 h-100 d-flex flex-wrap">
         <div id="menu" class="h-100 w-20">
             <div id="header-logo" class="d-flex fler-wrap align-items-center w-100 position-sticky">
-                <img src="./images/logo.png" width="49.5px" height="49.5px">
                 <p id="header-menu-name" class="user-select-none">ChatMe</p>
             </div>
             <div id="contacts">
             </div>
             <div id="header-options">
                 <i id="sign-out-icon" class="fas fa-sign-out-alt" style="transform: rotate(180deg);"></i>
-            </div> 
+            </div>
         </div>
         <div id="conversation" class="h-100 w-80 d-none">
+            <div id="background-conversation" class="h-100 w-100"></div>
             <div id="header-chat" class="d-flex fler-wrap align-items-center w-100 position-fixed">
                 <i id="chat-icon" class="icon fa fa-user-o h-100" aria-hidden="true"></i>
                 <div class="d-flex flex-column">
@@ -41,13 +41,35 @@
                     <p id="header-status" class="user-select-none">Online</p>
                 </div>
             </div>
-            <div id="messages">
+            <div id="messages" class="w-100 h-100 z-n1">
 
             </div>
             <div id="typezone" class="d-flex fler-wrap align-items-center justify-content-center position-fixed w-80">
-                <div id="typezone-section" class="w-95">
-                    <i id="file-icon" class="fas fa-paperclip"></i>
+                <div id="typezone-section"
+                    class="w-98 d-flex fler-wrap align-items-center justify-content-between h-100">
+                    <button id="attach-button" class="btn" type="button">
+                        <i id="file-icon" class="fas fa-paperclip"></i>
+                    </button>
+                    <div class="d-flex align-items-end w-100 h-100">
+                        <textarea id="message-input" type="text" class="w-100 h-80 p-r-6 p-l-6"
+                            placeholder="Type a message"></textarea>
+                    </div>
+                    <button id="emoji-button" class="btn" type="button">
+                        <i id="emoji-icon" class="fas fa-smile"></i>
+                    </button>
+                    <button id="send-button" class="btn" type="button">
+                        <i id="send-icon" class="fas fa-paper-plane"></i>
+                    </button>
                 </div>
+            </div>
+        </div>
+        
+        <div id="prompt" class="rounded-5">
+            <p id="prompt-error"></p>
+            <p id="prompt-text"></p>
+            <div id="button-container" class="d-flex flex-wrap align-items-center justify-content-evenly w-100">
+                <button id="yes-button">Yes</button>
+                <button id="no-button">No</button>
             </div>
         </div>
     </div>

@@ -1,6 +1,7 @@
 class keyManager {
     constructor() {
         this.keyPair = null;
+        this.aesKey = null;
     }
 
     async generateNewKeyPair(nickname, email, password) {
@@ -16,6 +17,13 @@ class keyManager {
         const passphrase = password;
         this.keyPair = { publicKey, privateKey, passphrase };// salva le chiavi nella variabile di istanza
         return this.keyPair;
+    }
+    setAesKey(key) {
+        this.aesKey = key;
+    }
+    
+    getAesKey() {
+        return this.aesKey;
     }
 
     getPublicKey() {
