@@ -481,9 +481,9 @@ function getRow(username) {
   });
 }
 
-function getNickname(email) {
+function getNickname(db, email) {
   return new Promise((resolve, reject) => {
-    Users.all("SELECT * FROM users WHERE email = ?", [email], (err, rows) => {
+    db.all("SELECT * FROM users WHERE email = ?", [email], (err, rows) => {
       if (err) {
         console.log(err);
         reject(err);
@@ -494,14 +494,27 @@ function getNickname(email) {
   });
 }
 
-function getEmail(nickname) {
+function getEmail(db, nickname) {
   return new Promise((resolve, reject) => {
-    Users.all("SELECT * FROM users WHERE nickname = ?", [nickname], (err, rows) => {
+    db.all("SELECT * FROM users WHERE nickname = ?", [nickname], (err, rows) => {
       if (err) {
         console.log(err);
         reject(err);
       } else {
         resolve(rows[0].email);
+      }
+    });
+  });
+}
+
+function getPassword(db, email, nickname) {
+  return new Promise((resolve, reject) => {
+    db.all("SELECT * FROM users WHERE email = ? and nickname = ?", [email, nickname], (err, rows) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(rows[0].password);
       }
     });
   });
@@ -595,6 +608,7 @@ module.exports = {
   getRow,
   getNickname,
   getEmail,
+  getPassword,
   getAesKey,
   Users,
   tempUsers,

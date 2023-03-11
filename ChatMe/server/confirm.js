@@ -224,7 +224,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
         if ((check1 || check2) && check3 && check4 && check5) {
             var email = e_mail;
             if (e_mail.length == 0) {
-                email = await database.getEmail(nickname);
+                email = await database.getEmail(database.Users, nickname);
             }
 
             if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
@@ -349,7 +349,7 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
         if ((check1 || check2) && check3 && check4 && check5) {
             var email = e_mail;
             if (e_mail.length == 0) {
-                email = await database.getEmail(nickname);
+                email = await database.getEmail(database.tempUsers, nickname);
             }
 
             if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
@@ -525,11 +525,11 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
                         var nick = nickname;
 
                         if (await database.existInDatabase(database.tempUsers, "", email, "or")) {
-                            nick = await database.getNickname(email);
+                            nick = await database.getNickname(database.tempUsers, email);
                         }
 
                         if (await database.existInDatabase(database.tempUsers, nickname, "", "or")) {
-                            email = await database.getEmail(nickname);
+                            mail = await database.getEmail(database.tempUsers, nickname);
                         }
 
                         var crypted_email = crypto.encryptAES(mail);
@@ -675,11 +675,11 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
                         var nick = nickname;
 
                         if (await database.existInDatabase(database.tempUsers, "", email, "or")) {
-                            nick = await database.getNickname(email);
+                            nick = await database.getNickname(database.tempUsers, email);
                         }
 
                         if (await database.existInDatabase(database.tempUsers, nickname, "", "or")) {
-                            email = await database.getEmail(nickname);
+                            mail = await database.getEmail(database.tempUsers, nickname);
                         }
 
                         var crypted_email = crypto.encryptAES(mail);

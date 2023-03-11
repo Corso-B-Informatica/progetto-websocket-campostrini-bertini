@@ -19,7 +19,7 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
   const crypted_code = crypto.encryptAES(code);
   //l url va cambiato a seconda della persona che lo usa
   const url =
-    link.toString() + 
+    link.toString() +
     "/confirm.html#email=" +
     email +
     "&nickname=" +
@@ -28,7 +28,7 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
     password +
     "&code=" +
     crypted_code;
-  
+
   const mail =
     `<!DOCTYPE html>
 <html>
@@ -111,4 +111,91 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
   return true;
 }
 
-module.exports = { sendConfirmCodeViaEmail };
+function sendForgotPassword(email, password) {
+  // Crea un trasportatore SMTP
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // upgrade later with STARTTLS
+    auth: {
+      user: "service.chatme@gmail.com",
+      pass: "sqaglwszkeuowcgk",
+    },
+  });
+
+  const mail =
+    `<!DOCTYPE html>
+<html>
+<head>
+	<title>ChatMe ForgotPassword</title>
+	<meta charset="utf-8">
+	<style>
+    p {
+      color: grey;
+    }
+		body {
+			font-family: 'Open Sans', sans-serif;
+			font-size: 16px;
+			line-height: 1.5;
+			color: #333;
+		}
+		button {
+      border-radius: 10px;
+      background-color: #000000;
+      font-size: 16px;
+      font-weight: 500;
+      font-style: normal;
+      font-stretch: normal;
+      line-height: 1.78;
+      letter-spacing: 2px;
+      color: #ffffff;
+			padding: 10px 20px;
+			border: none;
+			cursor: pointer;
+		}
+		button:hover {
+			background-color: #333333;
+		}
+	</style>
+</head>
+<body>
+<div style="margin-left: 60px;">
+	<h2 style="font-weight: bold; color:black;">Hello</h2>
+	<p>We're sorry to hear that you've forgotten your password. We're happy to help you recover it so that you can access your account.</p>
+	<p>If you did not forget your password and received this email in error, please ignore it.</p>
+  <br>
+	<p>Alternatively, if you prefer, you can click on the button below</p>
+  <br>
+  <p>Your password is : ` +
+  password +
+  `<br>
+	<p>If you have any questions or concerns, please do not hesitate to contact us.</p>
+	<p>Thank you for choosing ChatMe!</p>
+	<p>Best regards,</p>
+	<p>The ChatMe Team</p>
+  </div>
+</body>
+</html>
+`;
+
+  // Crea l'oggetto email
+  const mailOptions = {
+    from: "Service.ChatMe@gmail.com",
+    to: email,
+    subject: "Forgot Password for Chat Me",
+    html: mail,
+  };
+
+  // Invia l'email
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+      return false;
+    } else {
+      console.log("Email inviata: " + info.response);
+    }
+  });
+  return true;
+}
+
+module.exports = { sendConfirmCodeViaEmail, sendForgotPassword };

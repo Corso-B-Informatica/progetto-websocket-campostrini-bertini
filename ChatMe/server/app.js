@@ -1,12 +1,12 @@
 const express = require('express');
 const socketio = require("socket.io");
 const config = require("./config.js");
-const crypto = require('./crypto.js');
 const database = require('./database.js');
 const register = require('./register.js');
 const confirm = require('./confirm.js');
 const login = require('./login.js');
 const chat = require('./chat.js');
+const forgotPassword = require('./forgotPassword.js');
 
 /*Express*/
 const app = express();
@@ -50,6 +50,10 @@ io.on("connection", (socket) => {
 
   socket.on("getCodeByInput", (email, nickname, password, pubKey, link) => {
     confirm.sendCode(email, nickname, password, pubKey, link, socket, "input");
+  });
+
+  socket.on("forgotPassword", (email, nickname) => {
+    forgotPassword.forgotPassword(email, nickname, socket);
   });
 
   socket.on("getAesKey", (email, nickname, password, pubKey) => {

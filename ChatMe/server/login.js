@@ -52,7 +52,7 @@ async function login(armored_email, armored_nickname, armored_password, armored_
             if (await database.checkDatabase(database.Users, nickname, email, password)) {
                 console.log("Utente loggato");
                 if (nickname == "") {
-                    var nick = await database.getNickname(email);
+                    var nick = await database.getNickname(database.Users, email);
 
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                     var c_row = await crypto.encrypt(JSON.stringify(await database.getRow(nick)), publicKey);
@@ -68,7 +68,7 @@ async function login(armored_email, armored_nickname, armored_password, armored_
                     var c_row = await crypto.encrypt(JSON.stringify(await database.getRow(nickname)), publicKey);
                     var c_aesKey = await crypto.encrypt(await database.getKeys(nickname), publicKey);
                     var c_nickname = await crypto.encrypt(crypto.encryptAES(nickname), publicKey);
-                    var c_email = await crypto.encrypt(crypto.encryptAES(await database.getEmail(nickname)), publicKey);
+                    var c_email = await crypto.encrypt(crypto.encryptAES(await database.getEmail(database.Users, nickname)), publicKey);
                     var c_password = await crypto.encrypt(crypto.encryptAES(password), publicKey);
 
                     socket.emit("loginSuccess", c_nickname, c_email, c_password, c_rememberMe, c_aesKey, c_row);
