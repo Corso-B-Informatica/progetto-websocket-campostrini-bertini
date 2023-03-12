@@ -1,6 +1,6 @@
 const express = require('express');
+const http = require('http');
 const socketio = require("socket.io");
-const config = require("./config.js");
 const database = require('./database.js');
 const register = require('./register.js');
 const confirm = require('./confirm.js');
@@ -10,11 +10,13 @@ const forgotPassword = require('./forgotPassword.js');
 
 /*Express*/
 const app = express();
+
 app.use(express.static("../client"));
 
 /*Socket.io*/
-const server = app.listen(config.port, () => {
-  console.log("Server in ascolto sulla porta " + config.port);
+//http server sempre sulla porta 80
+const server = app.listen(80, () => {
+  console.log("Server in ascolto sulla porta 80");
 });
 
 const io = socketio(server);
