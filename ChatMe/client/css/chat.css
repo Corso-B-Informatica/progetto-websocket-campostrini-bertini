@@ -34,12 +34,26 @@
   top: 0px;
 }
 
+#search-contact {
+  border-radius: 12px;
+  background-color: var(--dark-1);
+  box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.2);
+}
+
 #header-menu-name {
   font-size: 20px;
   color: var(--white-transparent);
   height: 49.5px;
 }
 
+#new-messages {
+  color: var(--white-transparent);
+  margin: 0px;
+}
+#new-messages-number {
+  color: var(--last-status-transparent);
+  margin: 0px;
+}
 #header-chat-name {
   font-size: 20px;
   color: var(--white-transparent);
@@ -87,6 +101,26 @@
   color: var(--gray-2);
 }
 
+#search-icon {
+  color: var(--gray-2);
+}
+
+#write-icon {
+  color: var(--dark-violet-1);
+  font-size: 18px;
+}
+
+#write-button:hover #write-icon {
+  transform: scale(1.4);
+  transition: all 0.2s ease-in-out;
+}
+
+#search-button:hover #search-icon {
+  color: var(--dark-violet-1);
+  transform: scale(1.4);
+  transition: all 0.2s ease-in-out;
+}
+
 #attach-button:hover #file-icon {
   color: var(--dark-violet-1);
   transform: scale(1.4);
@@ -127,19 +161,44 @@
   border: none;
 }
 
+#contact-input {
+  background-color: var(--dark-1);
+  color: #fff;
+  border: none;
+}
+
+input {
+  outline: none;
+  border: none;
+}
+
 textarea {
   resize: none;
   outline: none;
   border: none;
 }
 
+input:focus::placeholder {
+  color: transparent;
+}
+
 textarea:focus::placeholder {
   color: transparent;
+}
+
+input::placeholder {
+  color: #adadad;
+  font-weight: 600;
 }
 
 textarea::placeholder {
   color: #adadad;
   font-weight: 600;
+}
+
+input:focus {
+  outline: none;
+  border: none;
 }
 
 textarea:focus {
@@ -148,6 +207,9 @@ textarea:focus {
   padding-bottom: 3px;
 }
 
+button:focus {
+  outline: none;
+}
 
 /*Global paragraf*/
 p {

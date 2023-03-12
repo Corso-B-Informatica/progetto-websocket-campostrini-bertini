@@ -26,14 +26,34 @@
             <div id="header-logo" class="d-flex fler-wrap align-items-center w-100 position-sticky">
                 <p id="header-menu-name" class="user-select-none">ChatMe</p>
             </div>
-            <div id="contacts">
+            <div id="contacts" class="d-flex flex-col w-100 align-items-center m-t-20 m-b-20">
+                <div id="search-contact"
+                    class="d-flex fler-wrap align-items-center justify-content-center w-90 p-r-6 p-l-20 p-t-10 p-b-10 m-b-20">
+                    <input type="text" id="contact-input" class="w-100" placeholder="Search anything">
+                    <button id="search-button" class="btn" type="button">
+                        <i id="search-icon" class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div id="contacts-new-messages" class="d-flex flex-wrap align-items-center justify-content-evenly w-90">
+                    <h3 id="new-messages" class="user-select-none">Messages</h3>
+                    <h3 id="new-messages-number" class="user-select-none">0 New</h3>
+                    <div id="contact-write" class="w-20 d-flex flex-wrap justify-content-end align-items-center">
+                        <button id="write-button" class="btn" type="button">
+                            <i id="write-icon" class="fa-regular fa-pen-to-square"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div id="header-options">
-                <i id="sign-out-icon" class="fas fa-sign-out-alt" style="transform: rotate(180deg);"></i>
+                <button id="sign-out-button" class="btn" type="button">
+                    <i id="sign-out-icon" class="fas fa-sign-out-alt" style="transform: rotate(180deg);"></i>
+                </button>
+                <button id="sync-button" class="btn" type="button">
+                    <i id="sync-icon" class="fas fa-sync-alt"></i>
+                </button>
             </div>
         </div>
         <div id="conversation" class="h-100 w-80 d-none">
-            <div id="background-conversation" class="h-100 w-100"></div>
             <div id="header-chat" class="d-flex fler-wrap align-items-center w-100 position-fixed">
                 <i id="chat-icon" class="icon fa fa-user-o h-100" aria-hidden="true"></i>
                 <div class="d-flex flex-column">
@@ -41,7 +61,8 @@
                     <p id="header-status" class="user-select-none">Online</p>
                 </div>
             </div>
-            <div id="messages" class="w-100 h-100 z-n1">
+            <div id="background-conversation" class="h-100 w-100"></div>
+            <div id="messages" class="w-100">
 
             </div>
             <div id="typezone" class="d-flex fler-wrap align-items-center justify-content-center position-fixed w-80">
@@ -63,7 +84,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div id="prompt" class="rounded-5">
             <p id="prompt-error"></p>
             <p id="prompt-text"></p>

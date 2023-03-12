@@ -1,6 +1,6 @@
 body {
   background-repeat: no-repeat;
-  background-size: 100%;
+  background-size: cover;
   background-image: linear-gradient(to bottom, #00dbde, #fc00ff);
   animation: gradient 5s ease infinite;
 }

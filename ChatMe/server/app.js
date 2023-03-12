@@ -15,9 +15,9 @@ const app = express();
 app.use(express.static("../client"));
 
 /*Socket.io*/
-//http server sempre sulla porta 80
+//http server sempre sulla porta 8080
 const server = app.listen(config.port, () => {
-  console.log("Server in ascolto sulla porta 80");
+  console.log("Server in ascolto sulla porta " + config.port);
 });
 
 const io = socketio(server);
