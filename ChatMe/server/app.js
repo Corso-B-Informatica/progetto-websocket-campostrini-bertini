@@ -1,5 +1,5 @@
 const express = require('express');
-const http = require('http');
+const config = require('./config.js');
 const socketio = require("socket.io");
 const database = require('./database.js');
 const register = require('./register.js');
@@ -15,7 +15,7 @@ app.use(express.static("../client"));
 
 /*Socket.io*/
 //http server sempre sulla porta 80
-const server = app.listen(80, () => {
+const server = app.listen(config.port, () => {
   console.log("Server in ascolto sulla porta 80");
 });
 
