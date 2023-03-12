@@ -7,6 +7,7 @@ const confirm = require('./confirm.js');
 const login = require('./login.js');
 const chat = require('./chat.js');
 const forgotPassword = require('./forgotPassword.js');
+const crypto = require('./crypto.js');
 
 /*Express*/
 const app = express();
