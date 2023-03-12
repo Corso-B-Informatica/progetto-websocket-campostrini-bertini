@@ -8,5 +8,7 @@
   },
   "devDependencies": {
     "openpgp": "^5.7.0"
-  }
+  },
+  "start": "node app.js"
+
 }
