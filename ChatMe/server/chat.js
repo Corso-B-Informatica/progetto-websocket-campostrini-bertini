@@ -44,38 +44,22 @@ async function sendAesKey(
     const publicKey =
         validate_pubKey.data == undefined ? "" : validate_pubKey.data;
 
-    if (
-        (await database.getAesKey(
-            validate_email,
-            validate_nickname,
-            validate_password
-        )) == null ||
-        (await database.getAesKey(
-            validate_email,
-            validate_nickname,
-            validate_password
-        )) == undefined ||
-        (await database
-            .getAesKey(validate_email, validate_nickname, validate_password)
-            .toString()
-            .trim()) == ""
-    ) {
+    const aesKey = await database.getAesKey(email, nickname, password);
+
+    if (aesKey == null || aesKey == undefined || aesKey.trim().length == 0) {
         socket.emit("ErrorAesKey");
     } else {
-        for (let i = 0; i < (await database.GetChat().chat.length); i++) {
-            socket.join(await database.GetChat().chat[i].chatId);
+        var chat = await database.GetChat(nickname);
+        for (let i = 0; i < (chat.chat.length); i++) {
+            socket.join(chat.chat[i].chatId);
         }
         socket.emit(
             "AesKey",
             crypto.encrypt(
-                await database.getAesKey(
-                    validate_email,
-                    validate_nickname,
-                    validate_password
-                ),
+                aesKey,
                 publicKey
             ),
-            crypto.encrypt(await database.GetChat(), publicKey)
+            crypto.encrypt(chat, publicKey)
         );
     }
 }

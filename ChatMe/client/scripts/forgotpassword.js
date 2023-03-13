@@ -216,3 +216,10 @@ document.getElementById("toggle-password-2").addEventListener("click", () => {
         password.type = "password";
     }
 });
+
+//se la key è invio premo il bottone
+document.onkeydown = function (e) {
+    if (e.keyCode == 13) {
+        forgotPassword();
+    }
+}

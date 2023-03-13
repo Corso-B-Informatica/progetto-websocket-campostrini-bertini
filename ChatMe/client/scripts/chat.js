@@ -6,15 +6,14 @@
 //poi controlliamo se il rememeber me è false e se lo è cancelliamo email, password, nickname e remember me, ma i dati della chat ce li teniamo, finchè non viene aggiornata la pagina
 //quindi da quel momento in poi dovremmo usare le informazioni di login contenute nella variabile data del localStrorage dentro la chat, la aesKey appena ci arriva la salviamo in una variabile
 //poi controlliamo che abbiamo una chat, se non la abbiamo dobbiamo crearla.
-/*KeyManager*/
+/*keyManager*/
 const kM = new keyManager();
 
 async function genKey() {
     await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
 }
-genKey();
 
-var pubKey = kM.getPublicKey();
+genKey();
 
 /*Socket.io*/
 var socket = io();
@@ -45,7 +44,7 @@ async function login() {
                 localStorage.getItem("email"),
                 localStorage.getItem("nickname"),
                 localStorage.getItem("password"),
-                await encrypt(pubKey, localStorage.getItem("publicKeyArmored"))
+                await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
             );
         } else {
             socket.emit("getPublicKey", "0");
@@ -59,7 +58,9 @@ async function login() {
 login();
 
 
-
+async function sendMessage() {
+    //da continuare
+}
 
 /*Input limit*/
 document.getElementById("message-input").addEventListener("input", function () {
@@ -119,4 +120,11 @@ document.getElementById("yes-button").addEventListener("click", () => {
     noButton.innerText = "No";
 });
 
-
+//se la key è invio premo il bottone
+document.onkeydown = function (e) {
+    if (e.keyCode == 13) {
+        if(document.getElementById("message-input").value != ""){
+            sendMessage();
+        }
+    }
+}

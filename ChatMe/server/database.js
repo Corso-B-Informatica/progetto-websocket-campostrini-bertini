@@ -171,7 +171,7 @@ function insertUser(nickname, email, password, key) {
   });
 }
 
-function getAesKey(email,nickname, password){
+function getAesKey(email, nickname, password) {
   return new Promise((resolve, reject) => {
     Users.all(
       `select * from users where nickname = ? or email = ? and password = ?`,
@@ -568,21 +568,19 @@ function updateWaitTimeCode() {
 
 function getAesKey(email, nickname, password) {
   return new Promise((resolve, reject) => {
-    Users.all(
-      `select * from users where nickname = ? or email = ? `,
-      [nickname, email],
-      (err, rows) => {
-        if (err) {
-          console.log(err);
-          reject(err);
+    Users.all("SELECT * FROM users WHERE email = ? or nickname = ?", [email, nickname], (err, rows) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        console.log(rows)
+        if (rows[0].password == password) {
+          resolve(rows[0].key);
         } else {
-          if(rows[0].password == password){
-            resolve(rows[0].key);
-          }else{
-            resolve(false);
-          }
+          resolve(false);
         }
-      });
+      }
+    });
   });
 }
 
@@ -597,7 +595,7 @@ function GetChat(nickname) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].chat );
+          resolve(rows[0].chat);
         }
       }
     );
