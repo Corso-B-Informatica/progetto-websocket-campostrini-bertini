@@ -9,8 +9,8 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
     port: 465,
     secure: true, // upgrade later with STARTTLS
     auth: {
-      user: "service.chatme@gmail.com",
-      pass: "sqaglwszkeuowcgk",
+      user: "chatme.mailservice@gmail.com",
+      pass: "wplzwdztlyajqfaj",
     },
   });
 
@@ -93,7 +93,7 @@ function sendConfirmCodeViaEmail(email, nickname, password, code, expiration_tim
 
   // Crea l'oggetto email
   const mailOptions = {
-    from: "Service.ChatMe@gmail.com",
+    from: "chatme.mailservice@gmail.com",
     to: decrypted_email,
     subject: "Registration Confirmation for Chat Me",
     html: mail,
@@ -118,8 +118,8 @@ function sendForgotPassword(email, password) {
     port: 465,
     secure: true, // upgrade later with STARTTLS
     auth: {
-      user: "service.chatme@gmail.com",
-      pass: "sqaglwszkeuowcgk",
+      user: "chatme.mailservice@gmail.com",
+      pass: "wplzwdztlyajqfaj",
     },
   });
 
@@ -180,7 +180,7 @@ function sendForgotPassword(email, password) {
 
   // Crea l'oggetto email
   const mailOptions = {
-    from: "Service.ChatMe@gmail.com",
+    from: "chatme.mailservice@gmail.com",
     to: email,
     subject: "Forgot Password for Chat Me",
     html: mail,
