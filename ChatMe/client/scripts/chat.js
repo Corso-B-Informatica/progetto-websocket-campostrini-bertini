@@ -26,20 +26,20 @@ socket.on("publicKey", (publicKey, str) => {
     }
 });
 
-socket.on("AesKey", (aesKey, chat) => {
-    console.log("gesù figlio di troia")
+socket.on("aesKey", (aesKey) => {
+    manageAesKeySuccess();
 });
 
-socket.on("ErrorAesKey", ()  => {
+socket.on("errorAesKey", ()  => {
     clearLocalStorageWithoutKey();
     window.location.href = "../signUp.html";
 });
 
 /*Check if the user is logged in*/
 async function login() {
+    var a = await genKey();
     if (checkData()) {
         if (checkKey()) {
-            console.log(kM.getPublicKey())
             socket.emit(
                 "getAesKey",
                 await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
@@ -58,11 +58,25 @@ async function login() {
 
 login();
 
-
 async function sendMessage() {
     //da continuare
 }
 
+async function manageAesKeySuccess(crypted_aes_key) {
+    var { data: aes_key } = await decrypt(
+        crypted_aes_key,
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
+
+    kM.setAesKey(aes_key);
+    readLocalStorage();
+}
+
+async function readLocalStorage() {
+    var aes_key = kM.getAesKey();
+    
+}
 /*Input limit*/
 document.getElementById("message-input").addEventListener("input", function () {
     var text = document.getElementById("message-input").value;

@@ -30,7 +30,7 @@ async function sendAesKey(
         validate_nickname = "";
     }
     try {
-        validate_pubKey = await crypto.decrypt(crypted_pubKey);
+        validate_pubKey = await crypto.decrypt(crypted_pubKey, crypto.privateKey);
     } catch (err) {
         validate_pubKey = "";
     }
@@ -47,7 +47,7 @@ async function sendAesKey(
     const aesKey = await database.getAesKey(email, nickname, password);
 
     if (aesKey == null || aesKey == undefined || aesKey.trim().length == 0) {
-        socket.emit("ErrorAesKey");
+        socket.emit("errorAesKey");
     } else {
         var chat = JSON.parse(await database.GetChat(nickname));
         console.log(chat)
@@ -55,12 +55,11 @@ async function sendAesKey(
             socket.join(chat.chats[i].chatId);
         }
         socket.emit(
-            "AesKey",
+            "aesKey",
             await crypto.encrypt(
                 aesKey,
                 pubKey
-            ),
-            await crypto.encrypt(chat.toString(), pubKey)
+            )
         );
     }
 }
