@@ -569,20 +569,43 @@ function updateWaitTimeCode() {
 function getAesKey(email, nickname, password) {
   return new Promise((resolve, reject) => {
     Users.all(
-      `select * from users where nickname = ? or email = ? and password = ?`,
-      [nickname, email, password],
+      `select * from users where nickname = ? or email = ? `,
+      [nickname, email],
       (err, rows) => {
         if (err) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].key);
+          if(rows[0].password == password){
+            resolve(rows[0].key);
+          }else{
+            resolve(false);
+          }
         }
       });
   });
 }
 
+/*Ritorna la chat*/
+function GetChat(nickname) {
+  return new Promise((resolve, reject) => {
+    Chat.all(
+      "SELECT * FROM users WHERE nickname = ?",
+      [nickname],
+      (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(rows[0].chat );
+        }
+      }
+    );
+  });
+}
+
 module.exports = {
+  GetChat,
   existInDatabase,
   insertTempUsers,
   insertUser,

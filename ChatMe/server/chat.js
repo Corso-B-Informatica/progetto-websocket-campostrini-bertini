@@ -1,7 +1,14 @@
-const crypto = require('./crypto.js');
-const database = require('./database.js');
+const crypto = require("./crypto.js");
+const database = require("./database.js");
+const validator = require("./validator.js");
 
-async function sendAesKey(crypted_email, crypted_nickname, crypted_password, crypted_pubKey, socket) {
+async function sendAesKey(
+    crypted_email,
+    crypted_nickname,
+    crypted_password,
+    crypted_pubKey,
+    socket
+) {
     var validate_email = "";
     var validate_password = "";
     var validate_nickname = "";
@@ -28,23 +35,49 @@ async function sendAesKey(crypted_email, crypted_nickname, crypted_password, cry
         validate_pubKey = "";
     }
 
-    const email = validate_email == undefined ? "" : validator.validate(validate_email);
-    const password = validate_password == undefined ? "" : validator.validate(validate_password);
-    const nickname = validate_nickname == undefined ? "" : validator.validate(validate_nickname);
-    const publicKey = validate_pubKey.data == undefined ? "" : validate_pubKey.data;
+    const email =
+        validate_email == undefined ? "" : validator.validate(validate_email);
+    const password =
+        validate_password == undefined ? "" : validator.validate(validate_password);
+    const nickname =
+        validate_nickname == undefined ? "" : validator.validate(validate_nickname);
+    const publicKey =
+        validate_pubKey.data == undefined ? "" : validate_pubKey.data;
 
-    var check1 = validator.checkUsername(nickname);
-    var check2 = validator.checkEmail(email);
-    var check3 = validator.checkPassword(password);
-    var check5 = await crypto.isValid(publicKey);
-    
-    if(await database.getAesKey(validate_email, validate_nickname, validate_password) == null){
+    if (
+        (await database.getAesKey(
+            validate_email,
+            validate_nickname,
+            validate_password
+        )) == null ||
+        (await database.getAesKey(
+            validate_email,
+            validate_nickname,
+            validate_password
+        )) == undefined ||
+        (await database
+            .getAesKey(validate_email, validate_nickname, validate_password)
+            .toString()
+            .trim()) == ""
+    ) {
         socket.emit("ErrorAesKey");
+    } else {
+        for (let i = 0; i < (await database.GetChat().chat.length); i++) {
+            socket.join(await database.GetChat().chat[i].chatId);
+        }
+        socket.emit(
+            "AesKey",
+            crypto.encrypt(
+                await database.getAesKey(
+                    validate_email,
+                    validate_nickname,
+                    validate_password
+                ),
+                publicKey
+            ),
+            crypto.encrypt(await database.GetChat(), publicKey)
+        );
     }
-    else{
-        socket.emit("AesKey", await database.getAesKey(validate_email, validate_nickname, validate_password))
-    }
-     
 }
 
 module.exports = { sendAesKey };

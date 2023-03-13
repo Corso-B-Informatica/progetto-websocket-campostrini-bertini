@@ -12,8 +12,9 @@ const kM = new keyManager();
 async function genKey() {
     await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
 }
-
 genKey();
+
+var pubKey = kM.getPublicKey();
 
 /*Socket.io*/
 var socket = io();
@@ -22,8 +23,17 @@ socket.on("publicKey", (publicKey, str) => {
     localStorage.setItem("publicKeyArmored", publicKey);
 
     if (str == "0") {
-        getAesKey();
+        login();
     }
+});
+
+socket.on("AesKey", (aesKey, chat) => {
+    console.log("gesù figlio di troia")
+});
+
+socket.on("ErrorAesKey", ()  => {
+    clearLocalStorageWithoutKey();
+    window.location.href = "../signUp.html";
 });
 
 /*Check if the user is logged in*/
@@ -35,7 +45,7 @@ async function login() {
                 localStorage.getItem("email"),
                 localStorage.getItem("nickname"),
                 localStorage.getItem("password"),
-                await encrypt(kM.publicKey, localStorage.getItem("publicKeyArmored"))
+                await encrypt(pubKey, localStorage.getItem("publicKeyArmored"))
             );
         } else {
             socket.emit("getPublicKey", "0");
@@ -46,7 +56,10 @@ async function login() {
     }
 }
 
-//login();
+login();
+
+
+
 
 /*Input limit*/
 document.getElementById("message-input").addEventListener("input", function () {
@@ -105,3 +118,5 @@ document.getElementById("yes-button").addEventListener("click", () => {
     noButton.style.display = "none";
     noButton.innerText = "No";
 });
+
+
