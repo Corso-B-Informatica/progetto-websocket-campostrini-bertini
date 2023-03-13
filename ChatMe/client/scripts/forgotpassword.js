@@ -60,12 +60,12 @@ async function forgotPassword() {
     if (checkKey()) {
         if (checkUsernameOrEmail()) {
             var ue = document.getElementById("username").value;
-            var crypted_email = await encrypt(validate(ue), localStorage.getItem("publicKeyArmored"));
+            var crypted_ue = await encrypt(validate(ue), localStorage.getItem("publicKeyArmored"));
 
-            if (ue.toString().contains("@")) {
-                socket.emit("forgotPassword", crypted_email, "");
+            if (ue.toString().includes('@')) {
+                socket.emit("forgotPassword", crypted_ue, "");
             } else {
-                socket.emit("forgotPassword", "", crypted_nickname);
+                socket.emit("forgotPassword", "", crypted_ue);
             }
         }
     } else {

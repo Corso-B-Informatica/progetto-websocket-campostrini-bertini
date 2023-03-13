@@ -509,7 +509,7 @@ function getEmail(db, nickname) {
 
 function getPassword(db, email, nickname) {
   return new Promise((resolve, reject) => {
-    db.all("SELECT * FROM users WHERE email = ? and nickname = ?", [email, nickname], (err, rows) => {
+    db.all("SELECT * FROM users WHERE email = ? or nickname = ?", [email, nickname], (err, rows) => {
       if (err) {
         console.log(err);
         reject(err);

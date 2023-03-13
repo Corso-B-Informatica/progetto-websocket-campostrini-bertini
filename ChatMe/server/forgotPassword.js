@@ -26,22 +26,22 @@ async function forgotPassword(armored_email, armored_nickname, socket) {
 
     if (check1 || check2) {
         if (await database.existInDatabase(database.Users, nickname, email, "or")) {
-            var password = await database.getPasswordFromTempUsers(nickname, email);
+            var password = await database.getPassword(database.Users, email, nickname);
             var e_mail = email;
 
             if (e_mail.length == 0) {
-                email = await database.getEmail(database.Users, nickname);
+                e_mail = await database.getEmail(database.Users, nickname);
             }
 
             emailer.sendForgotPassword(e_mail, password);
 
             socket.emit("forgotPasswordSuccess");
         } else if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
-            var password = await database.getPasswordFromTempUsers(nickname, email);
+            var password = await database.getPassword(database.tempUsers, email, nickname);
             var e_mail = email;
 
             if (e_mail.length == 0) {
-                email = await database.getEmail(database.tempUsers, nickname);
+                e_mail = await database.getEmail(database.tempUsers, nickname);
             }
 
             emailer.sendForgotPassword(e_mail, password);
