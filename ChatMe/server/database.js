@@ -573,7 +573,6 @@ function getAesKey(email, nickname, password) {
         console.log(err);
         reject(err);
       } else {
-        console.log(rows)
         if (rows[0].password == password) {
           resolve(rows[0].key);
         } else {
@@ -588,7 +587,7 @@ function getAesKey(email, nickname, password) {
 function GetChat(nickname) {
   return new Promise((resolve, reject) => {
     Chat.all(
-      "SELECT * FROM users WHERE nickname = ?",
+      "SELECT * FROM chat WHERE nickname = ?",
       [nickname],
       (err, rows) => {
         if (err) {

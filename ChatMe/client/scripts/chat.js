@@ -39,11 +39,12 @@ socket.on("ErrorAesKey", ()  => {
 async function login() {
     if (checkData()) {
         if (checkKey()) {
+            console.log(kM.getPublicKey())
             socket.emit(
                 "getAesKey",
-                localStorage.getItem("email"),
-                localStorage.getItem("nickname"),
-                localStorage.getItem("password"),
+                await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
+                await encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored")),
+                await encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored")),
                 await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
             );
         } else {
