@@ -29,7 +29,7 @@
 
 #header-chat {
   background-color: var(--dark-1-transparent);
-  padding: 12px 30px;
+  height: 85.5px;
   box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.1);
   top: 0px;
 }
@@ -50,10 +50,12 @@
   color: var(--white-transparent);
   margin: 0px;
 }
+
 #new-messages-number {
   color: var(--last-status-transparent);
   margin: 0px;
 }
+
 #header-chat-name {
   font-size: 20px;
   color: var(--white-transparent);
@@ -67,7 +69,7 @@
 #chat-icon {
   font-size: 20px;
   font-weight: lighter;
-  padding-right: 25px;
+  padding: 0px 30px;
   color: var(--white-transparent);
 }
 
@@ -77,7 +79,7 @@
 }
 
 #header-logo {
-  padding: 12px 30px;
+  height: 85.5px;
   box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.1);
   top: 0px;
 }
@@ -165,6 +167,7 @@
   background-color: var(--dark-1);
   color: #fff;
   border: none;
+  padding: 0px 20px;
 }
 
 input {
@@ -207,8 +210,19 @@ textarea:focus {
   padding-bottom: 3px;
 }
 
+button {
+  outline: none;
+  border: none;
+}
+
+button:hover {
+  outline: none;
+  border: none;
+}
+
 button:focus {
   outline: none;
+  border: none;
 }
 
 /*Global paragraf*/
@@ -268,7 +282,7 @@ p {
   min-height: 12px;
   height: 12px;
   max-height: 12px;
-  background-color:rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.1);
   cursor: pointer;
 }
 
@@ -298,19 +312,19 @@ p {
 /*Media sizes*/
 @media (min-width: 1400px) {
   #header-chat {
-    padding: 15px 35px;
+    height: 82.5px;
   }
   #header-logo {
-    padding: 15px 35px;
+    height: 82.5px;
   }
 }
 
 @media (min-width: 1600px) {
   #header-chat {
-    padding: 18px 37px;
+    height: 85.5px;
   }
   #header-logo {
-    padding: 18px 37px;
+    height: 85.5px;
   }
 }
 
@@ -398,6 +412,9 @@ p {
   }
   #typezone {
     margin-bottom: 2px !important;
+  }
+  #header-logo {
+    box-shadow: none;
   }
 }
 

@@ -23,18 +23,11 @@
 <body>
     <div id="chat" class="w-100 h-100 d-flex flex-wrap">
         <div id="menu" class="h-100 w-20">
-            <div id="header-logo" class="d-flex fler-wrap align-items-center w-100 position-sticky">
-                <p id="header-menu-name" class="user-select-none">ChatMe</p>
+            <div id="header-logo" class="d-flex fler-wrap align-items-center w-100 position-sticky justify-content-center">
             </div>
-            <div id="contacts" class="d-flex flex-col w-100 align-items-center m-t-20 m-b-20">
-                <div id="search-contact"
-                    class="d-flex fler-wrap align-items-center justify-content-center w-90 p-r-6 p-l-20 p-t-10 p-b-10 m-b-20">
-                    <input type="text" id="contact-input" class="w-100" placeholder="Search anything">
-                    <button id="search-button" class="btn" type="button">
-                        <i id="search-icon" class="fas fa-search"></i>
-                    </button>
-                </div>
-                <div id="contacts-new-messages" class="d-flex flex-wrap align-items-center justify-content-evenly w-90">
+            <div id="contacts" class="d-flex flex-col w-100 align-items-center m-t-15 m-b-15">
+                <!--si potrebbe provare a spostare sopra w whatsapp foto telegram-->
+                <div id="contacts-new-messages" class="d-flex flex-wrap align-items-center justify-content-evenly w-90 m-b-15">
                     <h3 id="new-messages" class="user-select-none">Messages</h3>
                     <h3 id="new-messages-number" class="user-select-none">0 New</h3>
                     <div id="contact-write" class="w-20 d-flex flex-wrap justify-content-end align-items-center">
@@ -42,6 +35,12 @@
                             <i id="write-icon" class="fa-regular fa-pen-to-square"></i>
                         </button>
                     </div>
+                </div>
+                <div id="search-contact" class="d-flex fler-wrap align-items-center justify-content-center w-90 h-60">
+                    <input type="text" id="contact-input" class="w-100" placeholder="Search anything">
+                    <button id="search-button" class="btn" type="button">
+                        <i id="search-icon" class="fas fa-search"></i>
+                    </button>
                 </div>
             </div>
             <div id="header-options">
@@ -55,17 +54,17 @@
         </div>
         <div id="conversation" class="h-100 w-80 d-none">
             <div id="header-chat" class="d-flex fler-wrap align-items-center w-100 position-fixed">
-                <i id="chat-icon" class="icon fa fa-user-o h-100" aria-hidden="true"></i>
+                <i id="chat-icon" class="icon fa fa-user-o" aria-hidden="true"></i>
                 <div class="d-flex flex-column">
-                    <p id="header-chat-name" class="user-select-none">Bertini</p>
-                    <p id="header-status" class="user-select-none">Online</p>
+                    <p id="header-chat-name" class="user-select-none">ads</p>
+                    <p id="header-status" class="user-select-none">asd</p>
                 </div>
             </div>
             <div id="background-conversation" class="h-100 w-100"></div>
             <div id="messages" class="w-100">
 
             </div>
-            <div id="typezone" class="d-flex fler-wrap align-items-center justify-content-center position-fixed w-80">
+            <div id="typezone" class="d-flex fler-wrap align-items-center justify-content-center position-fixed w-80 d-none">
                 <div id="typezone-section"
                     class="w-98 d-flex fler-wrap align-items-center justify-content-between h-100">
                     <button id="attach-button" class="btn" type="button">

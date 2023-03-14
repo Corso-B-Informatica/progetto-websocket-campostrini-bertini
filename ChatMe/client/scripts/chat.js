@@ -27,7 +27,7 @@ socket.on("publicKey", (publicKey, str) => {
 });
 
 socket.on("aesKey", (aesKey) => {
-    manageAesKeySuccess();
+    manageAesKeySuccess(aesKey);
 });
 
 socket.on("errorAesKey", ()  => {
@@ -63,6 +63,7 @@ async function sendMessage() {
 }
 
 async function manageAesKeySuccess(crypted_aes_key) {
+    console.log(crypted_aes_key)
     var { data: aes_key } = await decrypt(
         crypted_aes_key,
         kM.getPrivateKey(),

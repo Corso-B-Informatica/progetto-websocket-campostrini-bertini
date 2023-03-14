@@ -43,23 +43,27 @@ async function sendAesKey(
         validate_nickname == undefined ? "" : validator.validate(validate_nickname);
     const pubKey =
         validate_pubKey.data == undefined ? "" : validate_pubKey.data;
-    console.log(email, password, nickname)
+    
     const aesKey = await database.getAesKey(email, nickname, password);
 
     if (aesKey == null || aesKey == undefined || aesKey.trim().length == 0) {
         socket.emit("errorAesKey");
     } else {
+        
         var chat = JSON.parse(await database.GetChat(nickname));
-        console.log(chat)
+
         for (let i = 0; i < (chat.chats.length); i++) {
             socket.join(chat.chats[i].chatId);
         }
+
+        var message = await crypto.encrypt(
+            aesKey,
+            pubKey
+        );
+
         socket.emit(
             "aesKey",
-            await crypto.encrypt(
-                aesKey,
-                pubKey
-            )
+            message
         );
     }
 }
