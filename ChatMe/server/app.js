@@ -62,6 +62,9 @@ io.on("connection", (socket) => {
   socket.on("getAesKey", (email, nickname, password, pubKey) => {
     chat.sendAesKey(email, nickname, password, pubKey, socket);
   });
+  socket.on("message", (message, nickname, password, dnickname, pubKey) => {
+    chat.sendMessage(message, nickname, password, dnickname, pubKey, socket);
+  });
 });
 
 setInterval(database.cleanDatabase, 60000);

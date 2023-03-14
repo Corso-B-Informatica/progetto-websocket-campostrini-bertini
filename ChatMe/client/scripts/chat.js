@@ -59,12 +59,28 @@ async function login() {
 login();
 
 async function sendMessage() {
-    //da continuare
+        //da continuare
+        var message = document.getElementById("message-input").value
+        console.log(message)
+        if(message.length > 2000) {
+            //mostra un errore
+        }
+        else{
+            let crypted_message = encrypt(message, localStorage.getItem("publicKeyArmored"))
+            let crypted_nickname = encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored"))
+            let crypted_password = encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored"))
+            let crypted_dnickname = encrypt("sos", localStorage.getItem("publicKeyArmored"))
+            let crypted_publickey = encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
+            if(checkKey()){
+                socket.emit("message", crypted_message, crypted_nickname, crypted_password, crypted_dnickname, crypted_publickey)
+            }
+            else{
+                socket.emit("getPublicKey", "1")
+            }
+        }
     //pulsante che prende il testo da "message-input" incluse le emoji e poi prende i file che l'utente ha caricato
     //(max 100 file per un massimo di 100mB a file e un massimo di un totale di 5gB si potrebbe anche fare 10gB ma andrebbe a ridurre le prestazioni 50% di maxPotenziale)
     //controlla se i file sono meno di 100 e pesano il giusto
-    //controlla che il message-input sia lungo meno di 2000 chars (incluse emoji)
-    //invia il messaggio criptato al server assieme al proprio nickname alla password, all'id della chat
     //sul server fare il check chi è online in quella chat, se è una chat singola controllare solo che la persona sia online (mandare nella stanza con l'id della chat il messaggio e inserire nel database degli utenti le robe)
 }
 async function searchContact() {

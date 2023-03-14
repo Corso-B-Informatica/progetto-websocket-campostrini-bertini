@@ -191,7 +191,7 @@ function insertChat(nickname, chat) {
   return new Promise((resolve, reject) => {
     Chat.run(
       ` INSERT INTO chat (nickname, chat)
-      VALUES (?, ?);`,
+      VALUES (?, ?, ?);`,
       [nickname, chat],
       (err) => {
         if (err) {
@@ -583,6 +583,23 @@ function getAesKey(email, nickname, password) {
   });
 }
 
+
+function UpdateChat(nickname,chat){
+  return new Promise((resolve, reject) => {
+    Chat.all(
+      "UPDATE chat SET chat = ? WHERE nickname = ?",
+      [chat,nickname],
+      (err) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      }
+    );
+  });
+}
 /*Ritorna la chat*/
 function GetChat(nickname) {
   return new Promise((resolve, reject) => {
@@ -602,6 +619,7 @@ function GetChat(nickname) {
 }
 
 module.exports = {
+  UpdateChat,
   GetChat,
   existInDatabase,
   insertTempUsers,
