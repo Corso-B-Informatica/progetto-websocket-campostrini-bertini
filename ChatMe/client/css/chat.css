@@ -41,9 +41,8 @@
 }
 
 #header-menu-name {
-  font-size: 20px;
   color: var(--white-transparent);
-  height: 49.5px;
+  margin: 0px;
 }
 
 #new-messages {
@@ -84,11 +83,6 @@
   top: 0px;
 }
 
-#sign-out-icon {
-  font-size: 20px;
-  color: var(--red-1);
-}
-
 /*Typezone icons*/
 #send-icon {
   color: var(--dark-violet-1);
@@ -110,6 +104,28 @@
 #write-icon {
   color: var(--dark-violet-1);
   font-size: 18px;
+}
+
+#sync-icon {
+  color: var(--gray-2);
+  transition: all 0.5s ease-in-out;
+}
+
+#sign-out-icon {
+  color: var(--red-1);
+  rotate: 180deg;
+  font-size: 16px;
+  transition: all 0.3s ease-in-out;
+}
+
+#sign-out-button:hover #sign-out-icon {
+  transform: scale(1.2);
+  padding-left: 4px;
+}
+
+#sync-button:hover #sync-icon {
+  rotate: 180deg;
+  color: var(--dark-violet-1);
 }
 
 #write-button:hover #write-icon {

@@ -41,7 +41,7 @@ async function sendAesKey(
         validate_password == undefined ? "" : validator.validate(validate_password);
     const nickname =
         validate_nickname == undefined ? "" : validator.validate(validate_nickname);
-    const pubKey =
+    const publicKey =
         validate_pubKey.data == undefined ? "" : validate_pubKey.data;
     
     const aesKey = await database.getAesKey(email, nickname, password);
@@ -55,16 +55,16 @@ async function sendAesKey(
         for (let i = 0; i < (chat.chats.length); i++) {
             socket.join(chat.chats[i].chatId);
         }
-
-        var message = await crypto.encrypt(
+        
+        /*var message = await crypto.encrypt(
             aesKey,
-            pubKey
+            publicKey
         );
 
         socket.emit(
             "aesKey",
             message
-        );
+        );*/
     }
 }
 
