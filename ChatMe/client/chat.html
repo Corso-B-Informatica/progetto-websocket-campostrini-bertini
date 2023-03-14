@@ -31,14 +31,14 @@
                     <h3 id="new-messages" class="user-select-none">Messages</h3>
                     <h3 id="new-messages-number" class="user-select-none">0 New</h3>
                     <div id="contact-write" class="w-20 d-flex flex-wrap justify-content-end align-items-center">
-                        <button id="write-button" class="btn" type="button">
+                        <button id="write-button" class="btn" type="button" onclick="openWriteDialog()">
                             <i id="write-icon" class="fa-regular fa-pen-to-square"></i>
                         </button>
                     </div>
                 </div>
                 <div id="search-contact" class="d-flex fler-wrap align-items-center justify-content-center w-90 h-60">
                     <input type="text" id="contact-input" class="w-100" placeholder="Search anything">
-                    <button id="search-button" class="btn" type="button">
+                    <button id="search-button" class="btn" type="button" onclick="searchContact()">
                         <i id="search-icon" class="fas fa-search"></i>
                     </button>
                 </div>

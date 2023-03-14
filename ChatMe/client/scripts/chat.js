@@ -60,6 +60,23 @@ login();
 
 async function sendMessage() {
     //da continuare
+    //pulsante che prende il testo da "message-input" incluse le emoji e poi prende i file che l'utente ha caricato
+    //(max 100 file per un massimo di 100mB a file e un massimo di un totale di 5gB si potrebbe anche fare 10gB ma andrebbe a ridurre le prestazioni 50% di maxPotenziale)
+    //controlla se i file sono meno di 100 e pesano il giusto
+    //controlla che il message-input sia lungo meno di 2000 chars (incluse emoji)
+    //invia il messaggio criptato al server assieme al proprio nickname alla password, all'id della chat
+    //sul server fare il check chi è online in quella chat, se è una chat singola controllare solo che la persona sia online (mandare nella stanza con l'id della chat il messaggio e inserire nel database degli utenti le robe)
+}
+async function searchContact() {
+    //da continuare
+    //permette di cercare un contatto in base al valore di "contact-input"
+}
+
+//emoji-button e attach button da gestire (bottoni per attaccare file e emoji)
+async function openWriteDialog() {
+    //da continuare
+    //fa apparire nell'html la finestra di dialogo per l'aggiunta di una nuova chat o gruppo ( fa scegliere il nome e i membri)
+    //alla conferma viene creata una nuova chat
 }
 
 async function manageAesKeySuccess(crypted_aes_key) {
