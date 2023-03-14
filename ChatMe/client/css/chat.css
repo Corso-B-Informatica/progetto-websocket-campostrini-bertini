@@ -45,16 +45,6 @@
   margin: 0px;
 }
 
-#new-messages {
-  color: var(--white-transparent);
-  margin: 0px;
-}
-
-#new-messages-number {
-  color: var(--last-status-transparent);
-  margin: 0px;
-}
-
 #header-chat-name {
   font-size: 20px;
   color: var(--white-transparent);
@@ -71,7 +61,15 @@
   padding: 0px 30px;
   color: var(--white-transparent);
 }
+#new-messages {
+  color: var(--white-transparent);
+  margin: 0px;
+}
 
+#new-messages-number {
+  color: var(--last-status-transparent);
+  margin: 0px;
+}
 /*Menu*/
 #menu {
   background-color: var(--dark-2);
@@ -227,18 +225,31 @@ textarea:focus {
 }
 
 button {
-  outline: none;
-  border: none;
+  outline: none !important;
+  border: none !important;
 }
 
 button:hover {
-  outline: none;
-  border: none;
+  outline: none !important;
+  border: none !important;
 }
 
 button:focus {
-  outline: none;
-  border: none;
+  outline: none !important;
+  border: none !important;
+  --bs-btn-close-focus-shadow: none;
+}
+#closeButton {
+  color: #000;
+  background-color: transparent;
+  font-size: 1.5em;
+  transition: all 0.2s ease-in-out;
+}
+
+#closeButton:hover {
+  color: #fff;
+  font-size: 1.5em;
+  rotate: 180deg;
 }
 
 /*Global paragraf*/
@@ -378,6 +389,12 @@ p {
   #typezone {
     width: 74%;
   }
+  #new-message {
+    font-size: 24px;
+  }
+  #new-messages-number {
+    font-size: 24px;
+  }
 }
 
 @media (max-width: 1350px) {
@@ -389,6 +406,12 @@ p {
   }
   #typezone {
     width: 72%;
+  }
+  #new-message {
+    font-size: 22px;
+  }
+  #new-messages-number {
+    font-size: 22px;
   }
 }
 
@@ -402,6 +425,12 @@ p {
   #typezone {
     width: 70%;
   }
+  #new-messages {
+    font-size: 20px;
+  }
+  #new-messages-number {
+    font-size: 20px;
+  }
 }
 
 @media (max-width: 1050px) {
@@ -413,6 +442,12 @@ p {
   }
   #typezone {
     width: 68%;
+  }
+  #new-messages {
+    font-size: 18px;
+  }
+  #new-messages-number {
+    font-size: 18px;
   }
 }
 
@@ -439,11 +474,37 @@ p {
     display: block !important;
   }
 }
-
+@media (max-width: 350px) {
+  .modal-content {
+    width: 100%;
+    height: 100%;
+    border-radius: 0px !important;
+    background-color: #1d1d1d;
+  }
+  .modal-dialog {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .modal-header {
+    border-radius: 0px;
+    background-color: #1d1d1d;
+  }
+  .modal-footer {
+    border-radius: 0px;
+  }
+}
 @media (max-width: 300px) {
   #message-input {
     font-size: 15px;
     height: 75%;
+  }
+  #new-messages {
+    font-size: 16px;
+  }
+  #new-messages-number {
+    font-size: 16px;
   }
 }
 
@@ -485,4 +546,104 @@ p {
   #typezone {
     margin-bottom: 4px;
   }
+}
+
+/* CSS */
+.modal-header {
+  background-color: #1b1b1b;
+  color: white;
+}
+
+.modal-content {
+  background-color: #1b1b1b;
+  color: white;
+  border-radius: 20px;
+  box-shadow: 0px 0px 15px #000000;
+}
+.modal-footer {
+  border: none;
+}
+.border-modal {
+  border-bottom: 1px solid #2c2c2c;
+}
+
+.form-control {
+  background-color: #1b1b1b;
+  color: white;
+  border: none;
+  height: 40px;
+}
+.form-floating {
+  border-bottom: 1px solid #2c2c2c;
+}
+.form-control:focus {
+  box-shadow: none;
+  border: none;
+  outline: none;
+  background-color: #1b1b1b;
+  color: #fff;
+}
+
+.form-control:focus + #chatNameLabel {
+  color: rgba(38, 166, 154, 0.886) !important;
+}
+.form-control:focus > .form-floating {
+  border-color: #2aab9e;
+}
+.form-floating label {
+  color: white;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:hover {
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+
+.form-check-input {
+  background-color: #0d6efd;
+  border: none;
+  color: white;
+}
+/* aggiunta di stili per il tema scuro */
+.dark-mode .modal-header {
+  color: white;
+  border-bottom: 1px solid #2c2c2c;
+}
+
+.dark-mode .modal-content {
+  background-color: #1b1b1b;
+  color: white;
+  border-radius: 20px;
+  box-shadow: 0px 0px 15px #000000;
+}
+
+.dark-mode .form-control {
+  background-color: #1b1b1b;
+  color: white;
+  border: none;
+}
+
+.dark-mode .form-control:focus {
+  box-shadow: none;
+  border: none;
+  outline: none;
+}
+
+.dark-mode .form-floating label {
+  color: white;
+}
+
+.dark-mode .form-check-label {
+  color: white;
+}
+
+.dark-mode .form-floating textarea {
+  background-color: #1b1b1b;
+  color: white;
+  border: none;
 }

@@ -39,6 +39,21 @@ socket.on("errorAesKey", ()  => {
     window.location.href = "../signUp.html";
 });
 
+function changeNewChatType() {
+    var checkbox = document.getElementById("isGroup");
+
+    if (checkbox.checked) {
+        document.getElementById("chatNameLabel").innerText = "Group name";
+    } else {
+        document.getElementById("chatNameLabel").innerText = "Nickname";
+    }
+}
+
+function signOut() {
+    clearLocalStorageWithoutKey();
+    window.location.href = "../signUp.html";
+}
+
 /*Check if the user is logged in*/
 async function login() {
     var a = await genKey();
@@ -181,3 +196,4 @@ document.onkeydown = function (e) {
         }
     }
 }
+
