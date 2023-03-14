@@ -191,7 +191,7 @@ function insertChat(nickname, chat) {
   return new Promise((resolve, reject) => {
     Chat.run(
       ` INSERT INTO chat (nickname, chat)
-      VALUES (?, ?, ?);`,
+      VALUES (?, ?);`,
       [nickname, chat],
       (err) => {
         if (err) {

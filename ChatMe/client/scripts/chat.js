@@ -22,26 +22,34 @@ var socket = io();
 
 socket.on("publicKey", (publicKey, str) => {
     localStorage.setItem("publicKeyArmored", publicKey);
-
-    if(str == "2"){
-        sync();
-    }
-    if(str == "1"){
-        sendMessage();
-    }
-    
     if (str == "0") {
         login();
     }
+    if (str == "1") {
+        sendMessage();
+    }
+    if (str == "2") {
+        sync();
+    }
+    if(str == "3"){
+        creaChat();
+    }
 });
+
 socket.on("sync", (crypted_chat) =>{
     manageSync(crypted_chat);
 });
+
 socket.on("aesKey", (aesKey) => {
     manageAesKeySuccess(aesKey);
 });
 
 socket.on("errorAesKey", ()  => {
+    clearLocalStorageWithoutKey();
+    window.location.href = "../signUp.html";
+});
+
+socket.on("errorUserNotFound", () => {
     clearLocalStorageWithoutKey();
     window.location.href = "../signUp.html";
 });
@@ -127,6 +135,42 @@ async function manageSync(crypted_chat) {
     console.log("frocio")
     localStorage.setItem("data", encryptAES(chat, kM.getAesKey()));
 }
+
+async function creaChat() {
+    if (checkKey()) {
+        var chatName = document.getElementById("chatName").value;
+
+        if (document.getElementById("isGroup").checked) {
+            //nel caso di un gruppo lo gestiremo più avanti
+        } else {
+            if (chatName.trim().length > 0) {
+                if (chatName.trim().length <= 30) {
+                    if (!chatName.includes("@")) {
+                        if (/[a-zA-Z0-9]/.test(chatName)) {
+                            //se aesKey è valida posso decriptare i dati nel localstorage, vedo se sono presenti username e password, se ci sono chill, se no tento di vedere se ci sono con email password e nickname se no lo sloggo
+
+                        } else {
+                            chatName.classList.add("error");
+                            chatName.setAttribute("error-message", "Nickname must contain at least one letter or number");
+                        }
+                    } else {
+                        chatName.classList.add("error");
+                        chatName.setAttribute("error-message", "Nickname must not contain '@'");
+                    }
+                } else {
+                    chatName.classList.add("error");
+                    chatName.setAttribute("error-message", "Nickname must be at most 30 characters long");
+                }
+            } else {
+                chatName.classList.add("error");
+                chatName.setAttribute("error-message", "Nickname must be filled out");
+            }
+        }
+    } else {
+        socket.emit("getPublicKey", "3");
+    }
+}
+
 //emoji-button e attach button da gestire (bottoni per attaccare file e emoji)
 async function openWriteDialog() {
     //da continuare

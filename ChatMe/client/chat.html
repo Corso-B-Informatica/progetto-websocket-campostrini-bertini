@@ -35,7 +35,8 @@
                 <div class="modal-body w-90">
                     <form>
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="chatName" placeholder="" required>
+                            <input type="text" class="form-control" id="chatName" placeholder="" required
+                                error-message="Invalid Username">
                             <label for="chatName" id="chatNameLabel">Nickname</label>
                         </div>
                         <div class="form-check form-switch mb-3">
@@ -46,7 +47,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-                    <button type="button" class="btn btn-primary" id="createChatButton">Crea</button>
+                    <button type="button" class="btn btn-primary" id="createChatButton"
+                        onclick="creaChat()">Crea</button>
                 </div>
             </div>
         </div>

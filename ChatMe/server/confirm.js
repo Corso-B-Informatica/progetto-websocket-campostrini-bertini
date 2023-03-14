@@ -515,7 +515,7 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
 
                         await database.insertUser(nickname, email, password, keyAES);
                         await database.removeTempUsers(email, password);
-                        await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "chats": []}`);
+                        await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "password": "` + password + `", "group": [ ` + `"id" : "` + `", "nome" : "` + `", "utenti" : [ ` + `"nickname" : "` + `", "latest-access" : "` + `", "current-state" : "` + `"]` + `"message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `]` + `"chat" : [` + `"id" : "` + `", "current-state" : "` + `", "latest-access" :"` + `", "message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `]`);
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                         var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "chats": []}`, publicKey);
@@ -665,7 +665,7 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
 
                         await database.insertUser(nickname, email, password, keyAES);
                         await database.removeTempUsers(email, password);
-                        await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "chats": []}`);
+                        await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "password": "` + password + `", "group": [ ` + `"id" : "` + `", "nome" : "` + `", "utenti" : [ ` + `"nickname" : "` + `", "latest-access" : "` + `", "current-state" : "` + `"]` + `"message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `]` + `"chat" : [` + `"id" : "` + `", "current-state" : "` + `", "latest-access" :"` + `", "message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `]`);
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                         var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "chats": []}`, publicKey);
