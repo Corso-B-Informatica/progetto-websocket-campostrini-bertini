@@ -120,14 +120,14 @@ function existInDatabase(db, nickname, email, operator) {
 function checkDatabase(db, nickname, email, password) {
   return new Promise((resolve, reject) => {
     db.all(
-      `select * from users where nickname = ? or email = ? and password = ?`,
-      [nickname, email, password],
+      `select * from users where nickname = ? or email = ? `,
+      [nickname, email],
       (err, rows) => {
         if (err) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows.length > 0);
+          resolve(rows.length > 0 && rows[0].password == password);
         }
       });
   });

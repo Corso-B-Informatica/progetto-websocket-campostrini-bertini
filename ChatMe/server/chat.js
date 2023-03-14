@@ -43,7 +43,7 @@ async function sendAesKey(
         validate_nickname == undefined ? "" : validator.validate(validate_nickname);
     const publicKey =
         validate_pubKey.data == undefined ? "" : validate_pubKey.data;
-        var check = await crypto.isValid(publicKey);
+    var check = await crypto.isValid(publicKey);
     const aesKey = await database.getAesKey(email, nickname, password);
 
     if (aesKey == null || aesKey == undefined || aesKey.trim().length == 0) {
@@ -56,15 +56,14 @@ async function sendAesKey(
             socket.join(chat.chats[i].chatId);
         }
 
-        /*var message = await crypto.encrypt(
+        var message = await crypto.encrypt(
             aesKey,
             publicKey
         );
-
         socket.emit(
             "aesKey",
             message
-        );*/
+        );
     }
 }
 
@@ -104,7 +103,7 @@ async function sendMessage(crypted_message, crypted_nickname, crypted_password, 
         validate_pubKey = "";
     }
 
-    const message = 
+    const message =
         validate_message == undefined ? "" : validator.validate(validate_message);
     const id =
         validate_id == undefined ? "" : validator.validate(validate_id);
@@ -114,27 +113,76 @@ async function sendMessage(crypted_message, crypted_nickname, crypted_password, 
         validate_nickname == undefined ? "" : validator.validate(validate_nickname);
     const pubKey =
         validate_pubKey.data == undefined ? "" : validate_pubKey.data;
-    
+
     let check = await crypto.isValid(pubKey);
 
-    if(message == null || message == undefined || message.trim().length == 0 || message > 2000) {
+    if (message == null || message == undefined || message.trim().length == 0 || message > 2000) {
         socket.emit("errorSendMessage");
-    } 
-    else if(check){
+    }
+    else if (check) {
         socket.emit("errorPubKeySendMessage");
     }
     else {
-        if(await database.checkDatabase(database.Users, nickname,"",password)){
-            if(await database.checkDestinationUser(nickname, id)){
-                console.log('mannaggia ddio')
+        if (await database.checkDatabase(database.Users, nickname, "", password)) {
+            if (await database.checkDestinationUser(nickname, id)) {
+                console.log('si')
                 var chat = JSON.parse(await database.GetChat(nickname));
             }
         }
-        else{
+        else {
             socket.emit("errorUserNotFound");
         }
     }
 
 }
 
-module.exports = { sendAesKey };
+async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) {
+    
+    var validate_password = "";
+    var validate_nickname = "";
+    var validate_pubKey = "";
+
+    try {
+        validate_password = await crypto.doubleDecrypt(crypted_password);
+    } catch (err) {
+        validate_password = "";
+    }
+    try {
+        validate_nickname = await crypto.doubleDecrypt(crypted_nickname);
+    } catch (err) {
+        validate_nickname = "";
+    }
+    try {
+        validate_pubKey = await crypto.decrypt(crypted_pubKey, crypto.privateKey);
+    } catch (err) {
+        validate_pubKey = "";
+    }
+
+    const password =
+        validate_password == undefined ? "" : validator.validate(validate_password);
+    const nickname =
+        validate_nickname == undefined ? "" : validator.validate(validate_nickname);
+    const pubKey =
+        validate_pubKey.data == undefined ? "" : validate_pubKey.data;
+
+    let check = await crypto.isValid(pubKey);
+    console.log(validate_nickname)
+    console.log(password)
+    if(check){
+        socket.emit("errorPubKeySync");
+    }
+    else if (await database.checkDatabase(database.Users, nickname, "", password)){
+        var crypted_chat = crypto.encrypt(await database.GetChat(nickname), pubKey);
+        socket.emit("sync", crypted_chat);
+    }
+    else{
+        console.log('no')
+        socket.emit("errorUserNotFound");
+    }
+}
+
+module.exports = {
+    sendAesKey,
+    sendMessage,
+    sync
+};

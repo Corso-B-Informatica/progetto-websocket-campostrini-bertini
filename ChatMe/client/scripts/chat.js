@@ -6,6 +6,8 @@
 //poi controlliamo se il rememeber me è false e se lo è cancelliamo email, password, nickname e remember me, ma i dati della chat ce li teniamo, finchè non viene aggiornata la pagina
 //quindi da quel momento in poi dovremmo usare le informazioni di login contenute nella variabile data del localStrorage dentro la chat, la aesKey appena ci arriva la salviamo in una variabile
 //poi controlliamo che abbiamo una chat, se non la abbiamo dobbiamo crearla.
+
+
 /*keyManager*/
 const kM = new keyManager();
 
@@ -21,6 +23,9 @@ var socket = io();
 socket.on("publicKey", (publicKey, str) => {
     localStorage.setItem("publicKeyArmored", publicKey);
 
+    if(str == "2"){
+        sync();
+    }
     if(str == "1"){
         sendMessage();
     }
@@ -29,7 +34,9 @@ socket.on("publicKey", (publicKey, str) => {
         login();
     }
 });
-
+socket.on("sync", (crypted_chat) =>{
+    manageSync(crypted_chat);
+});
 socket.on("aesKey", (aesKey) => {
     manageAesKeySuccess(aesKey);
 });
@@ -56,7 +63,7 @@ function signOut() {
 
 /*Check if the user is logged in*/
 async function login() {
-    var a = await genKey();
+    await genKey();
     if (checkData()) {
         if (checkKey()) {
             socket.emit(
@@ -107,6 +114,19 @@ async function searchContact() {
     //permette di cercare un contatto in base al valore di "contact-input"
 }
 
+async function addContact() {
+}
+
+
+async function manageSync(crypted_chat) {
+    var { data: chat } = await decrypt(
+        crypted_chat,
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
+    console.log("frocio")
+    localStorage.setItem("data", encryptAES(chat, kM.getAesKey()));
+}
 //emoji-button e attach button da gestire (bottoni per attaccare file e emoji)
 async function openWriteDialog() {
     //da continuare
@@ -115,7 +135,6 @@ async function openWriteDialog() {
 }
 
 async function manageAesKeySuccess(crypted_aes_key) {
-    console.log(crypted_aes_key)
     var { data: aes_key } = await decrypt(
         crypted_aes_key,
         kM.getPrivateKey(),
@@ -129,6 +148,26 @@ async function manageAesKeySuccess(crypted_aes_key) {
 async function readLocalStorage() {
     var aes_key = kM.getAesKey();
     
+}
+
+async function sync() {
+    console.log(kM.getAesKey())
+    if(!checkKey()){
+        socket.emit("getPublicKey", "2");
+    }
+    else{
+        if(kM.getAesKey() == null || kM.getAesKey() == undefined){
+            alert('Wait for page to load')
+        }
+        else{
+            crypted_nickname = localStorage.getItem("nickname")
+            crypted_password = localStorage.getItem("password")
+            crypted_pubKey = encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
+            socket.emit("sync", crypted_nickname, crypted_password, crypted_pubKey )
+        }
+    }
+
+
 }
 /*Input limit*/
 document.getElementById("message-input").addEventListener("input", function () {
