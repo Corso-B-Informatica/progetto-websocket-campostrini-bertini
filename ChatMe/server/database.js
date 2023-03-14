@@ -463,23 +463,7 @@ function getKeys(username) {
   });
 }
 
-function getRow(username) {
-  return new Promise((resolve, reject) => {
-    Chat.all(
-      "SELECT * FROM chat WHERE nickname = ?",
-      [username],
-      (err, rows) => {
-        if (err) {
-          console.log(err);
-          reject(err);
-        } else {
-          resolve(rows[0]);
-        }
-      }
-    )
 
-  });
-}
 
 function getNickname(db, email) {
   return new Promise((resolve, reject) => {
@@ -600,6 +584,29 @@ function UpdateChat(nickname,chat){
     );
   });
 }
+
+function checkDestinationUser(nickname, id){
+  return new Promise((resolve, reject) => {
+    Chat.all(
+      "SELECT * FROM chat WHERE nickname = ?",
+      [nickname],
+      (err, rows) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          var pchat = JSON.parse(rows[0].chat)
+          for(let i = 0; i < pchat.chat.length; i++){
+            if(pchat.chat[i].id == id || pchat.group[i].id == id){
+              resolve(true);
+            }
+          }
+          resolve(false);
+        }
+      }
+    );
+  });
+}
 /*Ritorna la chat*/
 function GetChat(nickname) {
   return new Promise((resolve, reject) => {
@@ -619,6 +626,7 @@ function GetChat(nickname) {
 }
 
 module.exports = {
+  checkDestinationUser,
   UpdateChat,
   GetChat,
   existInDatabase,
@@ -643,7 +651,6 @@ module.exports = {
   checkDatabase,
   getTimes,
   getKeys,
-  getRow,
   getNickname,
   getEmail,
   getPassword,

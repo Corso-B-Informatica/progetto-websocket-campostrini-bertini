@@ -21,6 +21,10 @@ var socket = io();
 socket.on("publicKey", (publicKey, str) => {
     localStorage.setItem("publicKeyArmored", publicKey);
 
+    if(str == "1"){
+        sendMessage();
+    }
+    
     if (str == "0") {
         login();
     }
@@ -69,10 +73,10 @@ async function sendMessage() {
             let crypted_message = encrypt(message, localStorage.getItem("publicKeyArmored"))
             let crypted_nickname = encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored"))
             let crypted_password = encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored"))
-            let crypted_dnickname = encrypt("sos", localStorage.getItem("publicKeyArmored"))
+            let crypted_id = encrypt("sos", localStorage.getItem("publicKeyArmored"))
             let crypted_publickey = encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
             if(checkKey()){
-                socket.emit("message", crypted_message, crypted_nickname, crypted_password, crypted_dnickname, crypted_publickey)
+                socket.emit("message", crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_publickey)
             }
             else{
                 socket.emit("getPublicKey", "1")

@@ -62,8 +62,8 @@ io.on("connection", (socket) => {
   socket.on("getAesKey", (email, nickname, password, pubKey) => {
     chat.sendAesKey(email, nickname, password, pubKey, socket);
   });
-  socket.on("message", (message, nickname, password, dnickname, pubKey) => {
-    chat.sendMessage(message, nickname, password, dnickname, pubKey, socket);
+  socket.on("message", (crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_pubKey) => {
+    chat.sendMessage(crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_pubKey, socket);
   });
 });
 
