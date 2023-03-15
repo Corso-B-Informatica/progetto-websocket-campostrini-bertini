@@ -68,10 +68,84 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
                 if (await database.checkVerificationCode(email, nickname, password, verification_code)) {
                     await database.insertUser(nickname, email, password, keyAES);
                     await database.removeTempUsers(email, password);
-                    await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "password": "` + password + `", "group": [ ` + `"id" : "` + `", "nome" : "` + `", "utenti" : [ ` + `"nickname" : "` + `", "latest-access" : "` + `", "current-state" : "` + `"],` + `" message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `],` + ` "chat" : [` + `"id" : "` + `", "current-state" : "` + `", "latest-access" :"` + `", "message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `]`+ `}`);
+                    await database.insertChat(
+                      nickname,
+                      `{"nickname" : "` +
+                        nickname +
+                        `", "password": "` +
+                        password +
+                        `", "group": "{ ` +
+                        `"id" : "` +
+                        `", "nome" : "` +
+                        `", "utenti" : "{ ` +
+                        `"nickname" : "` +
+                        `", "latest-access" : "` +
+                        `", "current-state" : "` +
+                        `"}",` +
+                        `" message" : "{` +
+                        `"nickname" : "` +
+                        `", "message" : "` +
+                        `", "sended" : "` +
+                        `", "removed" : "` +
+                        `", "visualized" : "` +
+                        `", "data-recived" : "` +
+                        `"}"` +
+                        `}",` +
+                        ` "chat" : "{` +
+                        `"id" : "` +
+                        `", "current-state" : "` +
+                        `", "latest-access" :"` +
+                        `", "message" : "{` +
+                        `"nickname" : "` +
+                        `", "message" : "` +
+                        `", "sended" : "` +
+                        `", "removed" : "` +
+                        `", "visualized" : "` +
+                        `", "data-recived" : "` +
+                        `"}"` +
+                        `}"` +
+                        `}`
+                    );
 
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
-                    var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "password": "` + password + `", "group": [ ` + `"id" : "` + `", "nome" : "` + `", "utenti" : [ ` + `"nickname" : "` + `", "latest-access" : "` + `", "current-state" : "` + `"],` + `" message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `],` + ` "chat" : [` + `"id" : "` + `", "current-state" : "` + `", "latest-access" :"` + `", "message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `]`+ `}`, publicKey);
+                    var c_row = await crypto.encrypt(
+                      `{"nickname" : "` +
+                        nickname +
+                        `", "password": "` +
+                        password +
+                        `", "group": "{ ` +
+                        `"id" : "` +
+                        `", "nome" : "` +
+                        `", "utenti" : "{ ` +
+                        `"nickname" : "` +
+                        `", "latest-access" : "` +
+                        `", "current-state" : "` +
+                        `"}",` +
+                        `" message" : "{` +
+                        `"nickname" : "` +
+                        `", "message" : "` +
+                        `", "sended" : "` +
+                        `", "removed" : "` +
+                        `", "visualized" : "` +
+                        `", "data-recived" : "` +
+                        `"}"` +
+                        `}",` +
+                        ` "chat" : "{` +
+                        `"id" : "` +
+                        `", "current-state" : "` +
+                        `", "latest-access" :"` +
+                        `", "message" : "{` +
+                        `"nickname" : "` +
+                        `", "message" : "` +
+                        `", "sended" : "` +
+                        `", "removed" : "` +
+                        `", "visualized" : "` +
+                        `", "data-recived" : "` +
+                        `"}"` +
+                        `}"` +
+                        `}`,
+                      publicKey
+                    );
                     var c_aesKey = await crypto.encrypt(keyAES, publicKey);
                     var crypted_email = crypto.encryptAES(email);
                     var crypted_password = crypto.encryptAES(password);
@@ -515,10 +589,84 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
 
                         await database.insertUser(nickname, email, password, keyAES);
                         await database.removeTempUsers(email, password);
-                        await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "password": "` + password + `", "group": [ ` + `"id" : "` + `", "nome" : "` + `", "utenti" : [ ` + `"nickname" : "` + `", "latest-access" : "` + `", "current-state" : "` + `"],` + `" message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `],` + ` "chat" : [` + `"id" : "` + `", "current-state" : "` + `", "latest-access" :"` + `", "message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `] ` + `}`);
+                        await database.insertChat(
+                          nickname,
+                          `{"nickname" : "` +
+                            nickname +
+                            `", "password": "` +
+                            password +
+                            `", "group": "{ ` +
+                            `"id" : "` +
+                            `", "nome" : "` +
+                            `", "utenti" : "{ ` +
+                            `"nickname" : "` +
+                            `", "latest-access" : "` +
+                            `", "current-state" : "` +
+                            `"}",` +
+                            `" message" : "{` +
+                            `"nickname" : "` +
+                            `", "message" : "` +
+                            `", "sended" : "` +
+                            `", "removed" : "` +
+                            `", "visualized" : "` +
+                            `", "data-recived" : "` +
+                            `"}"` +
+                            `}",` +
+                            ` "chat" : "{` +
+                            `"id" : "` +
+                            `", "current-state" : "` +
+                            `", "latest-access" :"` +
+                            `", "message" : "{` +
+                            `"nickname" : "` +
+                            `", "message" : "` +
+                            `", "sended" : "` +
+                            `", "removed" : "` +
+                            `", "visualized" : "` +
+                            `", "data-recived" : "` +
+                            `"}"` +
+                            `}"` +
+                            `}`
+                        );
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
-                        var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "password": "` + password + `", "group": [ ` + `"id" : "` + `", "nome" : "` + `", "utenti" : [ ` + `"nickname" : "` + `", "latest-access" : "` + `", "current-state" : "` + `"],` + `" message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `],` + ` "chat" : [` + `"id" : "` + `", "current-state" : "` + `", "latest-access" :"` + `", "message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `]`+ `}`, publicKey);
+                        var c_row = await crypto.encrypt(
+                          `{"nickname" : "` +
+                            nickname +
+                            `", "password": "` +
+                            password +
+                            `", "group": "{ ` +
+                            `"id" : "` +
+                            `", "nome" : "` +
+                            `", "utenti" : "{ ` +
+                            `"nickname" : "` +
+                            `", "latest-access" : "` +
+                            `", "current-state" : "` +
+                            `"}",` +
+                            `" message" : "{` +
+                            `"nickname" : "` +
+                            `", "message" : "` +
+                            `", "sended" : "` +
+                            `", "removed" : "` +
+                            `", "visualized" : "` +
+                            `", "data-recived" : "` +
+                            `"}"` +
+                            `}",` +
+                            ` "chat" : "{` +
+                            `"id" : "` +
+                            `", "current-state" : "` +
+                            `", "latest-access" :"` +
+                            `", "message" : "{` +
+                            `"nickname" : "` +
+                            `", "message" : "` +
+                            `", "sended" : "` +
+                            `", "removed" : "` +
+                            `", "visualized" : "` +
+                            `", "data-recived" : "` +
+                            `"}"` +
+                            `}"` +
+                            `}`,
+                          publicKey
+                        );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
 
                         var mail = email;
@@ -665,10 +813,84 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
 
                         await database.insertUser(nickname, email, password, keyAES);
                         await database.removeTempUsers(email, password);
-                        await database.insertChat(nickname, `{"nickname" : "` + nickname + `", "password": "` + password + `", "group": [ ` + `"id" : "` + `", "nome" : "` + `", "utenti" : [ ` + `"nickname" : "` + `", "latest-access" : "` + `", "current-state" : "` + `"],` + `" message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `],` + ` "chat" : [` + `"id" : "` + `", "current-state" : "` + `", "latest-access" :"` + `", "message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `]`+ `}`);
+                        await database.insertChat(
+                          nickname,
+                          `{"nickname" : "` +
+                            nickname +
+                            `", "password": "` +
+                            password +
+                            `", "group": "{ ` +
+                            `"id" : "` +
+                            `", "nome" : "` +
+                            `", "utenti" : "{ ` +
+                            `"nickname" : "` +
+                            `", "latest-access" : "` +
+                            `", "current-state" : "` +
+                            `"}",` +
+                            `" message" : "{` +
+                            `"nickname" : "` +
+                            `", "message" : "` +
+                            `", "sended" : "` +
+                            `", "removed" : "` +
+                            `", "visualized" : "` +
+                            `", "data-recived" : "` +
+                            `"}"` +
+                            `}",` +
+                            ` "chat" : "{` +
+                            `"id" : "` +
+                            `", "current-state" : "` +
+                            `", "latest-access" :"` +
+                            `", "message" : "{` +
+                            `"nickname" : "` +
+                            `", "message" : "` +
+                            `", "sended" : "` +
+                            `", "removed" : "` +
+                            `", "visualized" : "` +
+                            `", "data-recived" : "` +
+                            `"}"` +
+                            `}"` +
+                            `}`
+                        );
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
-                        var c_row = await crypto.encrypt(`{"nickname" : "` + nickname + `", "password": "` + password + `", "group": [ ` + `"id" : "` + `", "nome" : "` + `", "utenti" : [ ` + `"nickname" : "` + `", "latest-access" : "` + `", "current-state" : "` + `"],` + `" message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `],` + ` "chat" : [` + `"id" : "` + `", "current-state" : "` + `", "latest-access" :"` + `", "message" : [` + `"nickname" : "` + `", "message" : "` + `", "sended" : "` + `", "removed" : "` + `", "visualized" : "` + `", "data-recived" : "` + `"]` + `]`+ `}`, publicKey);
+                        var c_row = await crypto.encrypt(
+                          `{"nickname" : "` +
+                            nickname +
+                            `", "password": "` +
+                            password +
+                            `", "group": "{ ` +
+                            `"id" : "` +
+                            `", "nome" : "` +
+                            `", "utenti" : "{ ` +
+                            `"nickname" : "` +
+                            `", "latest-access" : "` +
+                            `", "current-state" : "` +
+                            `"}",` +
+                            `" message" : "{` +
+                            `"nickname" : "` +
+                            `", "message" : "` +
+                            `", "sended" : "` +
+                            `", "removed" : "` +
+                            `", "visualized" : "` +
+                            `", "data-recived" : "` +
+                            `"}"` +
+                            `}",` +
+                            ` "chat" : "{` +
+                            `"id" : "` +
+                            `", "current-state" : "` +
+                            `", "latest-access" :"` +
+                            `", "message" : "{` +
+                            `"nickname" : "` +
+                            `", "message" : "` +
+                            `", "sended" : "` +
+                            `", "removed" : "` +
+                            `", "visualized" : "` +
+                            `", "data-recived" : "` +
+                            `"}"` +
+                            `}"` +
+                            `}`,
+                          publicKey
+                        );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
 
                         var mail = email;
