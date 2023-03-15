@@ -52,14 +52,15 @@ async function sendAesKey(
 
         var chat = JSON.parse(await database.GetChat(nickname));
 
-        for (let i = 0; i < (chat.chats.length); i++) {
-            socket.join(chat.chats[i].chatId);
+        for (let i = 0; i < (chat.chat.length); i++) {
+            socket.join(chat.chat[i].chatId);
         }
 
         var message = await crypto.encrypt(
             aesKey,
             publicKey
         );
+
         socket.emit(
             "aesKey",
             message
@@ -143,12 +144,12 @@ async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) 
     var validate_pubKey = "";
 
     try {
-        validate_password = await crypto.doubleDecrypt(crypted_password);
+        validate_password = await crypto.decrypt(crypted_password, crypto.privateKey);
     } catch (err) {
         validate_password = "";
     }
     try {
-        validate_nickname = await crypto.doubleDecrypt(crypted_nickname);
+        validate_nickname = await crypto.decrypt(crypted_nickname, crypto.privateKey);
     } catch (err) {
         validate_nickname = "";
     }
@@ -159,16 +160,15 @@ async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) 
     }
 
     const password =
-        validate_password == undefined ? "" : validator.validate(validate_password);
+        validate_password.data == undefined ? "" : validator.validate(validate_password.data);
     const nickname =
-        validate_nickname == undefined ? "" : validator.validate(validate_nickname);
+        validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
     const pubKey =
         validate_pubKey.data == undefined ? "" : validate_pubKey.data;
 
     let check = await crypto.isValid(pubKey);
-    console.log(validate_nickname)
-    console.log(password)
-    if(check){
+
+    if(!check){
         socket.emit("errorPubKeySync");
     }
     else if (await database.checkDatabase(database.Users, nickname, "", password)){
@@ -176,7 +176,6 @@ async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) 
         socket.emit("sync", crypted_chat);
     }
     else{
-        console.log('no')
         socket.emit("errorUserNotFound");
     }
 }

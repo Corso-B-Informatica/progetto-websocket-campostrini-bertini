@@ -25,7 +25,7 @@
     <div class="modal fade" id="createChatModal" tabindex="-1" aria-labelledby="createChatModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content justify-content-center w-100 d-flex fler-wrap align-items-center">
+            <div class="modal-content justify-content-center w-100 d-flex flex-wrap align-items-center">
                 <div class="w-95 border-modal">
                     <div class="modal-header">
                         <h5 class="modal-title text-white" id="createChatModalLabel">Nuova Chat o Gruppo</h5>
@@ -58,7 +58,7 @@
     <div id="chat" class="w-100 h-100 d-flex flex-wrap">
         <div id="menu" class="h-100 w-20">
             <div id="header-logo"
-                class="d-flex fler-wrap w-100 position-sticky align-items-center justify-content-between">
+                class="d-flex flex-wrap w-100 position-sticky align-items-center justify-content-between">
                 <h2 id="header-menu-name" class="user-select-none p-l-20">ChatMe</h2>
                 <div>
                     <button id="sign-out-button" class="btn" type="button" onclick="signOut()">
@@ -83,16 +83,18 @@
                         </button>
                     </div>
                 </div>
-                <div id="search-contact" class="d-flex fler-wrap align-items-center justify-content-center w-90 h-60">
+                <div id="search-contact" class="d-flex align-items-center justify-content-center w-90 h-60">
                     <input type="text" id="contact-input" class="w-100" placeholder="Search anything">
                     <button id="search-button" class="btn" type="button" onclick="searchContact()">
                         <i id="search-icon" class="fas fa-search"></i>
                     </button>
                 </div>
+                <div id="contact-list" class="w-100 d-flex flex-col align-items-center justify-content-start p-t-10 p-b-10">
+                </div>
             </div>
         </div>
         <div id="conversation" class="h-100 w-80 d-none">
-            <div id="header-chat" class="d-flex fler-wrap align-items-center w-100 position-fixed d-none">
+            <div id="header-chat" class="d-flex flex-wrap align-items-center w-100 position-fixed d-none">
                 <i id="chat-icon" class="icon fa fa-user-o" aria-hidden="true"></i>
                 <div class="d-flex flex-column">
                     <p id="header-chat-name" class="user-select-none"></p>
@@ -100,13 +102,14 @@
                 </div>
             </div>
             <div id="background-conversation" class="h-100 w-100"></div>
-            <div id="messages" class="w-100">
+            <div id="messages" class="w-100 h-100 d-flex flex-col align-items-center justify-content-start">
 
             </div>
-            <div id="typezone" class="d-flex fler-wrap align-items-center justify-content-center position-fixed w-80">
+            <div id="typezone" class="d-flex flex-wrap align-items-center justify-content-center position-fixed w-80">
                 <div id="typezone-section"
-                    class="w-98 d-flex fler-wrap align-items-center justify-content-between h-100">
-                    <button id="attach-button" class="btn" type="button">
+                    class="w-98 d-flex align-items-center justify-content-between h-100">
+                    <button id="attach-button" class="btn" type="button" onclick="attachFile()">
+                        <input type="file" id="myFile" name="filename" class="d-none">
                         <i id="file-icon" class="fas fa-paperclip"></i>
                     </button>
                     <div class="d-flex align-items-end w-100 h-100">

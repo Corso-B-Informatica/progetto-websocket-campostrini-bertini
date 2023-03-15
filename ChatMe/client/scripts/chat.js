@@ -6,8 +6,24 @@
 //poi controlliamo se il rememeber me è false e se lo è cancelliamo email, password, nickname e remember me, ma i dati della chat ce li teniamo, finchè non viene aggiornata la pagina
 //quindi da quel momento in poi dovremmo usare le informazioni di login contenute nella variabile data del localStrorage dentro la chat, la aesKey appena ci arriva la salviamo in una variabile
 //poi controlliamo che abbiamo una chat, se non la abbiamo dobbiamo crearla.
-
-
+/*contatto html*/
+/*
+                    <button class="bg-transparent contact d-flex flex-wrap align-items-center justify-content-center p-t-10 p-b-10 p-r-20 p-l-20 w-95">
+                        <div class="d-flex flex-wrap align-items-center justify-content-start w-100">
+                            <div class="d-flex flex-wrap align-items-center justify-content-start w-80">
+                                <i id="contact-icon" class="icon fa fa-user-o text-white p-r-15 p-l-15" aria-hidden="true"></i>
+                                <div class="d-flex flex-column">
+                                    <p id="contact-name" class="user-select-none text-white">Nome</p>
+                                    <p id="contact-last-message" class="user-select-none text-white">Ultimo messaggio</p>
+                                </div>
+                            </div>
+                            <div id="contact-last-message-time" class="w-20 d-flex flex-wrap justify-content-end align-items-center p-r-15">
+                                <p id="contact-last-message-time-text" class="user-select-none text-white">00:00</p>
+                            </div>
+                        </div>
+                    </button>
+*/
+//gestire le emoji non abbiamo ancora fatto la tabella emoji
 /*keyManager*/
 const kM = new keyManager();
 
@@ -52,6 +68,10 @@ socket.on("errorAesKey", ()  => {
 socket.on("errorUserNotFound", () => {
     clearLocalStorageWithoutKey();
     window.location.href = "../signUp.html";
+});
+
+socket.on("errorPubKeySync", () => {
+    alert("Error: public key sync");
 });
 
 function changeNewChatType() {
@@ -118,8 +138,28 @@ async function sendMessage() {
     //sul server fare il check chi è online in quella chat, se è una chat singola controllare solo che la persona sia online (mandare nella stanza con l'id della chat il messaggio e inserire nel database degli utenti le robe)
 }
 async function searchContact() {
-    //da continuare
-    //permette di cercare un contatto in base al valore di "contact-input"
+    var contact = document.getElementById("contact-input").value;
+
+    if (contact.trim().length > 0) {
+        var data = localStorage.getItem("data");
+        var decrypted_data = decryptAES(data, kM.getAesKey());
+        var chats = JSON.parse(decrypted_data);
+        for(let i = 0; i < chats.chat.length; i++){
+            if(chats.chat[i].nickname != contact){
+                if (!chats.group[i].nickname.includes(contact)) {
+                    document.getElementById("chat-" + i).style.display = "none";
+                }
+            }
+        }
+
+        for (let i = 0; i < chats.group.length; i++) {
+            if (chats.group[i].name != contact) {
+                if(!chats.group[i].nickname.includes(contact)){
+                    document.getElementById("group-" + i).style.display = "none";
+                }
+            }
+        }
+    }
 }
 
 async function addContact() {
@@ -136,6 +176,10 @@ async function manageSync(crypted_chat) {
     localStorage.setItem("data", encryptAES(chat, kM.getAesKey()));
 }
 
+function attachFile() {
+    var fileInput = document.getElementById("myFile");
+    fileInput.click();
+}
 async function creaChat() {
     if (checkKey()) {
         var chatName = document.getElementById("chatName").value;
@@ -172,11 +216,6 @@ async function creaChat() {
 }
 
 //emoji-button e attach button da gestire (bottoni per attaccare file e emoji)
-async function openWriteDialog() {
-    //da continuare
-    //fa apparire nell'html la finestra di dialogo per l'aggiunta di una nuova chat o gruppo ( fa scegliere il nome e i membri)
-    //alla conferma viene creata una nuova chat
-}
 
 async function manageAesKeySuccess(crypted_aes_key) {
     var { data: aes_key } = await decrypt(
@@ -186,27 +225,31 @@ async function manageAesKeySuccess(crypted_aes_key) {
     );
 
     kM.setAesKey(aes_key);
-    readLocalStorage();
+    readLocalStorage();//da fare
+    getNewMessages();//da fare
 }
 
 async function readLocalStorage() {
     var aes_key = kM.getAesKey();
-    
+    var data = localStorage.getItem("data");
+    var { data: decrypted_data } = decryptAES(data, aes_key);
+    //costruiamo le chat
 }
 
 async function sync() {
-    console.log(kM.getAesKey())
     if(!checkKey()){
         socket.emit("getPublicKey", "2");
     }
     else{
-        if(kM.getAesKey() == null || kM.getAesKey() == undefined){
+        if(kM.getAesKey() == null || kM.getAesKey() == undefined || kM.getAesKey() == ""){
             alert('Wait for page to load')
         }
-        else{
-            crypted_nickname = localStorage.getItem("nickname")
-            crypted_password = localStorage.getItem("password")
-            crypted_pubKey = encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
+        else {
+            var data = localStorage.getItem("data");
+            var { data: decrypted_data } = crypto.decryptAES(data, kM.getAesKey());
+            crypted_nickname = await encrypt(decrypted_data.nickname, localStorage.getItem("publicKeyArmored"));
+            crypted_password = await encrypt(decrypted_data.password, localStorage.getItem("publicKeyArmored"));
+            crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
             socket.emit("sync", crypted_nickname, crypted_password, crypted_pubKey )
         }
     }
@@ -280,3 +323,10 @@ document.onkeydown = function (e) {
     }
 }
 
+document.getElementById("contact-input").addEventListener("input", function () {
+    searchContact();
+    var text = document.getElementById("contact-input").value;
+    if (text.length > 30) {
+        document.getElementById("contact-input").value = text.substring(0, 30);
+    }
+});
