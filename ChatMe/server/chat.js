@@ -52,9 +52,11 @@ async function sendAesKey(
 
         var chat = JSON.parse(await database.GetChat(nickname));
 
+        console.log(chat)
         for (let i = 0; i < (chat.chat.length); i++) {
             socket.join(chat.chat[i].chatId);
         }
+
 
         var message = await crypto.encrypt(
             aesKey,
