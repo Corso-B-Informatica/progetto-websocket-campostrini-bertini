@@ -1,9 +1,18 @@
 const crypto = require("./crypto.js");
 const database = require("./database.js");
-const validator = require('./validator.js');
-const emailer = require('./emailer.js');
+const validator = require("./validator.js");
+const emailer = require("./emailer.js");
 
-async function confirmUserViaLink(armored_email, armored_password, armored_nickname, armored_verification_code, armored_rememberMe, publicKeyArmored, crypted_aesKey, socket) {
+async function confirmUserViaLink(
+    armored_email,
+    armored_password,
+    armored_nickname,
+    armored_verification_code,
+    armored_rememberMe,
+    publicKeyArmored,
+    crypted_aesKey,
+    socket
+) {
     var validate_email = "";
     var validate_password = "";
     var validate_nickname = "";
@@ -33,7 +42,10 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
         verification_code = "";
     }
     try {
-        validate_rememberMe = await crypto.decrypt(armored_rememberMe, crypto.privateKey);
+        validate_rememberMe = await crypto.decrypt(
+            armored_rememberMe,
+            crypto.privateKey
+        );
     } catch (err) {
         validate_rememberMe = "";
     }
@@ -48,10 +60,16 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
         aesKey = "";
     }
 
-    const email = validate_email == undefined ? "" : validator.validate(validate_email);
-    const password = validate_password == undefined ? "" : validator.validate(validate_password);
-    const nickname = validate_nickname == undefined ? "" : validator.validate(validate_nickname);
-    const rememberMe = validate_rememberMe.data == undefined ? "" : validator.validate(validate_rememberMe.data);
+    const email =
+        validate_email == undefined ? "" : validator.validate(validate_email);
+    const password =
+        validate_password == undefined ? "" : validator.validate(validate_password);
+    const nickname =
+        validate_nickname == undefined ? "" : validator.validate(validate_nickname);
+    const rememberMe =
+        validate_rememberMe.data == undefined
+            ? ""
+            : validator.validate(validate_rememberMe.data);
     const publicKey = pubKey.data == undefined ? "" : pubKey.data;
     const keyAES = aesKey.data == undefined ? "" : aesKey.data;
 
@@ -63,108 +81,143 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
     var check6 = validator.checkVerificationCode(verification_code);
 
     if (check1 && check2 && check3 && check4 && check5 && check6) {
-        if (await database.existInDatabase(database.tempUsers, nickname, email, "and")) {
-            if (await database.hasAttempts(email, password) && await database.getWaitTime(email, password) == 0) {
-                if (await database.checkVerificationCode(email, nickname, password, verification_code)) {
+        if (
+            await database.existInDatabase(database.tempUsers, nickname, email, "and")
+        ) {
+            if (
+                (await database.hasAttempts(email, password)) &&
+                (await database.getWaitTime(email, password)) == 0
+            ) {
+                if (
+                    await database.checkVerificationCode(
+                        email,
+                        nickname,
+                        password,
+                        verification_code
+                    )
+                ) {
                     await database.insertUser(nickname, email, password, keyAES);
                     await database.removeTempUsers(email, password);
                     await database.insertChat(
                       nickname,
-                      `{"nickname" : "` +
+                      `{"nickname": "` +
                         nickname +
-                        `", "password": "` +
+                        `","password": "` +
                         password +
-                        `", "group": "{ ` +
-                        `"id" : "` +
-                        `", "nome" : "` +
-                        `", "utenti" : "{ ` +
-                        `"nickname" : "` +
-                        `", "latest-access" : "` +
-                        `", "current-state" : "` +
-                        `"}",` +
-                        `" message" : "{` +
-                        `"nickname" : "` +
-                        `", "message" : "` +
-                        `", "sended" : "` +
-                        `", "removed" : "` +
-                        `", "visualized" : "` +
-                        `", "data-recived" : "` +
-                        `"}"` +
-                        `}",` +
-                        ` "chat" : "{` +
-                        `"id" : "` +
-                        `", "current-state" : "` +
-                        `", "latest-access" :"` +
-                        `", "message" : "{` +
-                        `"nickname" : "` +
-                        `", "message" : "` +
-                        `", "sended" : "` +
-                        `", "removed" : "` +
-                        `", "visualized" : "` +
-                        `", "data-recived" : "` +
-                        `"}"` +
-                        `}"` +
-                        `}`
+                        `","group": {
+    "id": "",
+    "nome": "",
+    "utenti": {
+      "nickname": "",
+      "latest-access": "",
+      "current-state": ""
+    },
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  },
+  "chat": {
+    "id": "",
+    "current-state": "",
+    "latest-access": "",
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  }
+}
+`
                     );
 
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
+                    //sas
                     var c_row = await crypto.encrypt(
-                      `{"nickname" : "` +
+                      `{"nickname": "` +
                         nickname +
-                        `", "password": "` +
+                        `","password": "` +
                         password +
-                        `", "group": "{ ` +
-                        `"id" : "` +
-                        `", "nome" : "` +
-                        `", "utenti" : "{ ` +
-                        `"nickname" : "` +
-                        `", "latest-access" : "` +
-                        `", "current-state" : "` +
-                        `"}",` +
-                        `" message" : "{` +
-                        `"nickname" : "` +
-                        `", "message" : "` +
-                        `", "sended" : "` +
-                        `", "removed" : "` +
-                        `", "visualized" : "` +
-                        `", "data-recived" : "` +
-                        `"}"` +
-                        `}",` +
-                        ` "chat" : "{` +
-                        `"id" : "` +
-                        `", "current-state" : "` +
-                        `", "latest-access" :"` +
-                        `", "message" : "{` +
-                        `"nickname" : "` +
-                        `", "message" : "` +
-                        `", "sended" : "` +
-                        `", "removed" : "` +
-                        `", "visualized" : "` +
-                        `", "data-recived" : "` +
-                        `"}"` +
-                        `}"` +
-                        `}`,
+                        `","group": {
+    "id": "",
+    "nome": "",
+    "utenti": {
+      "nickname": "",
+      "latest-access": "",
+      "current-state": ""
+    },
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  },
+  "chat": {
+    "id": "",
+    "current-state": "",
+    "latest-access": "",
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  }
+}
+`,
                       publicKey
                     );
                     var c_aesKey = await crypto.encrypt(keyAES, publicKey);
                     var crypted_email = crypto.encryptAES(email);
                     var crypted_password = crypto.encryptAES(password);
                     var crypted_nickname = crypto.encryptAES(nickname);
-                    var doubleCrypted_email = await crypto.encrypt(crypted_email, publicKey);
-                    var doubleCrypted_password = await crypto.encrypt(crypted_password, publicKey);
-                    var doubleCrypted_nickname = await crypto.encrypt(crypted_nickname, publicKey);
+                    var doubleCrypted_email = await crypto.encrypt(
+                        crypted_email,
+                        publicKey
+                    );
+                    var doubleCrypted_password = await crypto.encrypt(
+                        crypted_password,
+                        publicKey
+                    );
+                    var doubleCrypted_nickname = await crypto.encrypt(
+                        crypted_nickname,
+                        publicKey
+                    );
 
-                    socket.emit("confirmSuccess", doubleCrypted_email, doubleCrypted_nickname, doubleCrypted_password, c_rememberMe, c_aesKey, c_row);
+                    socket.emit(
+                        "confirmSuccess",
+                        doubleCrypted_email,
+                        doubleCrypted_nickname,
+                        doubleCrypted_password,
+                        c_rememberMe,
+                        c_aesKey,
+                        c_row
+                    );
                 } else {
                     await database.increaseConfirmAttempts(email, password);
 
-                    var message = await crypto.encrypt("Wrong verification code", publicKey);
+                    var message = await crypto.encrypt(
+                        "Wrong verification code",
+                        publicKey
+                    );
 
                     socket.emit("confirmError", message);
                 }
             } else {
-                if (!await database.hasAttempts(email, password)) {
-                    var wait_time = await database.getWaitTime(email, password)
+                if (!(await database.hasAttempts(email, password))) {
+                    var wait_time = await database.getWaitTime(email, password);
                     if (wait_time == 0) {
                         await database.resetAttempts(email, password);
                         await database.increaseTimes(email, password);
@@ -200,7 +253,9 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
 
                 socket.emit("confirmError", wait_time);
             }
-        } else if (await database.existInDatabase(database.Users, nickname, email, "or")) {
+        } else if (
+            await database.existInDatabase(database.Users, nickname, email, "or")
+        ) {
             console.log("Utente già confermato");
 
             const message = await crypto.encrypt("User already confirmed", publicKey);
@@ -223,7 +278,19 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
         const crypted_check4 = await crypto.encrypt(check4, publicKey);
         const crypted_check5 = await crypto.encrypt(check5, publicKey);
         const crypted_check6 = await crypto.encrypt(check6, publicKey);
-        const errors = validator.getErrors(nickname, password, verification_code, check1, check2, check3, check4, check5, check6).split("\n");
+        const errors = validator
+            .getErrors(
+                nickname,
+                password,
+                verification_code,
+                check1,
+                check2,
+                check3,
+                check4,
+                check5,
+                check6
+            )
+            .split("\n");
         const crypted_data1 = await crypto.encrypt(errors[0], publicKey);
         const crypted_data2 = await crypto.encrypt(errors[1], publicKey);
         const crypted_data3 = await crypto.encrypt(errors[2], publicKey);
@@ -231,7 +298,21 @@ async function confirmUserViaLink(armored_email, armored_password, armored_nickn
         const crypted_data5 = await crypto.encrypt(errors[4], publicKey);
         const crypted_data6 = await crypto.encrypt(errors[5], publicKey);
 
-        socket.emit("confirmDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_check5, crypted_check6, crypted_data1, crypted_data2, crypted_data3, crypted_data4, crypted_data5, crypted_data6);
+        socket.emit(
+            "confirmDataError",
+            crypted_check1,
+            crypted_check2,
+            crypted_check3,
+            crypted_check4,
+            crypted_check5,
+            crypted_check6,
+            crypted_data1,
+            crypted_data2,
+            crypted_data3,
+            crypted_data4,
+            crypted_data5,
+            crypted_data6
+        );
     }
 }
 
@@ -243,10 +324,22 @@ function isUrlConfirmed(url, email, password, nickname) {
         return false;
     }
 
-    return url.includes("/confirm.html") && (email.trim().length > 0 || nickname.trim().length > 0) && password.trim().length > 0;
+    return (
+        url.includes("/confirm.html") &&
+        (email.trim().length > 0 || nickname.trim().length > 0) &&
+        password.trim().length > 0
+    );
 }
 
-async function sendCode(armored_email, armored_nickname, armored_password, publicKeyArmored, crypted_link, socket, method) {
+async function sendCode(
+    armored_email,
+    armored_nickname,
+    armored_password,
+    publicKeyArmored,
+    crypted_link,
+    socket,
+    method
+) {
     var { data: pubKey } = "";
     var { data: url } = "";
 
@@ -275,19 +368,34 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
             validate_email = "";
         }
         try {
-            validate_password = await crypto.decrypt(armored_password, crypto.privateKey);
+            validate_password = await crypto.decrypt(
+                armored_password,
+                crypto.privateKey
+            );
         } catch (err) {
             validate_password = "";
         }
         try {
-            validate_nickname = await crypto.decrypt(armored_nickname, crypto.privateKey);
+            validate_nickname = await crypto.decrypt(
+                armored_nickname,
+                crypto.privateKey
+            );
         } catch (err) {
             validate_nickname = "";
         }
 
-        const e_mail = validate_email.data == undefined ? "" : validator.validate(validate_email.data);
-        const password = validate_password.data == undefined ? "" : validator.validate(validate_password.data);
-        const nickname = validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
+        const e_mail =
+            validate_email.data == undefined
+                ? ""
+                : validator.validate(validate_email.data);
+        const password =
+            validate_password.data == undefined
+                ? ""
+                : validator.validate(validate_password.data);
+        const nickname =
+            validate_nickname.data == undefined
+                ? ""
+                : validator.validate(validate_nickname.data);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(e_mail);
@@ -301,23 +409,43 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                 email = await database.getEmail(database.Users, nickname);
             }
 
-            if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
-                if (await database.getWaitTimeCode(email, password) == 0) {
-                    if (await database.getTimes(email, password) <= 5) {
+            if (
+                await database.existInDatabase(
+                    database.tempUsers,
+                    nickname,
+                    email,
+                    "or"
+                )
+            ) {
+                if ((await database.getWaitTimeCode(email, password)) == 0) {
+                    if ((await database.getTimes(email, password)) <= 5) {
                         const verification_code = crypto.generateRandomKey(10);
 
                         database.setVerificationCode(email, password, verification_code);
 
-                        const expiration_time = await database.getExipirationTime(email, password);
+                        const expiration_time = await database.getExipirationTime(
+                            email,
+                            password
+                        );
 
                         const crypted_email = crypto.encryptAES(email);
                         const crypted_password = crypto.encryptAES(password);
                         const crypted_nickname = crypto.encryptAES(nickname);
-                        const confirm_link = link.substring(0, link.indexOf("/confirm.html") + 13);
+                        const confirm_link = link.substring(
+                            0,
+                            link.indexOf("/confirm.html") + 13
+                        );
 
-                        emailer.sendConfirmCodeViaEmail(crypted_email, crypted_nickname, crypted_password, verification_code, expiration_time, confirm_link);
+                        emailer.sendConfirmCodeViaEmail(
+                            crypted_email,
+                            crypted_nickname,
+                            crypted_password,
+                            verification_code,
+                            expiration_time,
+                            confirm_link
+                        );
 
-                        const wait_time = await database.getWaitTimeCode(email, password)
+                        const wait_time = await database.getWaitTimeCode(email, password);
                         if (wait_time == 0) {
                             const times = await database.getTimes(email, password);
 
@@ -345,7 +473,9 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
 
                         socket.emit("requestCodeSuccess");
                     } else {
-                        console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
+                        console.log(
+                            "Numero di tentativi superato, necessario attendere per richiedere un altro codice"
+                        );
 
                         const time = await database.getWaitTimeCode(email, password);
                         const wait_time = await crypto.encrypt(time.toString(), publicKey);
@@ -353,17 +483,24 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                         socket.emit("requestCodeError", "User deleted");
                     }
                 } else {
-                    console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
+                    console.log(
+                        "Numero di tentativi superato, necessario attendere per richiedere un altro codice"
+                    );
 
                     const time = await database.getWaitTimeCode(email, password);
                     const wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                     socket.emit("requestCodeError", wait_time);
                 }
-            } else if (await database.existInDatabase(database.Users, nickname, email, "or")) {
+            } else if (
+                await database.existInDatabase(database.Users, nickname, email, "or")
+            ) {
                 console.log("Utente già confermato");
 
-                const message = await crypto.encrypt("User already confirmed", publicKey);
+                const message = await crypto.encrypt(
+                    "User already confirmed",
+                    publicKey
+                );
 
                 socket.emit("requestCodeError", message);
             } else {
@@ -381,13 +518,35 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
             const crypted_check2 = await crypto.encrypt(check2, publicKey);
             const crypted_check3 = await crypto.encrypt(check3, publicKey);
             const crypted_check4 = await crypto.encrypt(check4, publicKey);
-            const errors = validator.getErrors(nickname, password, "", check1, check2, check3, true, check4, true).split("\n");
+            const errors = validator
+                .getErrors(
+                    nickname,
+                    password,
+                    "",
+                    check1,
+                    check2,
+                    check3,
+                    true,
+                    check4,
+                    true
+                )
+                .split("\n");
             const crypted_data1 = await crypto.encrypt(errors[0], publicKey);
             const crypted_data2 = await crypto.encrypt(errors[1], publicKey);
             const crypted_data3 = await crypto.encrypt(errors[2], publicKey);
             const crypted_data4 = await crypto.encrypt(errors[4], publicKey);
 
-            socket.emit("requestCodeDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4);
+            socket.emit(
+                "requestCodeDataError",
+                crypted_check1,
+                crypted_check2,
+                crypted_check3,
+                crypted_check4,
+                crypted_data1,
+                crypted_data2,
+                crypted_data3,
+                crypted_data4
+            );
         }
     } else {
         var validate_email = "";
@@ -410,9 +569,16 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
             validate_nickname = "";
         }
 
-        const e_mail = validate_email == undefined ? "" : validator.validate(validate_email);
-        const password = validate_password == undefined ? "" : validator.validate(validate_password);
-        const nickname = validate_nickname == undefined ? "" : validator.validate(validate_nickname);
+        const e_mail =
+            validate_email == undefined ? "" : validator.validate(validate_email);
+        const password =
+            validate_password == undefined
+                ? ""
+                : validator.validate(validate_password);
+        const nickname =
+            validate_nickname == undefined
+                ? ""
+                : validator.validate(validate_nickname);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(e_mail);
@@ -426,23 +592,43 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                 email = await database.getEmail(database.tempUsers, nickname);
             }
 
-            if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
-                if (await database.getWaitTimeCode(email, password) == 0) {
-                    if (await database.getTimes(email, password) <= 5) {
+            if (
+                await database.existInDatabase(
+                    database.tempUsers,
+                    nickname,
+                    email,
+                    "or"
+                )
+            ) {
+                if ((await database.getWaitTimeCode(email, password)) == 0) {
+                    if ((await database.getTimes(email, password)) <= 5) {
                         const verification_code = crypto.generateRandomKey(10);
 
                         database.setVerificationCode(email, password, verification_code);
 
-                        const expiration_time = await database.getExipirationTime(email, password);
+                        const expiration_time = await database.getExipirationTime(
+                            email,
+                            password
+                        );
 
                         const crypted_email = crypto.encryptAES(email);
                         const crypted_password = crypto.encryptAES(password);
                         const crypted_nickname = crypto.encryptAES(nickname);
-                        const confirm_link = link.substring(0, link.indexOf("/confirm.html"));
+                        const confirm_link = link.substring(
+                            0,
+                            link.indexOf("/confirm.html")
+                        );
 
-                        emailer.sendConfirmCodeViaEmail(crypted_email, crypted_nickname, crypted_password, verification_code, expiration_time, confirm_link);
+                        emailer.sendConfirmCodeViaEmail(
+                            crypted_email,
+                            crypted_nickname,
+                            crypted_password,
+                            verification_code,
+                            expiration_time,
+                            confirm_link
+                        );
 
-                        const wait_time = await database.getWaitTimeCode(email, password)
+                        const wait_time = await database.getWaitTimeCode(email, password);
                         if (wait_time == 0) {
                             const times = await database.getTimes(email, password);
 
@@ -470,7 +656,9 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
 
                         socket.emit("requestCodeSuccess");
                     } else {
-                        console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
+                        console.log(
+                            "Numero di tentativi superato, necessario attendere per richiedere un altro codice"
+                        );
 
                         const time = await database.getWaitTimeCode(email, password);
                         const wait_time = await crypto.encrypt(time.toString(), publicKey);
@@ -478,17 +666,24 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
                         socket.emit("requestCodeError", "User deleted");
                     }
                 } else {
-                    console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice");
+                    console.log(
+                        "Numero di tentativi superato, necessario attendere per richiedere un altro codice"
+                    );
 
                     const time = await database.getWaitTimeCode(email, password);
                     const wait_time = await crypto.encrypt(time.toString(), publicKey);
 
                     socket.emit("requestCodeError", wait_time);
                 }
-            } else if (await database.existInDatabase(database.Users, nickname, email, "or")) {
+            } else if (
+                await database.existInDatabase(database.Users, nickname, email, "or")
+            ) {
                 console.log("Utente già confermato");
 
-                const message = await crypto.encrypt("User already confirmed", publicKey);
+                const message = await crypto.encrypt(
+                    "User already confirmed",
+                    publicKey
+                );
 
                 socket.emit("requestCodeError", message);
             } else {
@@ -506,30 +701,68 @@ async function sendCode(armored_email, armored_nickname, armored_password, publi
             const crypted_check2 = await crypto.encrypt(check2, publicKey);
             const crypted_check3 = await crypto.encrypt(check3, publicKey);
             const crypted_check4 = await crypto.encrypt(check4, publicKey);
-            const errors = validator.getErrors(nickname, password, "", check1, check2, check3, true, check4, true).split("\n");
+            const errors = validator
+                .getErrors(
+                    nickname,
+                    password,
+                    "",
+                    check1,
+                    check2,
+                    check3,
+                    true,
+                    check4,
+                    true
+                )
+                .split("\n");
             const crypted_data1 = await crypto.encrypt(errors[0], publicKey);
             const crypted_data2 = await crypto.encrypt(errors[1], publicKey);
             const crypted_data3 = await crypto.encrypt(errors[2], publicKey);
             const crypted_data4 = await crypto.encrypt(errors[4], publicKey);
 
-            socket.emit("requestCodeDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4);
+            socket.emit(
+                "requestCodeDataError",
+                crypted_check1,
+                crypted_check2,
+                crypted_check3,
+                crypted_check4,
+                crypted_data1,
+                crypted_data2,
+                crypted_data3,
+                crypted_data4
+            );
         }
     }
 }
 
-async function confirmUserViaCode(armored_email, armored_nickname, armored_password, armored_verification_code, armored_rememberMe, publicKeyArmored, crypted_aesKey, socket, method) {
+async function confirmUserViaCode(
+    armored_email,
+    armored_nickname,
+    armored_password,
+    armored_verification_code,
+    armored_rememberMe,
+    publicKeyArmored,
+    crypted_aesKey,
+    socket,
+    method
+) {
     var { data: verification_code } = "";
     var { data: validate_rememberMe } = "";
     var { data: pubKey } = "";
     var { data: aesKey } = "";
 
     try {
-        verification_code = await crypto.decrypt(armored_verification_code, crypto.privateKey);
+        verification_code = await crypto.decrypt(
+            armored_verification_code,
+            crypto.privateKey
+        );
     } catch (err) {
         verification_code = "";
     }
     try {
-        validate_rememberMe = await crypto.decrypt(armored_rememberMe, crypto.privateKey);
+        validate_rememberMe = await crypto.decrypt(
+            armored_rememberMe,
+            crypto.privateKey
+        );
     } catch (err) {
         validate_rememberMe = "";
     }
@@ -547,7 +780,7 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
     var code = verification_code.data === undefined ? "" : verification_code.data;
     var publicKey = pubKey.data == undefined ? "" : pubKey.data;
     var keyAES = aesKey.data == undefined ? "" : aesKey.data;
-    
+
     if (method == "input") {
         var { data: validate_email } = "";
         var { data: validate_password } = "";
@@ -559,20 +792,38 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
             validate_email = "";
         }
         try {
-            validate_password = await crypto.decrypt(armored_password, crypto.privateKey);
+            validate_password = await crypto.decrypt(
+                armored_password,
+                crypto.privateKey
+            );
         } catch (err) {
             validate_password = "";
         }
         try {
-            validate_nickname = await crypto.decrypt(armored_nickname, crypto.privateKey);
+            validate_nickname = await crypto.decrypt(
+                armored_nickname,
+                crypto.privateKey
+            );
         } catch (err) {
             validate_nickname = "";
         }
 
-        const email = validate_email.data == undefined ? "" : validator.validate(validate_email.data);
-        const password = validate_password.data == undefined ? "" : validator.validate(validate_password.data);
-        const nickname = validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
-        const rememberMe = validate_rememberMe.data == undefined ? "" : validator.validate(validate_rememberMe.data);
+        const email =
+            validate_email.data == undefined
+                ? ""
+                : validator.validate(validate_email.data);
+        const password =
+            validate_password.data == undefined
+                ? ""
+                : validator.validate(validate_password.data);
+        const nickname =
+            validate_nickname.data == undefined
+                ? ""
+                : validator.validate(validate_nickname.data);
+        const rememberMe =
+            validate_rememberMe.data == undefined
+                ? ""
+                : validator.validate(validate_rememberMe.data);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(email);
@@ -582,89 +833,108 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
         var check6 = validator.checkVerificationCode(code);
 
         if ((check1 || check2) && check3 && check4 && check5 && check6) {
-            if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
-                if (await database.hasAttempts(email, password) && await database.getWaitTime(email, password) == 0) {
-                    if (await database.checkVerificationCode(email, nickname, password, code)) {
+            if (
+                await database.existInDatabase(
+                    database.tempUsers,
+                    nickname,
+                    email,
+                    "or"
+                )
+            ) {
+                if (
+                    (await database.hasAttempts(email, password)) &&
+                    (await database.getWaitTime(email, password)) == 0
+                ) {
+                    if (
+                        await database.checkVerificationCode(
+                            email,
+                            nickname,
+                            password,
+                            code
+                        )
+                    ) {
                         console.log("Utente confermato");
 
                         await database.insertUser(nickname, email, password, keyAES);
                         await database.removeTempUsers(email, password);
                         await database.insertChat(
                           nickname,
-                          `{"nickname" : "` +
+                          `{"nickname": "` +
                             nickname +
-                            `", "password": "` +
+                            `","password": "` +
                             password +
-                            `", "group": "{ ` +
-                            `"id" : "` +
-                            `", "nome" : "` +
-                            `", "utenti" : "{ ` +
-                            `"nickname" : "` +
-                            `", "latest-access" : "` +
-                            `", "current-state" : "` +
-                            `"}",` +
-                            `" message" : "{` +
-                            `"nickname" : "` +
-                            `", "message" : "` +
-                            `", "sended" : "` +
-                            `", "removed" : "` +
-                            `", "visualized" : "` +
-                            `", "data-recived" : "` +
-                            `"}"` +
-                            `}",` +
-                            ` "chat" : "{` +
-                            `"id" : "` +
-                            `", "current-state" : "` +
-                            `", "latest-access" :"` +
-                            `", "message" : "{` +
-                            `"nickname" : "` +
-                            `", "message" : "` +
-                            `", "sended" : "` +
-                            `", "removed" : "` +
-                            `", "visualized" : "` +
-                            `", "data-recived" : "` +
-                            `"}"` +
-                            `}"` +
-                            `}`
+                            `","group": {
+    "id": "",
+    "nome": "",
+    "utenti": {
+      "nickname": "",
+      "latest-access": "",
+      "current-state": ""
+    },
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  },
+  "chat": {
+    "id": "",
+    "current-state": "",
+    "latest-access": "",
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  }
+}
+`
                         );
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                         var c_row = await crypto.encrypt(
-                          `{"nickname" : "` +
+                          `{"nickname": "` +
                             nickname +
-                            `", "password": "` +
+                            `","password": "` +
                             password +
-                            `", "group": "{ ` +
-                            `"id" : "` +
-                            `", "nome" : "` +
-                            `", "utenti" : "{ ` +
-                            `"nickname" : "` +
-                            `", "latest-access" : "` +
-                            `", "current-state" : "` +
-                            `"}",` +
-                            `" message" : "{` +
-                            `"nickname" : "` +
-                            `", "message" : "` +
-                            `", "sended" : "` +
-                            `", "removed" : "` +
-                            `", "visualized" : "` +
-                            `", "data-recived" : "` +
-                            `"}"` +
-                            `}",` +
-                            ` "chat" : "{` +
-                            `"id" : "` +
-                            `", "current-state" : "` +
-                            `", "latest-access" :"` +
-                            `", "message" : "{` +
-                            `"nickname" : "` +
-                            `", "message" : "` +
-                            `", "sended" : "` +
-                            `", "removed" : "` +
-                            `", "visualized" : "` +
-                            `", "data-recived" : "` +
-                            `"}"` +
-                            `}"` +
-                            `}`,
+                            `","group": {
+    "id": "",
+    "nome": "",
+    "utenti": {
+      "nickname": "",
+      "latest-access": "",
+      "current-state": ""
+    },
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  },
+  "chat": {
+    "id": "",
+    "current-state": "",
+    "latest-access": "",
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  }
+}
+`,
                           publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
@@ -672,38 +942,74 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
                         var mail = email;
                         var nick = nickname;
 
-                        if (await database.existInDatabase(database.tempUsers, "", email, "or")) {
+                        if (
+                            await database.existInDatabase(
+                                database.tempUsers,
+                                "",
+                                email,
+                                "or"
+                            )
+                        ) {
                             nick = await database.getNickname(database.tempUsers, email);
                         }
 
-                        if (await database.existInDatabase(database.tempUsers, nickname, "", "or")) {
+                        if (
+                            await database.existInDatabase(
+                                database.tempUsers,
+                                nickname,
+                                "",
+                                "or"
+                            )
+                        ) {
                             mail = await database.getEmail(database.tempUsers, nickname);
                         }
 
                         var crypted_email = crypto.encryptAES(mail);
                         var crypted_password = crypto.encryptAES(password);
                         var crypted_nickname = crypto.encryptAES(nick);
-                        var doubleCrypted_email = await crypto.encrypt(crypted_email, publicKey);
-                        var doubleCrypted_password = await crypto.encrypt(crypted_password, publicKey);
-                        var doubleCrypted_nickname = await crypto.encrypt(crypted_nickname, publicKey);
+                        var doubleCrypted_email = await crypto.encrypt(
+                            crypted_email,
+                            publicKey
+                        );
+                        var doubleCrypted_password = await crypto.encrypt(
+                            crypted_password,
+                            publicKey
+                        );
+                        var doubleCrypted_nickname = await crypto.encrypt(
+                            crypted_nickname,
+                            publicKey
+                        );
 
-                        socket.emit("confirmSuccess", doubleCrypted_email, doubleCrypted_nickname, doubleCrypted_password, c_rememberMe, c_aesKey, c_row);
+                        socket.emit(
+                            "confirmSuccess",
+                            doubleCrypted_email,
+                            doubleCrypted_nickname,
+                            doubleCrypted_password,
+                            c_rememberMe,
+                            c_aesKey,
+                            c_row
+                        );
                     } else {
                         console.log("Codice di verifica errato");
 
                         await database.increaseConfirmAttempts(email, password);
 
-                        var message = await crypto.encrypt("Wrong verification code", publicKey);
+                        var message = await crypto.encrypt(
+                            "Wrong verification code",
+                            publicKey
+                        );
 
                         socket.emit("confirmError", message);
                     }
                 } else {
                     console.log("Impossibile testare un altro codice");
 
-                    if (!await database.hasAttempts(email, password)) {
-                        console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice -> verify via code");
+                    if (!(await database.hasAttempts(email, password))) {
+                        console.log(
+                            "Numero di tentativi superato, necessario attendere per richiedere un altro codice -> verify via code"
+                        );
 
-                        var wait_time = await database.getWaitTime(email, password)
+                        var wait_time = await database.getWaitTime(email, password);
                         if (wait_time == 0) {
                             await database.resetAttempts(email, password);
                             await database.increaseTimes(email, password);
@@ -739,10 +1045,15 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
 
                     socket.emit("confirmError", wait_time);
                 }
-            } else if (await database.existInDatabase(database.Users, nickname, email, "or")) {
+            } else if (
+                await database.existInDatabase(database.Users, nickname, email, "or")
+            ) {
                 console.log("Utente già confermato");
 
-                const message = await crypto.encrypt("User already confirmed", publicKey);
+                const message = await crypto.encrypt(
+                    "User already confirmed",
+                    publicKey
+                );
 
                 socket.emit("confirmError", message);
             } else {
@@ -762,7 +1073,19 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
             const crypted_check4 = await crypto.encrypt(check4, publicKey);
             const crypted_check5 = await crypto.encrypt(check5, publicKey);
             const crypted_check6 = await crypto.encrypt(check6, publicKey);
-            const errors = validator.getErrors(nickname, password, code, check1, check2, check3, check4, check5, check6).split("\n");
+            const errors = validator
+                .getErrors(
+                    nickname,
+                    password,
+                    code,
+                    check1,
+                    check2,
+                    check3,
+                    check4,
+                    check5,
+                    check6
+                )
+                .split("\n");
             const crypted_data1 = await crypto.encrypt(errors[0], publicKey);
             const crypted_data2 = await crypto.encrypt(errors[1], publicKey);
             const crypted_data3 = await crypto.encrypt(errors[2], publicKey);
@@ -770,7 +1093,21 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
             const crypted_data5 = await crypto.encrypt(errors[4], publicKey);
             const crypted_data6 = await crypto.encrypt(errors[5], publicKey);
 
-            socket.emit("confirmDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_check5, crypted_check6, crypted_data1, crypted_data2, crypted_data3, crypted_data4, crypted_data5, crypted_data6);
+            socket.emit(
+                "confirmDataError",
+                crypted_check1,
+                crypted_check2,
+                crypted_check3,
+                crypted_check4,
+                crypted_check5,
+                crypted_check6,
+                crypted_data1,
+                crypted_data2,
+                crypted_data3,
+                crypted_data4,
+                crypted_data5,
+                crypted_data6
+            );
         }
     } else {
         var validate_email = "";
@@ -793,10 +1130,20 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
             validate_nickname = "";
         }
 
-        const email = validate_email == undefined ? "" : validator.validate(validate_email);
-        const password = validate_password == undefined ? "" : validator.validate(validate_password);
-        const nickname = validate_nickname == undefined ? "" : validator.validate(validate_nickname);
-        const rememberMe = validate_rememberMe.data == undefined ? "" : validator.validate(validate_rememberMe.data);
+        const email =
+            validate_email == undefined ? "" : validator.validate(validate_email);
+        const password =
+            validate_password == undefined
+                ? ""
+                : validator.validate(validate_password);
+        const nickname =
+            validate_nickname == undefined
+                ? ""
+                : validator.validate(validate_nickname);
+        const rememberMe =
+            validate_rememberMe.data == undefined
+                ? ""
+                : validator.validate(validate_rememberMe.data);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(email);
@@ -806,89 +1153,108 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
         var check6 = validator.checkVerificationCode(code);
 
         if ((check1 || check2) && check3 && check4 && check5 && check6) {
-            if (await database.existInDatabase(database.tempUsers, nickname, email, "or")) {
-                if (await database.hasAttempts(email, password) && await database.getWaitTime(email, password) == 0) {
-                    if (await database.checkVerificationCode(email, nickname, password, code)) {
+            if (
+                await database.existInDatabase(
+                    database.tempUsers,
+                    nickname,
+                    email,
+                    "or"
+                )
+            ) {
+                if (
+                    (await database.hasAttempts(email, password)) &&
+                    (await database.getWaitTime(email, password)) == 0
+                ) {
+                    if (
+                        await database.checkVerificationCode(
+                            email,
+                            nickname,
+                            password,
+                            code
+                        )
+                    ) {
                         console.log("Utente confermato");
 
                         await database.insertUser(nickname, email, password, keyAES);
                         await database.removeTempUsers(email, password);
                         await database.insertChat(
                           nickname,
-                          `{"nickname" : "` +
+                          `{"nickname": "` +
                             nickname +
-                            `", "password": "` +
+                            `","password": "` +
                             password +
-                            `", "group": "{ ` +
-                            `"id" : "` +
-                            `", "nome" : "` +
-                            `", "utenti" : "{ ` +
-                            `"nickname" : "` +
-                            `", "latest-access" : "` +
-                            `", "current-state" : "` +
-                            `"}",` +
-                            `" message" : "{` +
-                            `"nickname" : "` +
-                            `", "message" : "` +
-                            `", "sended" : "` +
-                            `", "removed" : "` +
-                            `", "visualized" : "` +
-                            `", "data-recived" : "` +
-                            `"}"` +
-                            `}",` +
-                            ` "chat" : "{` +
-                            `"id" : "` +
-                            `", "current-state" : "` +
-                            `", "latest-access" :"` +
-                            `", "message" : "{` +
-                            `"nickname" : "` +
-                            `", "message" : "` +
-                            `", "sended" : "` +
-                            `", "removed" : "` +
-                            `", "visualized" : "` +
-                            `", "data-recived" : "` +
-                            `"}"` +
-                            `}"` +
-                            `}`
+                            `","group": {
+    "id": "",
+    "nome": "",
+    "utenti": {
+      "nickname": "",
+      "latest-access": "",
+      "current-state": ""
+    },
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  },
+  "chat": {
+    "id": "",
+    "current-state": "",
+    "latest-access": "",
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  }
+}
+`
                         );
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                         var c_row = await crypto.encrypt(
-                          `{"nickname" : "` +
+                          `{"nickname": "` +
                             nickname +
-                            `", "password": "` +
+                            `","password": "` +
                             password +
-                            `", "group": "{ ` +
-                            `"id" : "` +
-                            `", "nome" : "` +
-                            `", "utenti" : "{ ` +
-                            `"nickname" : "` +
-                            `", "latest-access" : "` +
-                            `", "current-state" : "` +
-                            `"}",` +
-                            `" message" : "{` +
-                            `"nickname" : "` +
-                            `", "message" : "` +
-                            `", "sended" : "` +
-                            `", "removed" : "` +
-                            `", "visualized" : "` +
-                            `", "data-recived" : "` +
-                            `"}"` +
-                            `}",` +
-                            ` "chat" : "{` +
-                            `"id" : "` +
-                            `", "current-state" : "` +
-                            `", "latest-access" :"` +
-                            `", "message" : "{` +
-                            `"nickname" : "` +
-                            `", "message" : "` +
-                            `", "sended" : "` +
-                            `", "removed" : "` +
-                            `", "visualized" : "` +
-                            `", "data-recived" : "` +
-                            `"}"` +
-                            `}"` +
-                            `}`,
+                            `","group": {
+    "id": "",
+    "nome": "",
+    "utenti": {
+      "nickname": "",
+      "latest-access": "",
+      "current-state": ""
+    },
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  },
+  "chat": {
+    "id": "",
+    "current-state": "",
+    "latest-access": "",
+    "message": {
+      "nickname": "",
+      "message": "",
+      "sended": "",
+      "removed": "",
+      "visualized": "",
+      "data-recived": ""
+    }
+  }
+}
+`,
                           publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
@@ -896,38 +1262,74 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
                         var mail = email;
                         var nick = nickname;
 
-                        if (await database.existInDatabase(database.tempUsers, "", email, "or")) {
+                        if (
+                            await database.existInDatabase(
+                                database.tempUsers,
+                                "",
+                                email,
+                                "or"
+                            )
+                        ) {
                             nick = await database.getNickname(database.tempUsers, email);
                         }
 
-                        if (await database.existInDatabase(database.tempUsers, nickname, "", "or")) {
+                        if (
+                            await database.existInDatabase(
+                                database.tempUsers,
+                                nickname,
+                                "",
+                                "or"
+                            )
+                        ) {
                             mail = await database.getEmail(database.tempUsers, nickname);
                         }
 
                         var crypted_email = crypto.encryptAES(mail);
                         var crypted_password = crypto.encryptAES(password);
                         var crypted_nickname = crypto.encryptAES(nick);
-                        var doubleCrypted_email = await crypto.encrypt(crypted_email, publicKey);
-                        var doubleCrypted_password = await crypto.encrypt(crypted_password, publicKey);
-                        var doubleCrypted_nickname = await crypto.encrypt(crypted_nickname, publicKey);
+                        var doubleCrypted_email = await crypto.encrypt(
+                            crypted_email,
+                            publicKey
+                        );
+                        var doubleCrypted_password = await crypto.encrypt(
+                            crypted_password,
+                            publicKey
+                        );
+                        var doubleCrypted_nickname = await crypto.encrypt(
+                            crypted_nickname,
+                            publicKey
+                        );
 
-                        socket.emit("confirmSuccess", doubleCrypted_email, doubleCrypted_nickname, doubleCrypted_password, c_rememberMe, c_aesKey, c_row);
+                        socket.emit(
+                            "confirmSuccess",
+                            doubleCrypted_email,
+                            doubleCrypted_nickname,
+                            doubleCrypted_password,
+                            c_rememberMe,
+                            c_aesKey,
+                            c_row
+                        );
                     } else {
                         console.log("Codice di verifica errato");
 
                         await database.increaseConfirmAttempts(email, password);
 
-                        var message = await crypto.encrypt("Wrong verification code", publicKey);
+                        var message = await crypto.encrypt(
+                            "Wrong verification code",
+                            publicKey
+                        );
 
                         socket.emit("confirmError", message);
                     }
                 } else {
                     console.log("Impossibile testare un altro codice");
 
-                    if (!await database.hasAttempts(email, password)) {
-                        console.log("Numero di tentativi superato, necessario attendere per richiedere un altro codice -> verify via code");
+                    if (!(await database.hasAttempts(email, password))) {
+                        console.log(
+                            "Numero di tentativi superato, necessario attendere per richiedere un altro codice -> verify via code"
+                        );
 
-                        var wait_time = await database.getWaitTime(email, password)
+                        var wait_time = await database.getWaitTime(email, password);
                         if (wait_time == 0) {
                             await database.resetAttempts(email, password);
                             await database.increaseTimes(email, password);
@@ -963,10 +1365,15 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
 
                     socket.emit("confirmError", wait_time);
                 }
-            } else if (await database.existInDatabase(database.Users, nickname, email, "or")) {
+            } else if (
+                await database.existInDatabase(database.Users, nickname, email, "or")
+            ) {
                 console.log("Utente già confermato");
 
-                const message = await crypto.encrypt("User already confirmed", publicKey);
+                const message = await crypto.encrypt(
+                    "User already confirmed",
+                    publicKey
+                );
 
                 socket.emit("confirmError", message);
             } else {
@@ -986,7 +1393,19 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
             const crypted_check4 = await crypto.encrypt(check4.toString(), publicKey);
             const crypted_check5 = await crypto.encrypt(check5.toString(), publicKey);
             const crypted_check6 = await crypto.encrypt(check6.toString(), publicKey);
-            const errors = validator.getErrors(nickname, password, code, check1, check2, check3, check4, check5, check6).split("\n");
+            const errors = validator
+                .getErrors(
+                    nickname,
+                    password,
+                    code,
+                    check1,
+                    check2,
+                    check3,
+                    check4,
+                    check5,
+                    check6
+                )
+                .split("\n");
             const crypted_data1 = await crypto.encrypt(errors[0], publicKey);
             const crypted_data2 = await crypto.encrypt(errors[1], publicKey);
             const crypted_data3 = await crypto.encrypt(errors[2], publicKey);
@@ -994,7 +1413,21 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
             const crypted_data5 = await crypto.encrypt(errors[4], publicKey);
             const crypted_data6 = await crypto.encrypt(errors[5], publicKey);
 
-            socket.emit("confirmDataError", crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_check5, crypted_check6, crypted_data1, crypted_data2, crypted_data3, crypted_data4, crypted_data5, crypted_data6);
+            socket.emit(
+                "confirmDataError",
+                crypted_check1,
+                crypted_check2,
+                crypted_check3,
+                crypted_check4,
+                crypted_check5,
+                crypted_check6,
+                crypted_data1,
+                crypted_data2,
+                crypted_data3,
+                crypted_data4,
+                crypted_data5,
+                crypted_data6
+            );
         }
     }
 }
@@ -1002,5 +1435,5 @@ async function confirmUserViaCode(armored_email, armored_nickname, armored_passw
 module.exports = {
     confirmUserViaLink,
     sendCode,
-    confirmUserViaCode
-}
+    confirmUserViaCode,
+};
