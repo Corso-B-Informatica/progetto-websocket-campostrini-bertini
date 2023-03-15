@@ -99,7 +99,7 @@ async function confirmUserViaLink(
                     await database.insertUser(nickname, email, password, keyAES);
                     await database.removeTempUsers(email, password);
                     await database.insertChat(
-                      nickname,
+                        nickname,
                       `{"nickname": "` +
                         nickname +
                         `","password": "` +
@@ -141,7 +141,7 @@ async function confirmUserViaLink(
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                     //sas
                     var c_row = await crypto.encrypt(
-                      `{"nickname": "` +
+                      JSON.parse(`{"nickname": "` +
                         nickname +
                         `","password": "` +
                         password +
@@ -176,7 +176,7 @@ async function confirmUserViaLink(
     }
   }
 }
-`,
+`).toString(),
                       publicKey
                     );
                     var c_aesKey = await crypto.encrypt(keyAES, publicKey);
@@ -858,7 +858,7 @@ async function confirmUserViaCode(
                         await database.insertUser(nickname, email, password, keyAES);
                         await database.removeTempUsers(email, password);
                         await database.insertChat(
-                          nickname,
+                            nickname,
                           `{"nickname": "` +
                             nickname +
                             `","password": "` +
@@ -899,7 +899,7 @@ async function confirmUserViaCode(
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                         var c_row = await crypto.encrypt(
-                          `{"nickname": "` +
+                            JSON.parse(`{"nickname": "` +
                             nickname +
                             `","password": "` +
                             password +
@@ -934,7 +934,7 @@ async function confirmUserViaCode(
     }
   }
 }
-`,
+`).toString(),
                           publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
@@ -1178,7 +1178,7 @@ async function confirmUserViaCode(
                         await database.insertUser(nickname, email, password, keyAES);
                         await database.removeTempUsers(email, password);
                         await database.insertChat(
-                          nickname,
+                            nickname,
                           `{"nickname": "` +
                             nickname +
                             `","password": "` +
@@ -1219,7 +1219,7 @@ async function confirmUserViaCode(
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                         var c_row = await crypto.encrypt(
-                          `{"nickname": "` +
+                            JSON.parse(`{"nickname": "` +
                             nickname +
                             `","password": "` +
                             password +
@@ -1254,7 +1254,7 @@ async function confirmUserViaCode(
     }
   }
 }
-`,
+`).toString(),
                           publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
