@@ -267,10 +267,8 @@ async function sync() {
             
             console.log(decrypted_data)
             var decrypted_dataParsed = JSON.parse(decrypted_data.toString());
-            console.log("json " + decrypted_dataParsed.toString())
-            console.log(decrypted_dataParsed[0])
-            crypted_nickname = await encrypt(decrypted_data.nickname, localStorage.getItem("publicKeyArmored"));
-            crypted_password = await encrypt(decrypted_data.password, localStorage.getItem("publicKeyArmored"));
+            crypted_nickname = await encrypt(decrypted_dataParsed.nickname, localStorage.getItem("publicKeyArmored"));
+            crypted_password = await encrypt(decrypted_dataParsed.password, localStorage.getItem("publicKeyArmored"));
             crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
             socket.emit("sync", crypted_nickname, crypted_password, crypted_pubKey )
             console.log("frocio")
