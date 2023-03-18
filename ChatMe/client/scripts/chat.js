@@ -262,11 +262,18 @@ async function sync() {
         }
         else {
             var data = localStorage.getItem("data");
-            var { data: decrypted_data } = crypto.decryptAES(data, kM.getAesKey());
+            var decrypted_data = decryptAES(data, kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "");
+            var decrypted_data = decrypted_data.substring(2, decrypted_data.length - 2);
+            
+            console.log(decrypted_data)
+            var decrypted_dataParsed = JSON.parse(decrypted_data.toString());
+            console.log("json " + decrypted_dataParsed.toString())
+            console.log(decrypted_dataParsed[0])
             crypted_nickname = await encrypt(decrypted_data.nickname, localStorage.getItem("publicKeyArmored"));
             crypted_password = await encrypt(decrypted_data.password, localStorage.getItem("publicKeyArmored"));
             crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
             socket.emit("sync", crypted_nickname, crypted_password, crypted_pubKey )
+            console.log("frocio")
         }
     }
 
