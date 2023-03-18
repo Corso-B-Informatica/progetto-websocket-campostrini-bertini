@@ -24,6 +24,7 @@
                     </button>
 */
 //gestire le emoji non abbiamo ancora fatto la tabella emoji
+
 /*keyManager*/
 const kM = new keyManager();
 
@@ -192,7 +193,22 @@ async function creaChat() {
                     if (!chatName.includes("@")) {
                         if (/[a-zA-Z0-9]/.test(chatName)) {
                             //se aesKey è valida posso decriptare i dati nel localstorage, vedo se sono presenti username e password, se ci sono chill, se no tento di vedere se ci sono con email password e nickname se no lo sloggo
-
+                            var aesKey = kM.getAesKey();
+                            if (aesKey != null && aesKey != undefined && aesKey != "") {
+                                var data = localStorage.getItem("data");
+                                var decrypted_data = decryptAES(data, aesKey);
+                                var chats = JSON.parse(decrypted_data);
+                                var nickname = chats.nickname;
+                                var password = chats.password;
+                                var crypted_nickname = await encrypt(nickname, localStorage.getItem("publicKeyArmored"));
+                                var crypted_password = await encrypt(password, localStorage.getItem("publicKeyArmored"));
+                                
+                            } else {
+                                //si dovrebbe controllare lo storage per vedere se è presente il nickname e la password in modo da richiedere nuovamente l'aesKey
+                                //ma non abbiamo tempo
+                                clearLocalStorageWithoutKey();
+                                window.location.href = "../signUp.html";
+                            }
                         } else {
                             chatName.classList.add("error");
                             chatName.setAttribute("error-message", "Nickname must contain at least one letter or number");
