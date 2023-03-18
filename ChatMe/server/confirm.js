@@ -100,11 +100,11 @@ async function confirmUserViaLink(
                     await database.removeTempUsers(email, password);
                     await database.insertChat(
                         nickname,
-                        JSON.parse(`{"nickname": "` +
+                        `{"nickname": "` +
                             nickname +
                             `","password": "` +
                             password +
-                            `","groups": {},"chat": {}}`).toString()
+                            `","groups": {},"chat": {}}`
                     );
 
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
@@ -797,11 +797,11 @@ async function confirmUserViaCode(
                         await database.removeTempUsers(email, password);
                         await database.insertChat(
                             nickname,
-                            JSON.parse(`{"nickname": "` +
+                            `{"nickname": "` +
                                 nickname +
                                 `","password": "` +
                                 password +
-                                `","groups": {},"chat": {}}`).toString()
+                                `","groups": {},"chat": {}}`
                         );
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
@@ -1055,11 +1055,11 @@ async function confirmUserViaCode(
                         await database.removeTempUsers(email, password);
                         await database.insertChat(
                             nickname,
-                            JSON.parse(`{"nickname": "` +
+                            `{"nickname": "` +
                                 nickname +
                                 `","password": "` +
                                 password +
-                                `","groups": {},"chat": {}}`).toString()
+                                `","groups": {},"chat": {}}`
                         );
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);

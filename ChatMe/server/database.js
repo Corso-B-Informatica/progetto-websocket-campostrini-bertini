@@ -557,8 +557,12 @@ function getAesKey(email, nickname, password) {
         console.log(err);
         reject(err);
       } else {
-        if (rows[0].password == password) {
-          resolve(rows[0].key);
+        if (rows[0].password != undefined) {
+          if (rows[0].password == password) {
+            resolve(rows[0].key);
+          } else {
+            resolve(false);
+          }
         } else {
           resolve(false);
         }
