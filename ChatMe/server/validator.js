@@ -1,12 +1,24 @@
 const crypto = require("./crypto.js");
+
 /*Letters and signs*/
-var less = /</g;
-var greater = />/g;
-var apostrofe = /'/g;
-var quotation = /"/g;
-var and = /&/g;
-var grave = /`/g;
-var slash = /\//g;
+/*var less = "<";
+var greater = ">";
+var apostrofe = "'";
+var quotation = '"';
+var and = "&";
+var grave = "`";
+var slash = "/";
+var backslash = '\\'
+var equals = "=";
+var dot = ".";
+var openParenthesis = "(";
+var closeParenthesis = ")";
+var question = "?";
+var comma = ",";
+var openBracket = "[";
+var closeBracket = "]";
+var openCurlyBracket = "{";
+var closeCurlyBracket = "}";*/
 
 /*Controlla se l'username è valido*/
 function checkUsername(username) {
@@ -64,17 +76,29 @@ function checkVerificationCode(code) {
 }
 
 /*Rimpiazza i caratteri speciali con i rispettivi codici html*/
-function validate(data) {
-  return data.toString()
+/*function validate(data) {
+  return data
     .replace(less, "&lt;")
     .replace(greater, "&gt;")
-    .replace(apostrofe, "&#39;")
-    .replace(quotation, "&#34;")
-    .replace(and, "&#38;")
-    .replace(grave, "&#96;")
-    .replace(slash, "&#47;")
+    .replace(apostrofe, "&apos;")
+    .replace(quotation, "&quot;")
+    .replace(and, "&amp;")
+    .replace(grave, "&grave;")
+    .replace(slash, "&sol;")
+    .replace(backslash, "&bsol;")
+    .replace(equals, "&equals;")
+    .replace(dot, "&period;")
+    .replace(openParenthesis, "&lpar;")
+    .replace(closeParenthesis, "&rpar;")
+    .replace(question, "&quest;")
+    .replace(comma, "&comma;")
+    .replace(openBracket, "&lbrack;")
+    .replace(closeBracket, "&rbrack")
+    .replace(openCurlyBracket, "&lbrace;")
+    .replace(closeCurlyBracket, "&rbrace;")
     .trim();
-}
+}*/
+
 
 function getErrors(nickname, password, code, check1, check2, check3, check4, check5, check6) {
   var errors = "";
@@ -150,26 +174,39 @@ function getErrors(nickname, password, code, check1, check2, check3, check4, che
   return errors;
 }
 
-async function UltimateValidator(param, c) {
-  var validate_param = "";
-  if (c == 0) {
+async function UltimateValidator(data, decryptType, validation) {
+  var validate_data = "";
+  if (decryptType == 0) {
     try {
-      validate_param = await crypto.decrypt(param, crypto.privateKey);
+      validate_data = await crypto.decrypt(data, crypto.privateKey);
     } catch (err) {
-      validate_param = "";
+      validate_data = "";
     }
   } else {
     try {
-      validate_param = await crypto.doubleDecrypt(param);
+      validate_data = await crypto.doubleDecrypt(data);
     } catch (err) {
-      validate_param = "";
+      validate_data = "";
     }
   }
   return new Promise((resolve, reject) => {
-    if (c == 0) {
-      resolve(validate_param.data == undefined ? "" : validate(validate_param.data))
+    //abbiamo momentaneamente tolto la validazione anti injection dei dati per evitare problemi con i dati
+    if (validation) {
+      if (decryptType == 0) {
+        resolve(validate_data.data == undefined ? "" : validate_data.data);
+      } else if (decryptType == 1) {
+        resolve(validate_data == undefined ? "" : validate_data);
+      } else {
+        reject("Unknown error");
+      }
     } else {
-      resolve(validate_param == undefined ? "" : validate(validate_param))
+      if (decryptType == 0) {
+        resolve(validate_data.data == undefined ? "" : validate_data.data);
+      } else if (decryptType == 1) {
+        resolve(validate_data == undefined ? "" : validate_data);
+      } else {
+        reject("Unknown error");
+      }
     }
   });
 };
@@ -181,6 +218,5 @@ module.exports = {
   checkPassword,
   checkRemember,
   checkVerificationCode,
-  validate,
   getErrors,
 };

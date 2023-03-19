@@ -14,18 +14,13 @@ async function confirmUserViaLink(
     socket
 ) {
 
-    const email =
-    await validator.UltimateValidator(armored_email, 1);
-    const password =
-    await validator.UltimateValidator(armored_password, 1);
-    const nickname =
-    await validator.UltimateValidator(armored_nickname, 1);
-    const rememberMe =
-    await validator.UltimateValidator(armored_rememberMe, 0);
-    const publicKey = await validator.UltimateValidator(publicKeyArmored, 0);
-    const keyAES = await validator.UltimateValidator(crypted_aesKey, 0);
-    const verification_code = await validator.UltimateValidator(armored_verification_code, 1);
-
+    const email = await validator.UltimateValidator(armored_email, 1, true);
+    const password = await validator.UltimateValidator(armored_password, 1, true);
+    const nickname = await validator.UltimateValidator(armored_nickname, 1, true);
+    const rememberMe = await validator.UltimateValidator(armored_rememberMe, 0, true);
+    const publicKey = await validator.UltimateValidator(publicKeyArmored, 0, false);
+    const keyAES = await validator.UltimateValidator(crypted_aesKey, 0, false);
+    const verification_code = await validator.UltimateValidator(armored_verification_code, 1, false);
 
     var check1 = validator.checkUsername(nickname);
     var check2 = validator.checkEmail(email);
@@ -65,11 +60,11 @@ async function confirmUserViaLink(
                     //sas
                     var c_row = await crypto.encrypt(
                         `{"nickname": "` +
-                            nickname +
-                            `","password": "` +
-                            password +
-                            `","groups": {}, "chats": {}, "contacts": {}}`,
-                      publicKey
+                        nickname +
+                        `","password": "` +
+                        password +
+                        `","groups": {}, "chats": {}, "contacts": {}}`,
+                        publicKey
                     );
                     var c_aesKey = await crypto.encrypt(keyAES, publicKey);
                     var crypted_email = crypto.encryptAES(email);
@@ -164,12 +159,12 @@ async function confirmUserViaLink(
         //dati non validi
         console.log("Dati non validi");
 
-        const crypted_check1 = await crypto.encrypt(check1, publicKey);
-        const crypted_check2 = await crypto.encrypt(check2, publicKey);
-        const crypted_check3 = await crypto.encrypt(check3, publicKey);
-        const crypted_check4 = await crypto.encrypt(check4, publicKey);
-        const crypted_check5 = await crypto.encrypt(check5, publicKey);
-        const crypted_check6 = await crypto.encrypt(check6, publicKey);
+        const crypted_check1 = await crypto.encrypt(check1.toString(), publicKey);
+        const crypted_check2 = await crypto.encrypt(check2.toString(), publicKey);
+        const crypted_check3 = await crypto.encrypt(check3.toString(), publicKey);
+        const crypted_check4 = await crypto.encrypt(check4.toString(), publicKey);
+        const crypted_check5 = await crypto.encrypt(check5.toString(), publicKey);
+        const crypted_check6 = await crypto.encrypt(check6.toString(), publicKey);
         const errors = validator
             .getErrors(
                 nickname,
@@ -233,17 +228,14 @@ async function sendCode(
     method
 ) {
 
-    var publicKey = await validator.UltimateValidator(publicKeyArmored, 0);
-    const link = await validator.UltimateValidator(crypted_link, 0);
+    const publicKey = await validator.UltimateValidator(publicKeyArmored, 0, false);
+    const link = await validator.UltimateValidator(crypted_link, 0, false);
 
     if (method == "input") {
 
-        const e_mail =
-            await validator.UltimateValidator(armored_email, 0);
-        const password =
-            await validator.UltimateValidator(armored_password, 0);
-        const nickname =
-            await validator.UltimateValidator(armored_nickname, 0);
+        const e_mail = await validator.UltimateValidator(armored_email, 0, true);
+        const password = await validator.UltimateValidator(armored_password, 0, true);
+        const nickname = await validator.UltimateValidator(armored_nickname, 0, true);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(e_mail);
@@ -362,10 +354,10 @@ async function sendCode(
             //dati non validi
             console.log("Dati non validi");
 
-            const crypted_check1 = await crypto.encrypt(check1, publicKey);
-            const crypted_check2 = await crypto.encrypt(check2, publicKey);
-            const crypted_check3 = await crypto.encrypt(check3, publicKey);
-            const crypted_check4 = await crypto.encrypt(check4, publicKey);
+            const crypted_check1 = await crypto.encrypt(check1.toString(), publicKey);
+            const crypted_check2 = await crypto.encrypt(check2.toString(), publicKey);
+            const crypted_check3 = await crypto.encrypt(check3.toString(), publicKey);
+            const crypted_check4 = await crypto.encrypt(check4.toString(), publicKey);
             const errors = validator
                 .getErrors(
                     nickname,
@@ -399,11 +391,11 @@ async function sendCode(
     } else {
 
         const e_mail =
-            await validator.UltimateValidator(armored_email, 1)
+            await validator.UltimateValidator(armored_email, 1, true)
         const password =
-            await validator.UltimateValidator(armored_password, 1)
+            await validator.UltimateValidator(armored_password, 1, true)
         const nickname =
-            await validator.UltimateValidator(armored_nickname, 1)
+            await validator.UltimateValidator(armored_nickname, 1, true)
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(e_mail);
@@ -522,10 +514,10 @@ async function sendCode(
             //dati non validi
             console.log("Dati non validi");
 
-            const crypted_check1 = await crypto.encrypt(check1, publicKey);
-            const crypted_check2 = await crypto.encrypt(check2, publicKey);
-            const crypted_check3 = await crypto.encrypt(check3, publicKey);
-            const crypted_check4 = await crypto.encrypt(check4, publicKey);
+            const crypted_check1 = await crypto.encrypt(check1.toString(), publicKey);
+            const crypted_check2 = await crypto.encrypt(check2.toString(), publicKey);
+            const crypted_check3 = await crypto.encrypt(check3.toString(), publicKey);
+            const crypted_check4 = await crypto.encrypt(check4.toString(), publicKey);
             const errors = validator
                 .getErrors(
                     nickname,
@@ -571,20 +563,16 @@ async function confirmUserViaCode(
     method
 ) {
 
-    var code = await validator.UltimateValidator(armored_verification_code, 0);
-    var publicKey = await validator.UltimateValidator(publicKeyArmored, 0);
-    var keyAES = await validator.UltimateValidator(crypted_aesKey, 0);
+    var code = await validator.UltimateValidator(armored_verification_code, 0, false);
+    var publicKey = await validator.UltimateValidator(publicKeyArmored, 0, false);
+    var keyAES = await validator.UltimateValidator(crypted_aesKey, 0, false);
 
     if (method == "input") {
 
-        const email =
-            await validator.UltimateValidator(armored_email, 0)
-        const password =
-            await validator.UltimateValidator(armored_password, 0)
-        const nickname =
-            await validator.UltimateValidator(armored_nickname, 0)
-        const rememberMe =
-            await validator.UltimateValidator(armored_rememberMe, 0)
+        const email = await validator.UltimateValidator(armored_email, 0, true);
+        const password = await validator.UltimateValidator(armored_password, 0, true);
+        const nickname = await validator.UltimateValidator(armored_nickname, 0, true);
+        const rememberMe = await validator.UltimateValidator(armored_rememberMe, 0, true);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(email);
@@ -621,20 +609,20 @@ async function confirmUserViaCode(
                         await database.insertChat(
                             nickname,
                             `{"nickname": "` +
-                                nickname +
-                                `","password": "` +
-                                password +
-                                `","groups": {}, "chats": {}, "contacts": {}}`
+                            nickname +
+                            `","password": "` +
+                            password +
+                            `","groups": {}, "chats": {}, "contacts": {}}`
                         );
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                         var c_row = await crypto.encrypt(
                             `{"nickname": "` +
-                                nickname +
-                                `","password": "` +
-                                password +
-                                `","groups": {}, "chats": {}, "contacts": {}}`,
-                          publicKey
+                            nickname +
+                            `","password": "` +
+                            password +
+                            `","groups": {}, "chats": {}, "contacts": {}}`,
+                            publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
 
@@ -766,12 +754,12 @@ async function confirmUserViaCode(
             //dati non validi
             console.log("Dati non validi");
 
-            const crypted_check1 = await crypto.encrypt(check1, publicKey);
-            const crypted_check2 = await crypto.encrypt(check2, publicKey);
-            const crypted_check3 = await crypto.encrypt(check3, publicKey);
-            const crypted_check4 = await crypto.encrypt(check4, publicKey);
-            const crypted_check5 = await crypto.encrypt(check5, publicKey);
-            const crypted_check6 = await crypto.encrypt(check6, publicKey);
+            const crypted_check1 = await crypto.encrypt(check1.toString(), publicKey);
+            const crypted_check2 = await crypto.encrypt(check2.toString(), publicKey);
+            const crypted_check3 = await crypto.encrypt(check3.toString(), publicKey);
+            const crypted_check4 = await crypto.encrypt(check4.toString(), publicKey);
+            const crypted_check5 = await crypto.encrypt(check5.toString(), publicKey);
+            const crypted_check6 = await crypto.encrypt(check6.toString(), publicKey);
             const errors = validator
                 .getErrors(
                     nickname,
@@ -809,14 +797,10 @@ async function confirmUserViaCode(
             );
         }
     } else {
-        const email =
-            await validator.UltimateValidator(armored_email, 1);
-        const password =
-            await validator.UltimateValidator(armored_password, 1);
-        const nickname =
-            await validator.UltimateValidator(armored_nickname, 1);
-        const rememberMe =
-            await validator.UltimateValidator(armored_rememberMe, 0);
+        const email = await validator.UltimateValidator(armored_email, 1, true);
+        const password = await validator.UltimateValidator(armored_password, 1, true);
+        const nickname = await validator.UltimateValidator(armored_nickname, 1, true);
+        const rememberMe = await validator.UltimateValidator(armored_rememberMe, 0, true);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(email);
@@ -862,11 +846,11 @@ async function confirmUserViaCode(
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                         var c_row = await crypto.encrypt(
                             `{"nickname": "` +
-                                nickname +
-                                `","password": "` +
-                                password +
-                                `","groups": {}, "chats": {}, "contacts": {}}`,
-                          publicKey
+                            nickname +
+                            `","password": "` +
+                            password +
+                            `","groups": {}, "chats": {}, "contacts": {}}`,
+                            publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
 

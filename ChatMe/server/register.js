@@ -12,19 +12,19 @@ async function checkUserData(
     socket
 ) {
 
-    const email = await validator.UltimateValidator(armored_email, 0)
-    const password = await validator.UltimateValidator(armored_password, 0)
-    const nickname = await validator.UltimateValidator(armored_nickname, 0)
-    const publicKey = await validator.UltimateValidator(publicKeyArmored, 0)
-    const link = await validator.UltimateValidator(crypted_link, 0)
+    const email = await validator.UltimateValidator(armored_email, 0, true);
+    const password = await validator.UltimateValidator(armored_password, 0, true);
+    const nickname = await validator.UltimateValidator(armored_nickname, 0, true);
+    const publicKey = await validator.UltimateValidator(publicKeyArmored, 0, false);
+    const link = await validator.UltimateValidator(crypted_link, 0, false);
     const confirm_link = link.substring(0, link.indexOf("/signUp.html"));
-    console.log(confirm_link)
-
+    
     var check1 = validator.checkUsername(nickname);
     var check2 = validator.checkEmail(email);
     var check3 = validator.checkPassword(password);
     var check4 = await crypto.isValid(publicKey);
     var check5 = isUrlConfirmed(link, email, password, nickname);
+
 
     //se i dati sono validi
     if (check1 && check2 && check3 && check4 && check5) {
@@ -60,10 +60,10 @@ async function checkUserData(
     } else {
         console.log("Dati non validi");
 
-        const crypted_check1 = await crypto.encrypt(check1, publicKey);
-        const crypted_check2 = await crypto.encrypt(check2, publicKey);
-        const crypted_check3 = await crypto.encrypt(check3, publicKey);
-        const crypted_check4 = await crypto.encrypt(check4, publicKey);
+        const crypted_check1 = await crypto.encrypt(check1.toString(), publicKey);
+        const crypted_check2 = await crypto.encrypt(check2.toString(), publicKey);
+        const crypted_check3 = await crypto.encrypt(check3.toString(), publicKey);
+        const crypted_check4 = await crypto.encrypt(check4.toString(), publicKey);
         const errors = validator.getErrors(nickname, password, "", check1, check2, check3, true, check4, true).split("\n");
         const crypted_data1 = await crypto.encrypt(errors[0], publicKey);
         const crypted_data2 = await crypto.encrypt(errors[1], publicKey);

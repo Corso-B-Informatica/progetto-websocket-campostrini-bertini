@@ -5,8 +5,8 @@ const emailer = require('./emailer.js');
 
 async function forgotPassword(armored_email, armored_nickname, socket) {
     
-    const email = await validator.UltimateValidator(armored_email, 0);
-    const nickname = await validator.UltimateValidator(armored_nickname, 0);
+    const email = await validator.UltimateValidator(armored_email, 0, true);
+    const nickname = await validator.UltimateValidator(armored_nickname, 0, true);
 
     var check1 = validator.checkUsername(nickname);
     var check2 = validator.checkEmail(email);

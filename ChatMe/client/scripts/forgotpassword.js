@@ -60,7 +60,7 @@ async function forgotPassword() {
     if (checkKey()) {
         if (checkUsernameOrEmail()) {
             var ue = document.getElementById("username").value;
-            var crypted_ue = await encrypt(validate(ue), localStorage.getItem("publicKeyArmored"));
+            var crypted_ue = await encrypt(ue, localStorage.getItem("publicKeyArmored"));
 
             if (ue.toString().includes('@')) {
                 socket.emit("forgotPassword", crypted_ue, "");

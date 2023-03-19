@@ -1,12 +1,3 @@
-/*Letters and signs*/
-var less = /</g;
-var greater = />/g;
-var apostrofe = /'/g;
-var quotation = /"/g;
-var and = /&/g;
-var grave = /`/g;
-var slash = /\//g;
-
 /*Controlla se l'username è valido*/
 function checkUsername() {
     var username = document.getElementById("username").value.toString();
@@ -139,17 +130,4 @@ function checkUsernameOrEmail() {
         return false;
     }
     return true;
-}
-
-/*Rimpiazza i caratteri speciali con i rispettivi codici html*/
-function validate(data) {
-    return data
-        .replace(less, "&lt;")
-        .replace(greater, "&gt;")
-        .replace(apostrofe, "&#39;")
-        .replace(quotation, "&#34;")
-        .replace(and, "&#38;")
-        .replace(grave, "&#96;")
-        .replace(slash, "&#47;")
-        .trim();
 }

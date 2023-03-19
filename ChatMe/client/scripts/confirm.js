@@ -227,14 +227,14 @@ async function getCode() {
                         var ue = document.getElementById("username").value;
 
                         if (ue.toString().contains("@")) {
-                            var crypted_email = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_email = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
 
                             socket.emit("getCodeByInput", crypted_email, "", crypted_password, pubKey, link);
                         } else {
-                            var crypted_username = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_username = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
 
                             socket.emit("getCodeByInput", "", crypted_username, crypted_password, pubKey, link);
@@ -259,14 +259,14 @@ async function getCode() {
                         var ue = document.getElementById("username").value;
 
                         if (ue.toString().contains("@")) {
-                            var crypted_email = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_email = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
 
                             socket.emit("getCodeByInput", crypted_email, "", crypted_password, pubKey, link);
                         } else {
-                            var crypted_username = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_username = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
 
                             socket.emit("getCodeByInput", "", crypted_username, crypted_password, pubKey, link);
@@ -291,14 +291,14 @@ async function getCode() {
                         var ue = document.getElementById("username").value;
 
                         if (ue.toString().contains("@")) {
-                            var crypted_email = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_email = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
 
                             socket.emit("getCodeByInput", crypted_email, "", crypted_password, pubKey, link);
                         } else {
-                            var crypted_username = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_username = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
 
                             socket.emit("getCodeByInput", "", crypted_username, crypted_password, pubKey, link);
@@ -317,14 +317,14 @@ async function getCode() {
                 var ue = document.getElementById("username").value;
 
                 if (ue.toString().contains("@")) {
-                    var crypted_email = await encrypt(validate(ue), publicKey);
-                    var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                    var crypted_email = await encrypt(ue, publicKey);
+                    var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                     var pubKey = await encrypt(kM.getPublicKey(), publicKey);
 
                     socket.emit("getCodeByInput", crypted_email, "", crypted_password, pubKey, link);
                 } else {
-                    var crypted_username = await encrypt(validate(ue), publicKey);
-                    var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                    var crypted_username = await encrypt(ue, publicKey);
+                    var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                     var pubKey = await encrypt(kM.getPublicKey(), publicKey);
 
                     socket.emit("getCodeByInput", "", crypted_username, crypted_password, pubKey, link);
@@ -341,7 +341,7 @@ async function confirmCode() {
     var password = localStorage.getItem("password");
     var nickname = localStorage.getItem("nickname");
     var publicKey = localStorage.getItem("publicKeyArmored");
-    var verification_code = validate(document.getElementById("code").value);
+    var verification_code = document.getElementById("code").value;
     var remeberMe = document.getElementById("checkbox").checked;
 
     if (publicKey != null && checkVerificationCode()) {
@@ -386,8 +386,8 @@ async function confirmCode() {
                         var ue = document.getElementById("username").value;
 
                         if (ue.toString().contains("@")) {
-                            var crypted_email = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_email = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var crypted_verification_code = await encrypt(verification_code, publicKey);
                             var crypted_remeberMe = await encrypt(remeberMe, publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
@@ -395,8 +395,8 @@ async function confirmCode() {
 
                             socket.emit("confirmViaCodeByInput", crypted_email, "", crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
                         } else {
-                            var crypted_username = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_username = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var crypted_verification_code = await encrypt(verification_code, publicKey);
                             var crypted_remeberMe = await encrypt(remeberMe, publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
@@ -427,8 +427,8 @@ async function confirmCode() {
                         var ue = document.getElementById("username").value;
 
                         if (ue.toString().contains("@")) {
-                            var crypted_email = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_email = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var crypted_verification_code = await encrypt(verification_code, publicKey);
                             var crypted_remeberMe = await encrypt(remeberMe, publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
@@ -436,8 +436,8 @@ async function confirmCode() {
 
                             socket.emit("confirmViaCodeByInput", crypted_email, "", crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
                         } else {
-                            var crypted_username = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_username = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var crypted_verification_code = await encrypt(verification_code, publicKey);
                             var crypted_remeberMe = await encrypt(remeberMe, publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
@@ -468,8 +468,8 @@ async function confirmCode() {
                         var ue = document.getElementById("username").value;
 
                         if (ue.toString().contains("@")) {
-                            var crypted_email = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_email = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var crypted_verification_code = await encrypt(verification_code, publicKey);
                             var crypted_remeberMe = await encrypt(remeberMe, publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
@@ -477,8 +477,8 @@ async function confirmCode() {
 
                             socket.emit("confirmViaCodeByInput", crypted_email, "", crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
                         } else {
-                            var crypted_username = await encrypt(validate(ue), publicKey);
-                            var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                            var crypted_username = await encrypt(ue, publicKey);
+                            var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                             var crypted_verification_code = await encrypt(verification_code, publicKey);
                             var crypted_remeberMe = await encrypt(remeberMe, publicKey);
                             var pubKey = await encrypt(kM.getPublicKey(), publicKey);
@@ -500,8 +500,8 @@ async function confirmCode() {
                 var ue = document.getElementById("username").value;
 
                 if (ue.toString().contains("@")) {
-                    var crypted_email = await encrypt(validate(ue), publicKey);
-                    var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                    var crypted_email = await encrypt(ue, publicKey);
+                    var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                     var crypted_verification_code = await encrypt(verification_code, publicKey);
                     var crypted_remeberMe = await encrypt(remeberMe, publicKey);
                     var pubKey = await encrypt(kM.getPublicKey(), publicKey);
@@ -509,8 +509,8 @@ async function confirmCode() {
 
                     socket.emit("confirmViaCodeByInput", crypted_email, "", crypted_password, crypted_verification_code, crypted_remeberMe, pubKey, aesKey);
                 } else {
-                    var crypted_username = await encrypt(validate(ue), publicKey);
-                    var crypted_password = await encrypt(validate(document.getElementById("password")), publicKey);
+                    var crypted_username = await encrypt(ue, publicKey);
+                    var crypted_password = await encrypt(document.getElementById("password"), publicKey);
                     var crypted_verification_code = await encrypt(verification_code, publicKey);
                     var crypted_remeberMe = await encrypt(remeberMe, publicKey);
                     var pubKey = await encrypt(kM.getPublicKey(), publicKey);

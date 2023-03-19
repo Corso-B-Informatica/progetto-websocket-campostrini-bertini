@@ -9,14 +9,10 @@ async function sendAesKey(
     crypted_pubKey,
     socket
 ) {
-    const email =
-        await validator.UltimateValidator(crypted_email, 1);
-    const password =
-        await validator.UltimateValidator(crypted_password, 1);
-    const nickname =
-        await validator.UltimateValidator(crypted_nickname, 1);
-    const publicKey =
-        await validator.UltimateValidator(crypted_pubKey, 0);
+    const email = await validator.UltimateValidator(crypted_email, 1, true);
+    const password = await validator.UltimateValidator(crypted_password, 1, true);
+    const nickname = await validator.UltimateValidator(crypted_nickname, 1, true);
+    const publicKey = await validator.UltimateValidator(crypted_pubKey, 0, false);
 
     var check1 = validator.checkEmail(email);
     var check2 = validator.checkPassword(password);
@@ -31,7 +27,6 @@ async function sendAesKey(
         socket.emit("errorAesKey");
     }
     else if ((check1 || check2) && check3 && check4) {
-
         var chat = await JSON.parse(await database.GetChat(nickname));
 
         for (let i = 0; i < Object.keys(chat.chats).length; i++) {
@@ -40,7 +35,6 @@ async function sendAesKey(
         for (let i = 0; i < Object.keys(chat.groups).length; i++) {
             socket.join(JSON.stringify(chat.groups[i].Id));
         }
-
 
         var message = await crypto.encrypt(
             aesKey,
@@ -57,16 +51,11 @@ async function sendAesKey(
 
 async function sendMessage(crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_pubKey, socket) {
 
-    const message =
-        await validator.UltimateValidator(crypted_message, 0);
-    const id =
-        await validator.UltimateValidator(crypted_id, 0);
-    const password =
-        await validator.UltimateValidator(crypted_password, 0);
-    const nickname =
-        await validator.UltimateValidator(crypted_nickname, 0);
-    const pubKey =
-        await validator.UltimateValidator(crypted_pubKey, 0);
+    const message = await validator.UltimateValidator(crypted_message, 0, true);
+    const id = await validator.UltimateValidator(crypted_id, 0, true);
+    const password = await validator.UltimateValidator(crypted_password, 0, true);
+    const nickname = await validator.UltimateValidator(crypted_nickname, 0, true);
+    const pubKey = await validator.UltimateValidator(crypted_pubKey, 0, false);
 
     let check = await crypto.isValid(pubKey);
 
@@ -92,12 +81,9 @@ async function sendMessage(crypted_message, crypted_nickname, crypted_password, 
 
 async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) {
     
-    const password =
-        await validator.UltimateValidator(crypted_password, 0);
-    const nickname =
-        await validator.UltimateValidator(crypted_nickname, 0);
-    const pubKey =
-        await validator.UltimateValidator(crypted_pubKey, 0);
+    const password = await validator.UltimateValidator(crypted_password, 0, true);
+    const nickname = await validator.UltimateValidator(crypted_nickname, 0, true);
+    const pubKey = await validator.UltimateValidator(crypted_pubKey, 0, false);
 
     let check = await crypto.isValid(pubKey);
 
@@ -116,19 +102,17 @@ async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) 
 
 async function newChat(crypted_nickname, crypted_password, crypted_id, crypted_pubKey, socket) {
 
-    const password =
-        await validator.UltimateValidator(crypted_password, 0)
-    const nickname =
-        await validator.UltimateValidator(crypted_nickname, 0)
-    const id = await validator.UltimateValidator(crypted_id, 0)
-    const pubKey =
-        await validator.UltimateValidator(crypted_pubKey, 0)
+    const password = await validator.UltimateValidator(crypted_password, 0, true);
+    const nickname = await validator.UltimateValidator(crypted_nickname, 0, true);
+    const id = await validator.UltimateValidator(crypted_id, 0, true);
+    const pubKey = await validator.UltimateValidator(crypted_pubKey, 0, false);
 
     let check = await crypto.isValid(pubKey);
 
     if (!check) {
         socket.emit("errorPubKeySync");
     }
+    
     else if (await database.checkDatabase(database.Users, nickname, "", password)) {
         if (await database.existNickname(id)) {
             if (await database.checkChatExist(nickname, id, "chat")) {

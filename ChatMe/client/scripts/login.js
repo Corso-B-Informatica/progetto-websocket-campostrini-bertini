@@ -60,16 +60,16 @@ function Login() {
 async function sendLogin(publicKeyArmored) {
     if (checkUsernameOrEmail() && checkPassword()) {
         var ue = document.getElementById('username').value.toString();
-        var c_password = await encrypt(validate(document.getElementById('password').value.toString()), publicKeyArmored);
+        var c_password = await encrypt(document.getElementById('password').value.toString(), publicKeyArmored);
         var c_rememberMe = await encrypt(document.getElementById("checkbox").checked.toString(), publicKeyArmored);
         var c_publicKey = await encrypt(kM.getPublicKey(), publicKeyArmored);
         var c_email = "";
         var c_nickname = "";
 
         if (ue.includes("@")) {
-            c_email = await encrypt(validate(ue), publicKeyArmored);
+            c_email = await encrypt(ue, publicKeyArmored);
         } else {
-            c_nickname = await encrypt(validate(ue), publicKeyArmored);
+            c_nickname = await encrypt(ue, publicKeyArmored);
         }
 
         socket.emit("login", c_email, c_nickname, c_password, c_rememberMe, c_publicKey);

@@ -77,17 +77,17 @@ async function register() {
 async function sendRegister(publicKeyArmored) {
   //cifratura dati
   const crypted_nickname = await encrypt(
-    validate(document.getElementById("username").value.toString()),
+    document.getElementById("username").value.toString(),
     publicKeyArmored
   );
 
   const crypted_email = await encrypt(
-    validate(document.getElementById("email").value.toString()),
+    document.getElementById("email").value.toString(),
     publicKeyArmored
   );
 
   const crypted_password = await encrypt(
-    validate(document.getElementById("password").value.toString()),
+    document.getElementById("password").value.toString(),
     publicKeyArmored
   );
 
