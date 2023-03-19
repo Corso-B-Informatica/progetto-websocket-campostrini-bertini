@@ -33,4 +33,4 @@ Aggiungi una nuova chat tramite l'apposito bottone, poi inserisci le informazion
 # Sito web
 Abbiamo creato un sito web visitabile dove è possibile registrarsi e iniziare a chattare.
 * #### [ChatMe](http://chat-me.it:8080)
-* per il momento il sito non è completo.
+per il momento il sito non è completo.
