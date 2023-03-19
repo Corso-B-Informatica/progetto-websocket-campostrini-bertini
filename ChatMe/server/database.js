@@ -127,7 +127,11 @@ function checkDatabase(db, nickname, email, password) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows.length > 0 && rows[0].password == password);
+          try {
+            resolve(rows.length > 0 && rows[0].password == password);
+          } catch (e) {
+            reject(e);
+          }
         }
       });
   });
@@ -174,19 +178,27 @@ function insertUser(nickname, email, password, key) {
 function getAesKey(email, nickname, password) {
   return new Promise((resolve, reject) => {
     Users.all(
-      `select * from users where nickname = ? or email = ? and password = ?`,
-      [nickname, email, password],
+      `select * from users where nickname = ? or email = ?`,
+      [nickname, email],
       (err, rows) => {
         if (err) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].key);
+          try {
+            if (rows[0].password == password) {
+              resolve(rows[0].key);
+            } else {
+              reject("Password errata");
+            }
+          } catch (e) {
+            reject(e);
+          }
         }
       });
   });
 }
-
+getAesKey("sas", "s", "s");
 function insertChat(nickname, chat) {
   return new Promise((resolve, reject) => {
     Chat.run(
@@ -242,7 +254,11 @@ function hasAttempts(email, password) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].attempts <= 3);
+          try {
+            resolve(rows[0].attempts <= 3);
+          } catch (e) {
+            reject(e);
+          }
         }
       }
     );
@@ -260,7 +276,11 @@ function checkVerificationCode(email, nickname, password, verification_code) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].verification_code == verification_code && rows[0].password == password);
+          try {
+            resolve(rows[0].verification_code == verification_code && rows[0].password == password);
+          } catch (e) {
+            reject(e);
+          }
         }
       }
     );
@@ -366,7 +386,11 @@ function getExipirationTime(email, password) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].expiration_time);
+          try {
+            resolve(rows[0].expiration_time);
+          } catch (e) {
+            reject(e);
+          }
         }
       }
     );
@@ -420,7 +444,11 @@ function getWaitTime(email, password) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].wait_time);
+          try {
+            resolve(rows[0].wait_time);
+          } catch (e) {
+            reject(e);
+          }
         }
       }
     );
@@ -438,7 +466,11 @@ function getWaitTimeCode(email, password) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].wait_time_code);
+          try {
+            resolve(rows[0].wait_time_code);
+          } catch (e) {
+            reject(e);
+          }
         }
       }
     );
@@ -455,7 +487,11 @@ function getKeys(username) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].key);
+          try {
+            resolve(rows[0].key);
+          } catch (e) {
+            reject(e);
+          }
         }
       }
     )
@@ -472,7 +508,11 @@ function getNickname(db, email) {
         console.log(err);
         reject(err);
       } else {
-        resolve(rows[0].nickname);
+        try {
+          resolve(rows[0].nickname);
+        } catch (e) {
+          reject(e);
+        }
       }
     });
   });
@@ -485,7 +525,11 @@ function getEmail(db, nickname) {
         console.log(err);
         reject(err);
       } else {
-        resolve(rows[0].email);
+        try {
+          resolve(rows[0].email);
+        } catch (e) {
+          reject(e);
+        }
       }
     });
   });
@@ -498,7 +542,11 @@ function getPassword(db, email, nickname) {
         console.log(err);
         reject(err);
       } else {
-        resolve(rows[0].password);
+        try {
+          resolve(rows[0].password);
+        } catch (e) {
+          reject(e);
+        }
       }
     });
   });
@@ -515,7 +563,11 @@ function getTimes(email, password) {
           console.log(err);
           reject(err);
         } else {
-          resolve(rows[0].times);
+          try {
+            resolve(rows[0].times);
+          } catch (e) {
+            reject(e);
+          }
         }
       }
     );
@@ -557,14 +609,14 @@ function getAesKey(email, nickname, password) {
         console.log(err);
         reject(err);
       } else {
-        if (rows[0].password != undefined) {
+        try {
           if (rows[0].password == password) {
             resolve(rows[0].key);
           } else {
             resolve(false);
           }
-        } else {
-          resolve(false);
+        } catch (e) {
+          reject(e);
         }
       }
     });
@@ -572,11 +624,11 @@ function getAesKey(email, nickname, password) {
 }
 
 
-function UpdateChat(nickname,chat){
+function UpdateChat(nickname, chat) {
   return new Promise((resolve, reject) => {
     Chat.all(
       "UPDATE chat SET chat = ? WHERE nickname = ?",
-      [chat,nickname],
+      [chat, nickname],
       (err) => {
         if (err) {
           console.log(err);
@@ -589,7 +641,7 @@ function UpdateChat(nickname,chat){
   });
 }
 
-function checkDestinationUser(nickname, id){
+function checkDestinationUser(nickname, id, chat) {
   return new Promise((resolve, reject) => {
     Chat.all(
       "SELECT * FROM chat WHERE nickname = ?",
@@ -600,8 +652,8 @@ function checkDestinationUser(nickname, id){
           reject(err);
         } else {
           var pchat = JSON.parse(rows[0].chat)
-          for(let i = 0; i < pchat.chat.length; i++){
-            if(pchat.chat[i].id == id || pchat.group[i].id == id){
+          for (let i = 0; i < pchat[chat].length; i++) {
+            if (pchat[chat][i].id == id) {
               resolve(true);
             }
           }
@@ -629,6 +681,41 @@ function GetChat(nickname) {
   });
 }
 
+async function existNickname(nickname) {
+  return new Promise((resolve, reject) => {
+    Users.all("SELECT * FROM users WHERE nickname = ?", [nickname], (err, rows) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        resolve(rows.length > 0);
+      }
+    });
+  });
+}
+async function checkChatExist(nickname, chatName, chat) {
+  return new Promise((resolve, reject) => {
+    Chat.all("SELECT * FROM chat WHERE nickname = ?", [nickname], (err, rows) => {
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        if (rows.length > 0) {
+          var pchat = JSON.parse(rows[0].chat)
+          for (let i = 0; i < pchat[chat].length; i++) {
+            if (pchat[chat][i].name == chatName) {
+              resolve(true);
+            }
+          }
+          resolve(false);
+        } else {
+          resolve(false);
+        }
+      }
+    });
+  });
+}
+
 module.exports = {
   checkDestinationUser,
   UpdateChat,
@@ -637,6 +724,7 @@ module.exports = {
   insertTempUsers,
   insertUser,
   insertChat,
+  checkChatExist,
   cleanDatabase,
   removeTempUsers,
   increaseConfirmAttempts,
@@ -659,6 +747,7 @@ module.exports = {
   getEmail,
   getPassword,
   getAesKey,
+  existNickname,
   Users,
   tempUsers,
   Chat

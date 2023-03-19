@@ -43,12 +43,17 @@ async function sendAesKey(
         validate_nickname == undefined ? "" : validator.validate(validate_nickname);
     const publicKey =
         validate_pubKey.data == undefined ? "" : validate_pubKey.data;
-    var check = await crypto.isValid(publicKey);
+    
+    var check1 = validator.checkEmail(email);
+    var check2 = validator.checkPassword(password);
+    var check3 = validator.checkNickname(nickname);
+    var check4 = await crypto.isValid(publicKey);
+
     const aesKey = await database.getAesKey(email, nickname, password);
 
-    if (aesKey == null || aesKey == undefined || aesKey.trim().length == 0) {
+    if (aesKey == null || aesKey == undefined || aesKey.trim().length == 0 || aesKey == "false") {
         socket.emit("errorAesKey");
-    } else {
+    } else if((check1 || check2) && check3 && check4) {
 
         var chat = JSON.parse(await database.GetChat(nickname));
 
@@ -182,8 +187,69 @@ async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) 
     }
 }
 
+async function newChat(crypted_nickname, crypted_password, crypted_chatName, crypted_pubKey, socket) {
+
+    var validate_password = "";
+    var validate_nickname = "";
+    var validate_pubKey = "";
+    var validate_chatName = "";
+
+    try {
+        validate_password = await crypto.decrypt(crypted_password, crypto.privateKey);
+    } catch (err) {
+        validate_password = "";
+    }
+    try {
+        validate_nickname = await crypto.decrypt(crypted_nickname, crypto.privateKey);
+    } catch (err) {
+        validate_nickname = "";
+    }
+    try {
+        validate_pubKey = await crypto.decrypt(crypted_pubKey, crypto.privateKey);
+    } catch (err) {
+        validate_pubKey = "";
+    }
+    try {
+        validate_chatName = await crypto.decrypt(crypted_chatName, crypto.privateKey);
+    } catch (err) {
+        validate_chatName = "";
+    }
+
+    const password =
+        validate_password.data == undefined ? "" : validator.validate(validate_password.data);
+    const nickname =
+        validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
+    const chatName = validate_chatName.data == undefined ? "" : validator.validate(validate_chatName.data);
+    const pubKey =
+        validate_pubKey.data == undefined ? "" : validate_pubKey.data;
+
+    let check = await crypto.isValid(pubKey);
+
+    if (!check) {
+        socket.emit("errorPubKeySync");
+    }
+    else if (await database.checkDatabase(database.Users, nickname, "", password)) {
+        if (await database.existNickname(chatName)) {
+            if (await database.checkChatExist(nickname, chatName, "chat")) {
+                var chatId = await database.newChat(nickname, chatName);
+                socket.join(chatId);
+                
+                console.log("chat creata");
+            } else {
+                socket.emit("errorChatAlreadyExist");
+            }
+        } else {
+            socket.emit("errorChatName");
+        }
+    }
+    else {
+        socket.emit("errorUserNotFound");
+    }
+}
+
 module.exports = {
     sendAesKey,
     sendMessage,
-    sync
+    sync,
+    newChat
 };

@@ -202,7 +202,10 @@ async function creaChat() {
                                 var password = chats.password;
                                 var crypted_nickname = await encrypt(nickname, localStorage.getItem("publicKeyArmored"));
                                 var crypted_password = await encrypt(password, localStorage.getItem("publicKeyArmored"));
-                                
+                                var crypted_chatName = await encrypt(validator.validate(chatName), localStorage.getItem("publicKeyArmored"));
+                                var crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
+
+                                socket.emit("newChat", crypted_nickname, crypted_password, crypted_chatName, crypted_pubKey);
                             } else {
                                 //si dovrebbe controllare lo storage per vedere se è presente il nickname e la password in modo da richiedere nuovamente l'aesKey
                                 //ma non abbiamo tempo

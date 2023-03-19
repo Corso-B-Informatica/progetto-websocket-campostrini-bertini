@@ -70,6 +70,10 @@ io.on("connection", (socket) => {
   socket.on("sync", (crypted_nickname, crypted_password, crypted_pubKey) => {
     chat.sync(crypted_nickname, crypted_password, crypted_pubKey, socket);
   });
+
+  socket.on("newChat", (crypted_nickname, crypted_password, crypted_chatName, crypted_pubKey) => {
+    chat.newChat(crypted_nickname, crypted_password, crypted_chatName, crypted_pubKey, socket);
+  });
 });
 
 setInterval(database.cleanDatabase, 60000);

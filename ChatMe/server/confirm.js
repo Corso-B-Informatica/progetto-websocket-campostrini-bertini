@@ -101,20 +101,20 @@ async function confirmUserViaLink(
                     await database.insertChat(
                         nickname,
                         `{"nickname": "` +
-                            nickname +
-                            `","password": "` +
-                            password +
-                            `","groups": {},"chat": {}}`
+                        nickname +
+                        `","password": "` +
+                        password +
+                        `","groups": {}, "chats": {}, "contacts": {}}`
                     );
 
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                     //sas
                     var c_row = await crypto.encrypt(
-                      JSON.parse(`{"nickname": "` +
-                        nickname +
-                        `","password": "` +
-                        password +
-                        `","groups": {},"chat": {}}`).toString(),
+                        JSON.parse(`{"nickname": "` +
+                            nickname +
+                            `","password": "` +
+                            password +
+                            `","groups": {}, "chats": {}, "contacts": {}}`).toString(),
                       publicKey
                     );
                     var c_aesKey = await crypto.encrypt(keyAES, publicKey);
@@ -801,7 +801,7 @@ async function confirmUserViaCode(
                                 nickname +
                                 `","password": "` +
                                 password +
-                                `","groups": {},"chat": {}}`
+                                `","groups": {}, "chats": {}, "contacts": {}}`
                         );
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
@@ -810,7 +810,7 @@ async function confirmUserViaCode(
                                 nickname +
                                 `","password": "` +
                                 password +
-                                `","groups": {},"chat": {}}`).toString(),
+                                `","groups": {}, "chats": {}, "contacts": {}}`).toString(),
                           publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
@@ -1056,10 +1056,10 @@ async function confirmUserViaCode(
                         await database.insertChat(
                             nickname,
                             `{"nickname": "` +
-                                nickname +
-                                `","password": "` +
-                                password +
-                                `","groups": {},"chat": {}}`
+                            nickname +
+                            `","password": "` +
+                            password +
+                            `","groups": {}, "chats": {}, "contacts": {}}`
                         );
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
@@ -1068,7 +1068,7 @@ async function confirmUserViaCode(
                                 nickname +
                                 `","password": "` +
                                 password +
-                                `","groups": {},"chat": {}}`).toString(),
+                                `","groups": {}, "chats": {}, "contacts": {}}`).toString(),
                           publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
