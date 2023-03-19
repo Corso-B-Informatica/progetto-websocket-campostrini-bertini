@@ -586,8 +586,12 @@ function getAesKey(email, nickname, password) {
         reject(err);
       } else {
         try {
-          if (rows[0].password == password) {
-            resolve(rows[0].key);
+          if (rows.length > 0) {
+            if (rows[0].password == password) {
+              resolve(rows[0].key);
+            } else {
+              resolve(false);
+            }
           } else {
             resolve(false);
           }
@@ -598,7 +602,6 @@ function getAesKey(email, nickname, password) {
     });
   });
 }
-
 
 function UpdateChat(nickname, chat) {
   return new Promise((resolve, reject) => {
