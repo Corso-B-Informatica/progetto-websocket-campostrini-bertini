@@ -1,3 +1,4 @@
+const crypto = require("./crypto.js");
 /*Letters and signs*/
 var less = /</g;
 var greater = />/g;
@@ -149,7 +150,32 @@ function getErrors(nickname, password, code, check1, check2, check3, check4, che
   return errors;
 }
 
+async function UltimateValidator(param, c) {
+  var validate_param = "";
+  if (c == 0) {
+    try {
+      validate_param = await crypto.decrypt(param, crypto.privateKey);
+    } catch (err) {
+      validate_param = "";
+    }
+  } else {
+    try {
+      validate_param = await crypto.doubleDecrypt(param);
+    } catch (err) {
+      validate_param = "";
+    }
+  }
+  return new Promise((resolve, reject) => {
+    if (c == 0) {
+      resolve(validate_param.data == undefined ? "" : validate(validate_param.data))
+    } else {
+      resolve(validate_param == undefined ? "" : validate(validate_param))
+    }
+  });
+};
+
 module.exports = {
+  UltimateValidator,
   checkUsername,
   checkEmail,
   checkPassword,

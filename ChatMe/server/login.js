@@ -3,43 +3,12 @@ const database = require('./database.js');
 const validator = require('./validator.js');
 
 async function login(armored_email, armored_nickname, armored_password, armored_rememberMe, armored_publicKey, socket) {
-    var { data: validate_email } = "";
-    var { data: validate_password } = "";
-    var { data: validate_nickname } = "";
-    var { data: validate_rememberMe } = "";
-    var { data: pubKey } = "";
 
-    try {
-        validate_email = await crypto.decrypt(armored_email, crypto.privateKey);
-    } catch (error) {
-        validate_email = "";
-    }
-    try {
-        validate_password = await crypto.decrypt(armored_password, crypto.privateKey);
-    } catch (error) {
-        validate_password = "";
-    }
-    try {
-        validate_nickname = await crypto.decrypt(armored_nickname, crypto.privateKey);
-    } catch (error) {
-        validate_nickname = "";
-    }
-    try {
-        validate_rememberMe = await crypto.decrypt(armored_rememberMe, crypto.privateKey);
-    } catch (error) {
-        validate_rememberMe = "";
-    }
-    try {
-        pubKey = await crypto.decrypt(armored_publicKey, crypto.privateKey);
-    } catch (error) {
-        pubKey = "";
-    }
-
-    const email = validate_email.data == undefined ? "" : validator.validate(validate_email.data);
-    const password = validate_password.data == undefined ? "" : validator.validate(validate_password.data);
-    const nickname = validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
-    const rememberMe = validate_rememberMe.data == undefined ? "" : validator.validate(validate_rememberMe.data);
-    const publicKey = pubKey.data == undefined ? "" : pubKey.data;
+    const email = await validator.UltimateValidator(armored_email,0)
+    const password = await validator.UltimateValidator(armored_password,0)
+    const nickname = await validator.UltimateValidator(armored_nickname,0)
+    const rememberMe = await validator.UltimateValidator(armored_rememberMe,0)
+    const publicKey = await validator.UltimateValidator(armored_publicKey,0)
 
     var check1 = validator.checkUsername(nickname);
     var check2 = validator.checkEmail(email);

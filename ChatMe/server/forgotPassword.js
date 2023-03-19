@@ -4,22 +4,9 @@ const validator = require('./validator.js');
 const emailer = require('./emailer.js');
 
 async function forgotPassword(armored_email, armored_nickname, socket) {
-    var { data: validate_email } = "";
-    var { data: validate_nickname } = "";
-
-    try {
-        validate_email = await crypto.decrypt(armored_email, crypto.privateKey);
-    } catch (err) {
-        validate_email = "";
-    }
-    try {
-        validate_nickname = await crypto.decrypt(armored_nickname, crypto.privateKey);
-    } catch (err) {
-        validate_nickname = "";
-    }
-
-    const email = validate_email.data == undefined ? "" : validator.validate(validate_email.data);
-    const nickname = validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
+    
+    const email = await validator.UltimateValidator(armored_email, 0);
+    const nickname = await validator.UltimateValidator(armored_nickname, 0);
 
     var check1 = validator.checkUsername(nickname);
     var check2 = validator.checkEmail(email);

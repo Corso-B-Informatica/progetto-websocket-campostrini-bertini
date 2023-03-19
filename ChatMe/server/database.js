@@ -695,7 +695,27 @@ async function checkChatExist(nickname, chatName, chat) {
   });
 }
 
+async function newChat(nickname, json) {
+  return new Promise((resolve, reject) => {
+    Chat.all(
+      "UPDATE chat SET chat = ? WHERE nickname = ?",
+      [json, nickname],
+      (err) => {
+        if (err) {
+          console.log(err);
+          reject(err);
+        } else {
+          resolve(true);
+        }
+      }
+    );
+  });
+}
+
+
+
 module.exports = {
+  newChat,
   checkDestinationUser,
   UpdateChat,
   GetChat,

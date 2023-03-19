@@ -13,65 +13,19 @@ async function confirmUserViaLink(
     crypted_aesKey,
     socket
 ) {
-    var validate_email = "";
-    var validate_password = "";
-    var validate_nickname = "";
-    var verification_code = "";
-    var { data: validate_rememberMe } = "";
-    var { data: pubKey } = "";
-    var { data: aesKey } = "";
-
-    try {
-        validate_email = await crypto.doubleDecrypt(armored_email);
-    } catch (err) {
-        validate_email = "";
-    }
-    try {
-        validate_password = await crypto.doubleDecrypt(armored_password);
-    } catch (err) {
-        validate_password = "";
-    }
-    try {
-        validate_nickname = await crypto.doubleDecrypt(armored_nickname);
-    } catch (err) {
-        validate_nickname = "";
-    }
-    try {
-        verification_code = await crypto.doubleDecrypt(armored_verification_code);
-    } catch (err) {
-        verification_code = "";
-    }
-    try {
-        validate_rememberMe = await crypto.decrypt(
-            armored_rememberMe,
-            crypto.privateKey
-        );
-    } catch (err) {
-        validate_rememberMe = "";
-    }
-    try {
-        pubKey = await crypto.decrypt(publicKeyArmored, crypto.privateKey);
-    } catch (err) {
-        pubKey = "";
-    }
-    try {
-        aesKey = await crypto.decrypt(crypted_aesKey, crypto.privateKey);
-    } catch (err) {
-        aesKey = "";
-    }
 
     const email =
-        validate_email == undefined ? "" : validator.validate(validate_email);
+    await validator.UltimateValidator(armored_email, 1);
     const password =
-        validate_password == undefined ? "" : validator.validate(validate_password);
+    await validator.UltimateValidator(armored_password, 1);
     const nickname =
-        validate_nickname == undefined ? "" : validator.validate(validate_nickname);
+    await validator.UltimateValidator(armored_nickname, 1);
     const rememberMe =
-        validate_rememberMe.data == undefined
-            ? ""
-            : validator.validate(validate_rememberMe.data);
-    const publicKey = pubKey.data == undefined ? "" : pubKey.data;
-    const keyAES = aesKey.data == undefined ? "" : aesKey.data;
+    await validator.UltimateValidator(armored_rememberMe, 0);
+    const publicKey = await validator.UltimateValidator(publicKeyArmored, 0);
+    const keyAES = await validator.UltimateValidator(crypted_aesKey, 0);
+    const verification_code = await validator.UltimateValidator(armored_verification_code, 1);
+
 
     var check1 = validator.checkUsername(nickname);
     var check2 = validator.checkEmail(email);
@@ -278,62 +232,18 @@ async function sendCode(
     socket,
     method
 ) {
-    var { data: pubKey } = "";
-    var { data: url } = "";
 
-    try {
-        pubKey = await crypto.decrypt(publicKeyArmored, crypto.privateKey);
-    } catch (err) {
-        pubKey = "";
-    }
-    try {
-        url = await crypto.decrypt(crypted_link, crypto.privateKey);
-    } catch (err) {
-        url = "";
-    }
-
-    var publicKey = pubKey.data == undefined ? "" : pubKey.data;
-    const link = url.data == undefined ? "" : url.data;
+    var publicKey = await validator.UltimateValidator(publicKeyArmored, 0);
+    const link = await validator.UltimateValidator(crypted_link, 0);
 
     if (method == "input") {
-        var { data: validate_email } = "";
-        var { data: validate_nickname } = "";
-        var { data: validate_password } = "";
-
-        try {
-            validate_email = await crypto.decrypt(armored_email, crypto.privateKey);
-        } catch (err) {
-            validate_email = "";
-        }
-        try {
-            validate_password = await crypto.decrypt(
-                armored_password,
-                crypto.privateKey
-            );
-        } catch (err) {
-            validate_password = "";
-        }
-        try {
-            validate_nickname = await crypto.decrypt(
-                armored_nickname,
-                crypto.privateKey
-            );
-        } catch (err) {
-            validate_nickname = "";
-        }
 
         const e_mail =
-            validate_email.data == undefined
-                ? ""
-                : validator.validate(validate_email.data);
+            await validator.UltimateValidator(armored_email, 0);
         const password =
-            validate_password.data == undefined
-                ? ""
-                : validator.validate(validate_password.data);
+            await validator.UltimateValidator(armored_password, 0);
         const nickname =
-            validate_nickname.data == undefined
-                ? ""
-                : validator.validate(validate_nickname.data);
+            await validator.UltimateValidator(armored_nickname, 0);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(e_mail);
@@ -487,36 +397,13 @@ async function sendCode(
             );
         }
     } else {
-        var validate_email = "";
-        var validate_nickname = "";
-        var validate_password = "";
-
-        try {
-            validate_email = await crypto.doubleDecrypt(armored_email);
-        } catch (err) {
-            validate_email = "";
-        }
-        try {
-            validate_password = await crypto.doubleDecrypt(armored_password);
-        } catch (err) {
-            validate_password = "";
-        }
-        try {
-            validate_nickname = await crypto.doubleDecrypt(armored_nickname);
-        } catch (err) {
-            validate_nickname = "";
-        }
 
         const e_mail =
-            validate_email == undefined ? "" : validator.validate(validate_email);
+            await validator.UltimateValidator(armored_email, 1)
         const password =
-            validate_password == undefined
-                ? ""
-                : validator.validate(validate_password);
+            await validator.UltimateValidator(armored_password, 1)
         const nickname =
-            validate_nickname == undefined
-                ? ""
-                : validator.validate(validate_nickname);
+            await validator.UltimateValidator(armored_nickname, 1)
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(e_mail);
@@ -683,85 +570,21 @@ async function confirmUserViaCode(
     socket,
     method
 ) {
-    var { data: verification_code } = "";
-    var { data: validate_rememberMe } = "";
-    var { data: pubKey } = "";
-    var { data: aesKey } = "";
 
-    try {
-        verification_code = await crypto.decrypt(
-            armored_verification_code,
-            crypto.privateKey
-        );
-    } catch (err) {
-        verification_code = "";
-    }
-    try {
-        validate_rememberMe = await crypto.decrypt(
-            armored_rememberMe,
-            crypto.privateKey
-        );
-    } catch (err) {
-        validate_rememberMe = "";
-    }
-    try {
-        pubKey = await crypto.decrypt(publicKeyArmored, crypto.privateKey);
-    } catch (err) {
-        pubKey = "";
-    }
-    try {
-        aesKey = await crypto.decrypt(crypted_aesKey, crypto.privateKey);
-    } catch (err) {
-        aesKey = "";
-    }
-
-    var code = verification_code.data === undefined ? "" : verification_code.data;
-    var publicKey = pubKey.data == undefined ? "" : pubKey.data;
-    var keyAES = aesKey.data == undefined ? "" : aesKey.data;
+    var code = await validator.UltimateValidator(armored_verification_code, 0);
+    var publicKey = await validator.UltimateValidator(publicKeyArmored, 0);
+    var keyAES = await validator.UltimateValidator(crypted_aesKey, 0);
 
     if (method == "input") {
-        var { data: validate_email } = "";
-        var { data: validate_password } = "";
-        var { data: validate_nickname } = "";
-
-        try {
-            validate_email = await crypto.decrypt(armored_email, crypto.privateKey);
-        } catch (err) {
-            validate_email = "";
-        }
-        try {
-            validate_password = await crypto.decrypt(
-                armored_password,
-                crypto.privateKey
-            );
-        } catch (err) {
-            validate_password = "";
-        }
-        try {
-            validate_nickname = await crypto.decrypt(
-                armored_nickname,
-                crypto.privateKey
-            );
-        } catch (err) {
-            validate_nickname = "";
-        }
 
         const email =
-            validate_email.data == undefined
-                ? ""
-                : validator.validate(validate_email.data);
+            await validator.UltimateValidator(armored_email, 0)
         const password =
-            validate_password.data == undefined
-                ? ""
-                : validator.validate(validate_password.data);
+            await validator.UltimateValidator(armored_password, 0)
         const nickname =
-            validate_nickname.data == undefined
-                ? ""
-                : validator.validate(validate_nickname.data);
+            await validator.UltimateValidator(armored_nickname, 0)
         const rememberMe =
-            validate_rememberMe.data == undefined
-                ? ""
-                : validator.validate(validate_rememberMe.data);
+            await validator.UltimateValidator(armored_rememberMe, 0)
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(email);
@@ -986,40 +809,14 @@ async function confirmUserViaCode(
             );
         }
     } else {
-        var validate_email = "";
-        var validate_password = "";
-        var validate_nickname = "";
-
-        try {
-            validate_email = await crypto.doubleDecrypt(armored_email);
-        } catch (err) {
-            validate_email = "";
-        }
-        try {
-            validate_password = await crypto.doubleDecrypt(armored_password);
-        } catch (err) {
-            validate_password = "";
-        }
-        try {
-            validate_nickname = await crypto.doubleDecrypt(armored_nickname);
-        } catch (err) {
-            validate_nickname = "";
-        }
-
         const email =
-            validate_email == undefined ? "" : validator.validate(validate_email);
+            await validator.UltimateValidator(armored_email, 1);
         const password =
-            validate_password == undefined
-                ? ""
-                : validator.validate(validate_password);
+            await validator.UltimateValidator(armored_password, 1);
         const nickname =
-            validate_nickname == undefined
-                ? ""
-                : validator.validate(validate_nickname);
+            await validator.UltimateValidator(armored_nickname, 1);
         const rememberMe =
-            validate_rememberMe.data == undefined
-                ? ""
-                : validator.validate(validate_rememberMe.data);
+            await validator.UltimateValidator(armored_rememberMe, 0);
 
         var check1 = validator.checkUsername(nickname);
         var check2 = validator.checkEmail(email);

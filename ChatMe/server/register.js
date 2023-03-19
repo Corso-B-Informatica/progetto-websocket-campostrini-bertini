@@ -11,43 +11,12 @@ async function checkUserData(
     crypted_link,
     socket
 ) {
-    var { data: validate_email } = "";
-    var { data: validate_password } = "";
-    var { data: validate_nickname } = "";
-    var { data: pubKey } = "";
-    var { data: url } = "";
 
-    try {
-        validate_email = await crypto.decrypt(armored_email, crypto.privateKey);
-    } catch (error) {
-        validate_email = "";
-    }
-    try {
-        validate_password = await crypto.decrypt(armored_password, crypto.privateKey);
-    } catch (error) {
-        validate_password = "";
-    }
-    try {
-        validate_nickname = await crypto.decrypt(armored_nickname, crypto.privateKey);
-    } catch (error) {
-        validate_nickname = "";
-    }
-    try {
-        pubKey = await crypto.decrypt(publicKeyArmored, crypto.privateKey);
-    } catch (error) {
-        pubKey = "";
-    }
-    try {
-        url = await crypto.decrypt(crypted_link, crypto.privateKey);
-    } catch (error) {
-        url = "";
-    }
-
-    const email = validate_email.data == undefined ? "" : validator.validate(validate_email.data);
-    const password = validate_password.data == undefined ? "" : validator.validate(validate_password.data);
-    const nickname = validate_nickname.data == undefined ? "" : validator.validate(validate_nickname.data);
-    const publicKey = pubKey.data == undefined ? "" : pubKey.data;
-    const link = url.data == undefined ? "" : url.data;
+    const email = await validator.UltimateValidator(armored_email, 0)
+    const password = await validator.UltimateValidator(armored_password, 0)
+    const nickname = await validator.UltimateValidator(armored_nickname, 0)
+    const publicKey = await validator.UltimateValidator(publicKeyArmored, 0)
+    const link = await validator.UltimateValidator(crypted_link, 0)
     const confirm_link = link.substring(0, link.indexOf("/signUp.html"));
     console.log(confirm_link)
 
