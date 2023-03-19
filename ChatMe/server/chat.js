@@ -46,7 +46,7 @@ async function sendAesKey(
     
     var check1 = validator.checkEmail(email);
     var check2 = validator.checkPassword(password);
-    var check3 = validator.checkNickname(nickname);
+    var check3 = validator.checkUsername(nickname);
     var check4 = await crypto.isValid(publicKey);
 
     const aesKey = await database.getAesKey(email, nickname, password);
@@ -57,9 +57,11 @@ async function sendAesKey(
 
         var chat = JSON.parse(await database.GetChat(nickname));
 
-        console.log(chat)
-        for (let i = 0; i < (chat.chat.length); i++) {
-            socket.join(chat.chat[i].chatId);
+        for (let i = 0; i < Object.keys(chat.chats).length; i++) {
+            socket.join(JSON.stringify(chat.chats[i].Id));
+        }
+        for(let i = 0; i < Object.keys(chat.groups).length; i++) {
+            socket.join(JSON.stringify(chat.groups[i].Id));
         }
 
 

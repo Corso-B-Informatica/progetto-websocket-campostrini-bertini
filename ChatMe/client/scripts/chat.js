@@ -266,10 +266,11 @@ async function sync() {
         else {
             var data = localStorage.getItem("data");
             var decrypted_data = decryptAES(data, kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "");
-            var decrypted_data = decrypted_data.substring(2, decrypted_data.length - 2);
+
             
             console.log(decrypted_data)
-            var decrypted_dataParsed = JSON.parse(decrypted_data.toString());
+            var decrypted_dataParsed = JSON.stringify(decrypted_data);
+            console.log(decrypted_dataParsed)
             crypted_nickname = await encrypt(decrypted_dataParsed.nickname, localStorage.getItem("publicKeyArmored"));
             crypted_password = await encrypt(decrypted_dataParsed.password, localStorage.getItem("publicKeyArmored"));
             crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
