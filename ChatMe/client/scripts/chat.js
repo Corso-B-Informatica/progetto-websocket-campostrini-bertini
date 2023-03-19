@@ -173,7 +173,6 @@ async function manageSync(crypted_chat) {
         kM.getPrivateKey(),
         kM.getPassphrase()
     );
-    console.log("frocio")
     localStorage.setItem("data", encryptAES(chat, kM.getAesKey()));
 }
 
@@ -244,8 +243,8 @@ async function manageAesKeySuccess(crypted_aes_key) {
     );
 
     kM.setAesKey(aes_key);
-    readLocalStorage();//da fare
-    getNewMessages();//da fare
+    //readLocalStorage();//da fare
+    //getNewMessages();//da fare
 }
 
 async function readLocalStorage() {
@@ -265,17 +264,13 @@ async function sync() {
         }
         else {
             var data = localStorage.getItem("data");
-            var decrypted_data = decryptAES(data, kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "");
-
-            
-            console.log(decrypted_data)
-            var decrypted_dataParsed = JSON.stringify(decrypted_data);
-            console.log(decrypted_dataParsed)
-            crypted_nickname = await encrypt(decrypted_dataParsed.nickname, localStorage.getItem("publicKeyArmored"));
-            crypted_password = await encrypt(decrypted_dataParsed.password, localStorage.getItem("publicKeyArmored"));
+            var decrypted_data = JSON.parse(decryptAES(data, kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", ""));
+            var nickname = JSON.stringify(decrypted_data.nickname);
+            var password = JSON.stringify(decrypted_data.password);
+            crypted_nickname = await encrypt(nickname.substring(1, nickname.length - 1), localStorage.getItem("publicKeyArmored"));
+            crypted_password = await encrypt(password.substring(1, password.length - 1), localStorage.getItem("publicKeyArmored"));
             crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
             socket.emit("sync", crypted_nickname, crypted_password, crypted_pubKey )
-            console.log("frocio")
         }
     }
 

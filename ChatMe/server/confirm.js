@@ -110,11 +110,11 @@ async function confirmUserViaLink(
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                     //sas
                     var c_row = await crypto.encrypt(
-                        JSON.parse(`{"nickname": "` +
+                        `{"nickname": "` +
                             nickname +
                             `","password": "` +
                             password +
-                            `","groups": {}, "chats": {}, "contacts": {}}`).toString(),
+                            `","groups": {}, "chats": {}, "contacts": {}}`,
                       publicKey
                     );
                     var c_aesKey = await crypto.encrypt(keyAES, publicKey);
@@ -806,11 +806,11 @@ async function confirmUserViaCode(
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                         var c_row = await crypto.encrypt(
-                            JSON.parse(`{"nickname": "` +
+                            `{"nickname": "` +
                                 nickname +
                                 `","password": "` +
                                 password +
-                                `","groups": {}, "chats": {}, "contacts": {}}`).toString(),
+                                `","groups": {}, "chats": {}, "contacts": {}}`,
                           publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
@@ -1064,11 +1064,11 @@ async function confirmUserViaCode(
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
                         var c_row = await crypto.encrypt(
-                            JSON.parse(`{"nickname": "` +
+                            `{"nickname": "` +
                                 nickname +
                                 `","password": "` +
                                 password +
-                                `","groups": {}, "chats": {}, "contacts": {}}`).toString(),
+                                `","groups": {}, "chats": {}, "contacts": {}}`,
                           publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);

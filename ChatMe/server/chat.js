@@ -55,7 +55,7 @@ async function sendAesKey(
         socket.emit("errorAesKey");
     } else if((check1 || check2) && check3 && check4) {
 
-        var chat = JSON.parse(await database.GetChat(nickname));
+        var chat = await JSON.parse(await database.GetChat(nickname));
 
         for (let i = 0; i < Object.keys(chat.chats).length; i++) {
             socket.join(JSON.stringify(chat.chats[i].Id));
@@ -180,11 +180,12 @@ async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) 
     if(!check){
         socket.emit("errorPubKeySync");
     }
-    else if (await database.checkDatabase(database.Users, nickname, "", password)){
-        var crypted_chat = crypto.encrypt(await database.GetChat(nickname), pubKey);
+    else if (await database.checkDatabase(database.Users, nickname, "", password)) {
+        var chat = JSON.stringify(JSON.parse(await database.GetChat(nickname)));
+        var crypted_chat = await crypto.encrypt(chat, pubKey);
         socket.emit("sync", crypted_chat);
     }
-    else{
+    else {
         socket.emit("errorUserNotFound");
     }
 }

@@ -120,7 +120,7 @@ function existInDatabase(db, nickname, email, operator) {
 function checkDatabase(db, nickname, email, password) {
   return new Promise((resolve, reject) => {
     db.all(
-      `select * from users where nickname = ? or email = ? `,
+      `SELECT * FROM users WHERE nickname = ? or email = ? `,
       [nickname, email],
       (err, rows) => {
         if (err) {

@@ -800,7 +800,6 @@ async function manageConfirmSuccess(c_email, c_nickname, c_password, c_rememberM
     localStorage.setItem("password", password);
     localStorage.setItem("rememberMe", rememberMe);
     var data = encryptAES(row, aesKey);
-    console.log(row)
     localStorage.setItem("data", data);
 
     window.location.href = "../chat.html";
