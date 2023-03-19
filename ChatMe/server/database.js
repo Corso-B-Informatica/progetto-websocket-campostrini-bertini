@@ -175,30 +175,6 @@ function insertUser(nickname, email, password, key) {
   });
 }
 
-function getAesKey(email, nickname, password) {
-  return new Promise((resolve, reject) => {
-    Users.all(
-      `select * from users where nickname = ? or email = ?`,
-      [nickname, email],
-      (err, rows) => {
-        if (err) {
-          console.log(err);
-          reject(err);
-        } else {
-          try {
-            if (rows[0].password == password) {
-              resolve(rows[0].key);
-            } else {
-              reject("Password errata");
-            }
-          } catch (e) {
-            reject(e);
-          }
-        }
-      });
-  });
-}
-getAesKey("sas", "s", "s");
 function insertChat(nickname, chat) {
   return new Promise((resolve, reject) => {
     Chat.run(
