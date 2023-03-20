@@ -695,7 +695,7 @@ async function checkChatExist(nickname, chatName, chat) {
   });
 }
 
-async function newChat(nickname, json) {
+async function JsonUpdate(nickname, json) {
   return new Promise((resolve, reject) => {
     Chat.all(
       "UPDATE chat SET chat = ? WHERE nickname = ?",
@@ -715,7 +715,7 @@ async function newChat(nickname, json) {
 
 
 module.exports = {
-  newChat,
+  JsonUpdate,
   checkDestinationUser,
   UpdateChat,
   GetChat,

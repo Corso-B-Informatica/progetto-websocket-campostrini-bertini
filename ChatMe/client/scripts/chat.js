@@ -263,8 +263,14 @@ async function sync() {
             alert('Wait for page to load')
         }
         else {
-            var data = localStorage.getItem("data");
-            var decrypted_data = JSON.parse(decryptAES(data, kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", ""));
+            //porcoddio non capisco più una sega, se a te va chat gpt scrivigli questo :
+            //var data = "\"{\\\"nickname\\\": \\\"ciao\\\",\\\"password\\\": \\\"Cisco02!\\\",\\\"groups\\\": {}, \\\"chats\\\": {}, \\\"contacts\\\": {}}\"" 
+            //come posso risolvere questo errore : Unexpected non-whitespace character after JSON
+            var data = localStorage.getItem("data");            
+            var decrypted_data = (decryptAES(data, kM.getAesKey()));
+            console.log(decrypted_data)
+            var Parsed_data = JSON.parse(decrypted_data.replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "").substring(1, data.length - 1));
+            console.log(decrypted_data.replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "").substring(1, data.length - 1))
             var nickname = JSON.stringify(decrypted_data.nickname);
             var password = JSON.stringify(decrypted_data.password);
             crypted_nickname = await encrypt(nickname.substring(1, nickname.length - 1), localStorage.getItem("publicKeyArmored"));

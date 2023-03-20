@@ -80,7 +80,7 @@ async function sendMessage(crypted_message, crypted_nickname, crypted_password, 
 }
 
 async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) {
-    
+
     const password = await validator.UltimateValidator(crypted_password, 0, true);
     const nickname = await validator.UltimateValidator(crypted_nickname, 0, true);
     const pubKey = await validator.UltimateValidator(crypted_pubKey, 0, false);
@@ -112,17 +112,17 @@ async function newChat(crypted_nickname, crypted_password, crypted_id, crypted_p
     if (!check) {
         socket.emit("errorPubKeySync");
     }
-    
+
     else if (await database.checkDatabase(database.Users, nickname, "", password)) {
         if (await database.existNickname(id)) {
             if (await database.checkChatExist(nickname, id, "chat")) {
                 var chat = JSON.parse(await database.GetChat(nickname));
-                let json = {"id" : id , "messages": {}}
+                let json = { "id": id, "messages": {} }
                 chat.chats.push(json);
-                if(await database.newChat(nickname,chat)){
+                if (await database.JsonUpdate(nickname, chat)) {
                     socket.join(id);
                     console.log("Cinesello Balsamo")
-                }else{
+                } else {
                     socket.emit("errorNewChat");
                 }
             } else {
@@ -137,7 +137,44 @@ async function newChat(crypted_nickname, crypted_password, crypted_id, crypted_p
     }
 }
 
+async function newGroup(crypted_nickname, crypted_password, crypted_members, crypted_pubKey, crypted_groupname, socket) {
+
+    const password = await validator.UltimateValidator(crypted_password, 0, true);
+    const nickname = await validator.UltimateValidator(crypted_nickname, 0, true);
+    // array di nickname, vedere se validazione funziona
+    const members = await validator.UltimateValidator(crypted_members, 0, true);
+    const pubKey = await validator.UltimateValidator(crypted_pubKey, 0, false);
+    const groupname = await validator.UltimateValidator(crypted_groupname, 0, true);
+
+    let check = await crypto.isValid(pubKey);
+
+    if (!check) {
+        socket.emit("errorPubKeySync");
+    }
+    else if (await database.checkDatabase(database.Users, nickname, "", password)) {
+        var id = crypto.generateRandomKey(20)
+        var chat = JSON.parse(await database.GetChat(nickname));
+        let json = { "id": id, "nome": groupname, "utenti": {} }
+        chat.chats.push(json);
+        members.forEach(member => {
+            //penso che il path sia sbagliato
+            chat.groups.utenti.push(member)
+        });
+        if (await database.JsonUpdate(nickname, chat)) {
+            socket.join(id);
+            console.log("Cinesello Balsamo")
+        } else {
+            socket.emit("errorNewGroup");
+        }
+    } else {
+        socket.emit("errorNewGroupCredentials");
+    }
+
+}
+
 module.exports = {
+    newChat,
+    newGroup,
     sendAesKey,
     sendMessage,
     sync,
