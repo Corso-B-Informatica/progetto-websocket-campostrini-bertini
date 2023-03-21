@@ -112,7 +112,7 @@ async function manageLoginSuccess(c_nickname, c_email, c_password, c_rememberMe,
     localStorage.setItem("email", email);
     localStorage.setItem("password", password);
     localStorage.setItem("rememberMe", rememberMe);
-    var data = encryptAES(JSON.stringify(row), aesKey);
+    var data = encryptAES(row, aesKey);
     localStorage.setItem("data", data);
 
     window.location.href = "../chat.html";

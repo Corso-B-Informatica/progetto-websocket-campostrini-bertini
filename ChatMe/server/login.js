@@ -24,7 +24,7 @@ async function login(armored_email, armored_nickname, armored_password, armored_
                     var nick = await database.getNickname(database.Users, email);
 
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
-                    var c_row = await crypto.encrypt(JSON.stringify(await database.GetChat(nick)), publicKey);
+                    var c_row = await crypto.encrypt(await database.GetChat(nick), publicKey);
                     var c_aesKey = await crypto.encrypt(await database.getKeys(nick), publicKey);
                     var c_nickname = await crypto.encrypt(crypto.encryptAES(nick), publicKey);
                     var c_email = await crypto.encrypt(crypto.encryptAES(email), publicKey);
@@ -34,7 +34,7 @@ async function login(armored_email, armored_nickname, armored_password, armored_
                 } else {
 
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
-                    var c_row = await crypto.encrypt(JSON.stringify(await database.GetChat(nickname)), publicKey);
+                    var c_row = await crypto.encrypt(await database.GetChat(nickname), publicKey);
                     var c_aesKey = await crypto.encrypt(await database.getKeys(nickname), publicKey);
                     var c_nickname = await crypto.encrypt(crypto.encryptAES(nickname), publicKey);
                     var c_email = await crypto.encrypt(crypto.encryptAES(await database.getEmail(database.Users, nickname)), publicKey);

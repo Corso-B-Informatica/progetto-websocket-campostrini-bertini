@@ -174,6 +174,7 @@ async function manageSync(crypted_chat) {
         kM.getPassphrase()
     );
     localStorage.setItem("data", encryptAES(chat, kM.getAesKey()));
+    //la pagina deve essere ricaricata
 }
 
 function attachFile() {
@@ -260,17 +261,11 @@ async function sync() {
     }
     else{
         if(kM.getAesKey() == null || kM.getAesKey() == undefined || kM.getAesKey() == ""){
-            alert('Wait for page to load')
+            alert('Wait for page to load');
         }
         else {
-            //porcoddio non capisco più una sega, se a te va chat gpt scrivigli questo :
-            //var data = "\"{\\\"nickname\\\": \\\"ciao\\\",\\\"password\\\": \\\"Cisco02!\\\",\\\"groups\\\": {}, \\\"chats\\\": {}, \\\"contacts\\\": {}}\"" 
-            //come posso risolvere questo errore : Unexpected non-whitespace character after JSON
-            var data = localStorage.getItem("data");            
-            var decrypted_data = (decryptAES(data, kM.getAesKey()));
-            console.log(decrypted_data)
-            var Parsed_data = JSON.parse(decrypted_data.replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "").substring(1, data.length - 1));
-            console.log(decrypted_data.replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "").substring(1, data.length - 1))
+            var data = decryptAES(localStorage.getItem("data"), kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "");
+            var decrypted_data = JSON.parse(data);
             var nickname = JSON.stringify(decrypted_data.nickname);
             var password = JSON.stringify(decrypted_data.password);
             crypted_nickname = await encrypt(nickname.substring(1, nickname.length - 1), localStorage.getItem("publicKeyArmored"));
@@ -279,9 +274,9 @@ async function sync() {
             socket.emit("sync", crypted_nickname, crypted_password, crypted_pubKey )
         }
     }
-
-
+    //il sync deve far apparire sulla pagina un caricamento
 }
+
 /*Input limit*/
 document.getElementById("message-input").addEventListener("input", function () {
     var text = document.getElementById("message-input").value;

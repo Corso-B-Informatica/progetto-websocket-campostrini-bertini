@@ -1,6 +1,7 @@
 const crypto = require("./crypto.js");
 const database = require("./database.js");
 const validator = require("./validator.js");
+const socketList = require("./socketList.js");
 
 async function sendAesKey(
     crypted_email,
@@ -36,11 +37,13 @@ async function sendAesKey(
             socket.join(JSON.stringify(chat.groups[i].Id));
         }
 
+        socketList.pushSocket(nickname, socket);
+
         var message = await crypto.encrypt(
             aesKey,
             publicKey
         );
-
+        
         socket.emit(
             "aesKey",
             message
