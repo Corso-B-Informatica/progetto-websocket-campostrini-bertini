@@ -620,28 +620,7 @@ function UpdateChat(nickname, chat) {
   });
 }
 
-function checkDestinationUser(nickname, id, chat) {
-  return new Promise((resolve, reject) => {
-    Chat.all(
-      "SELECT * FROM chat WHERE nickname = ?",
-      [nickname],
-      (err, rows) => {
-        if (err) {
-          console.log(err);
-          reject(err);
-        } else {
-          var pchat = JSON.parse(rows[0].chat)
-          for (let i = 0; i < pchat[chat].length; i++) {
-            if (pchat[chat][i].id == id) {
-              resolve(true);
-            }
-          }
-          resolve(false);
-        }
-      }
-    );
-  });
-}
+
 /*Ritorna la chat*/
 function GetChat(nickname) {
   return new Promise((resolve, reject) => {
@@ -694,6 +673,40 @@ async function checkChatExist(nickname, chatName, chat) {
     });
   });
 }
+async function checkIdExist(nickname, chatName) {
+  return new Promise((resolve, reject) => {
+
+    Chat.all("SELECT * FROM chat WHERE nickname = ?", [nickname], (err, rows) => {
+      var c = false;
+      var g = false;
+      if (err) {
+        console.log(err);
+        reject(err);
+      } else {
+        if (rows.length > 0) {
+          var pchat = JSON.parse(rows[0].chat)
+          for(let i = 0; i < pchat[groups].length; i++){
+            if(pchat[groups][i].id == chatName){
+              g = true;
+            }
+          }
+          for (let i = 0; i < pchat[chats].length; i++) {
+            if (pchat[chats][i].id == chatName) {
+              c = true;
+            }
+          }
+          if(c || g){
+            resolve(true);
+          }
+          resolve(false);
+        } else {
+          resolve(false);
+        }
+      }
+    });
+  });
+}
+
 
 async function JsonUpdate(nickname, json) {
   return new Promise((resolve, reject) => {
@@ -716,7 +729,7 @@ async function JsonUpdate(nickname, json) {
 
 module.exports = {
   JsonUpdate,
-  checkDestinationUser,
+  checkIdExist,
   UpdateChat,
   GetChat,
   existInDatabase,

@@ -65,18 +65,35 @@ async function sendMessage(crypted_message, crypted_nickname, crypted_password, 
     if (message == null || message == undefined || message.trim().length == 0 || message > 2000) {
         socket.emit("errorSendMessage");
     }
-    else if (check) {
+    else if (!check) {
         socket.emit("errorPubKeySendMessage");
     }
     else {
         if (await database.checkDatabase(database.Users, nickname, "", password)) {
-            if (await database.checkDestinationUser(nickname, id)) {
+            if (await database.checkIdExist(nickname, id)) {
                 console.log('si')
-                var chat = JSON.parse(await database.GetChat(nickname));
+                if(id > 30){
+                let chat = JSON.parse(await database.GetChat(nickname));
+                chat.groups[id].members.forEach(element => {
+                    (async () => {
+                        let chat = JSON.parse(await database.GetChat(element));
+                        let json = {"message": message, "nickname": nickname, "date": new Date().toISOString()};
+                        chat.groups[id].nonVisualized.push(json);
+                        }) 
+                });
+
+            }else{
+                var chat1 = JSON.stringify(JSON.parse(await database.GetChat(nickname)));
+                let json1 = {"message": message, "nickname": nickname, "date": new Date().toISOString()};
+                chat1.chats[id].nonVisualized.push(json1);
+                var chat2 = JSON.stringify(JSON.parse(await database.GetChat(id)))
+                let json2 = {"message": message, "nickname": nickname, "date": new Date().toISOString()};
+                chat2.chats[id].nonVisualized.push(json2);
+            }
             }
         }
         else {
-            socket.emit("errorUserNotFound");
+            socket.emit("errorIdNotFound");
         }
     }
 
@@ -120,7 +137,7 @@ async function newChat(crypted_nickname, crypted_password, crypted_id, crypted_p
         if (await database.existNickname(id)) {
             if (await database.checkChatExist(nickname, id, "chat")) {
                 var chat = JSON.parse(await database.GetChat(nickname));
-                let json = { "id": id, "messages": {} }
+                let json = { "id": id, "visualized": {},"nonVisualized": {},"removed": {} }
                 chat.chats.push(json);
                 if (await database.JsonUpdate(nickname, chat)) {
                     socket.join(id);
@@ -155,13 +172,15 @@ async function newGroup(crypted_nickname, crypted_password, crypted_members, cry
         socket.emit("errorPubKeySync");
     }
     else if (await database.checkDatabase(database.Users, nickname, "", password)) {
-        var id = crypto.generateRandomKey(20)
-        var chat = JSON.parse(await database.GetChat(nickname));
-        let json = { "id": id, "nome": groupname, "utenti": {} }
+
+        let id = crypto.encryptAES(groupname) + new Date().toISOString() + crypto.generateRandomKey(10)
+        console.log(id)
+        let chat = JSON.parse(await database.GetChat(nickname));
+        let json = { "id": id, "nome": groupname, "members": {}, "visualized": {},"nonVisualized": {},"removed": {} }
         chat.chats.push(json);
         members.forEach(member => {
             //penso che il path sia sbagliato
-            chat.groups.utenti.push(member)
+            chat.groups.members.push(member)
         });
         if (await database.JsonUpdate(nickname, chat)) {
             socket.join(id);
