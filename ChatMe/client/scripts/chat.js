@@ -239,29 +239,22 @@ async function manageAesKeySuccess(crypted_aes_key) {
 /*sync*/
 async function sync() {
     $('#loadingModal').modal('show');
-    //funziona solo se l'utente ha fatto il RememberMe
-    if (checkData()) {
-        if (checkKey()) {
-            if (kM.getAesKey() == null || kM.getAesKey() == undefined || kM.getAesKey() == "") {
-                setTimeout(sync, 100);
-            }
-            else {
-                var data = decryptAES(localStorage.getItem("data"), kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "");
-                var decrypted_data = JSON.parse(data);
-                var nickname = decrypted_data.nickname;
-                var password = decrypted_data.password;
-                var crypted_nickname = await encrypt(nickname, localStorage.getItem("publicKeyArmored"));
-                var crypted_password = await encrypt(password, localStorage.getItem("publicKeyArmored"));
-                var crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
-                socket.emit("sync", crypted_nickname, crypted_password, crypted_pubKey);
-            }
-        } else {
-            socket.emit("getPublicKey", "2");
+    if (checkKey()) {
+        if (kM.getAesKey() == null || kM.getAesKey() == undefined || kM.getAesKey() == "") {
+            setTimeout(sync, 100);
+        }
+        else {
+            var data = decryptAES(localStorage.getItem("data"), kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "");
+            var decrypted_data = JSON.parse(data);
+            var nickname = decrypted_data.nickname;
+            var password = decrypted_data.password;
+            var crypted_nickname = await encrypt(nickname, localStorage.getItem("publicKeyArmored"));
+            var crypted_password = await encrypt(password, localStorage.getItem("publicKeyArmored"));
+            var crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
+            socket.emit("sync", crypted_nickname, crypted_password, crypted_pubKey);
         }
     } else {
-        console.log("si1")
-        clearLocalStorageWithoutKey();
-        window.location.href = "../signUp.html";
+        socket.emit("getPublicKey", "2");
     }
 }
 
@@ -278,12 +271,12 @@ async function manageSync(crypted_chat) {
     var groupsToupdate = JSON.parse(data).groups;
 
     clear();
+    document.getElementById("contact-list").innerHTML = "";
 
     for (let i = 0; i < chatsToupdate.length; i++) {
         add(chatsToupdate[i]);
     }
 
-    console.log(get())
     for (let i = 0; i < groupsToupdate.length; i++) {
         add(groupsToupdate[i]);
     }
@@ -416,7 +409,7 @@ function showNewMessagesNumber() {
     }
 
     if (newMessagesNumber > 0) {
-        $("#new-messages-number").html(newMessagesNumber);
+        $("#new-messages-number").html(newMessagesNumber + "New");
         $("#new-messages-number").show();
     } else {
         $("#new-messages-number").hide();
@@ -554,9 +547,9 @@ function createChats() {
             contactLastMessageTimeText.classList.add("user-select-none");
             contactLastMessageTimeText.classList.add("text-white");
             if (chats[i].nonVisualized.length > 0) {
-                contactLastMessageTimeText.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date;
+                contactLastMessageTimeText.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date.substring(11, 16);
             } else if (chats[i].visualized.length > 0) {
-                contactLastMessageTimeText.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].date;
+                contactLastMessageTimeText.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].date.substring(11, 16);
             }
 
             contactLastMessageTime.appendChild(contactLastMessageTimeText);
@@ -601,20 +594,36 @@ async function sendMessage() {
     //sul server fare il check chi è online in quella chat, se è una chat singola controllare solo che la persona sia online (mandare nella stanza con l'id della chat il messaggio e inserire nel database degli utenti le robe)
 }
 
+function closeChat() {
+    document.getElementById("header-chat").classList.add("d-none");
+    document.getElementById("typezone").classList.add("d-none");
+    if (window.innerWidth < 901) {
+      $("#menu").show();
+      document.getElementById("close-chat").classList.add("d-none");
+      document.getElementById("conversation").classList.add("d-none");
+      document
+        .getElementById("contact-" + getSelectedChat())
+        .classList.remove("selected-chat");
+    }
+    selectChat(-1);
+    showNewMessagesNumber();
+}
 
 function openChat(index) {
     if (index >= 0 && index < size()) {
         if (index != getSelectedChat()) {
-            $("#typezone").show();
-            $("#header-chat").show();
+            document.getElementById("header-chat").classList.remove("d-none");
+            document.getElementById("typezone").classList.remove("d-none");
             if (window.innerWidth < 901) {
                 $("#menu").hide();
-                $("#conversation").show();
+                document
+                  .getElementById("close-chat")
+                  .classList.remove("d-none");
+                document.getElementById("conversation").classList.remove("d-none");
+                document.getElementById("contact-" + getSelectedChat()).classList.remove("selected-chat");
             } else {
                 document.getElementById("contact-" + index).classList.add("selected-chat");
-                if (getSelectedChat(index) >= 0) {
-                    document.getElementById("contact-" + getSelectedChat()).classList.remove("selected-chat");
-                }
+                document.getElementById("contact-" + getSelectedChat()).classList.remove("selected-chat");
             }
             selectChat(index);
             document.getElementById("messages").innerHTML = "";

@@ -109,8 +109,10 @@
         </div>
         <div id="conversation" class="h-100 w-80 d-none">
             <div id="header-chat" class="d-flex flex-wrap align-items-center w-100 position-fixed d-none">
-                <div class="d-flex flex-wrap align-items-center justify-content-start">
-                    <i id="back-chat-arrow" class="fas fa-arrow-left d-none"></i>
+                <div id="close-chat" class="d-flex flex-wrap align-items-center justify-content-start h-100 d-none">
+                    <button id="back-chat-button" class="btn rounded-5" type="button" onclick="closeChat()">
+                        <i id="back-chat-arrow"><</i>
+                    </button>
                 </div>
                 <i id="chat-icon" class="icon fa fa-user-o" aria-hidden="true"></i>
                 <div class="d-flex flex-column">
@@ -119,7 +121,7 @@
                 </div>
             </div>
             <div id="background-conversation" class="h-100 w-100"></div>
-            <div id="messages" class="w-100 h-100 d-flex flex-col align-items-center justify-content-start">
+            <div id="messages" class="w-100 d-flex flex-col align-items-center justify-content-start">
 
             </div>
             <div id="typezone"
