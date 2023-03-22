@@ -482,7 +482,7 @@ function openChat(index) {
                 $("#menu").hide();
                 $("#conversation").show();
             } else {
-                document.getElementById("contact-" + index).classList.add("selected");
+                document.getElementById("contact-" + index).classList.add("selected-chat");
                 document.getElementById("contact-" + sortedChats.getSelectedChat()).classList.remove("selected-chat");
             }
             sortedChats.selectedChat(index);
@@ -507,6 +507,7 @@ function openChat(index) {
                 }
                 var encrypted_data = encryptAES(JSON.stringify(chats), kM.getAesKey());
                 localStorage.setItem("data", encrypted_data);
+                showNewMessagesNumber();
             }
         }
 
