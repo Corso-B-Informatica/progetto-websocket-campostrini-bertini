@@ -283,7 +283,6 @@ async function manageSync(crypted_chat) {
         add(chatsToupdate[i]);
     }
 
-    console.log(get())
     for (let i = 0; i < groupsToupdate.length; i++) {
         add(groupsToupdate[i]);
     }
@@ -416,7 +415,7 @@ function showNewMessagesNumber() {
     }
 
     if (newMessagesNumber > 0) {
-        $("#new-messages-number").html(newMessagesNumber);
+        $("#new-messages-number").html(newMessagesNumber + " New");
         $("#new-messages-number").show();
     } else {
         $("#new-messages-number").hide();
@@ -554,9 +553,9 @@ function createChats() {
             contactLastMessageTimeText.classList.add("user-select-none");
             contactLastMessageTimeText.classList.add("text-white");
             if (chats[i].nonVisualized.length > 0) {
-                contactLastMessageTimeText.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date;
+                contactLastMessageTimeText.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date.substring(11,16);
             } else if (chats[i].visualized.length > 0) {
-                contactLastMessageTimeText.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].date;
+                contactLastMessageTimeText.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].date.substring(11,16);
             }
 
             contactLastMessageTime.appendChild(contactLastMessageTimeText);
@@ -580,14 +579,12 @@ async function sendMessage() {
         //mostra un errore
     }
     else {
-        let chat = decryptAES(localStorage.getItem("data"), kM.getAesKey())
-        let nickname = chat.nickname
-        console.log(nickname)
-        let crypted_message = encrypt(message, localStorage.getItem("publicKeyArmored"))
-        let crypted_nickname = encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored"))
-        let crypted_password = encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored"))
-        let crypted_id = encrypt("sos", localStorage.getItem("publicKeyArmored"))
-        let crypted_publickey = encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
+        let chat = JSON.parse(decryptAES(localStorage.getItem("data"), kM.getAesKey()))
+        let crypted_message = await encrypt(message, localStorage.getItem("publicKeyArmored"))
+        let crypted_nickname = await encrypt(chat.nickname, localStorage.getItem("publicKeyArmored"))
+        let crypted_password = await encrypt(chat.password, localStorage.getItem("publicKeyArmored"))
+        let crypted_id = await encrypt(get(getSelectedChat()).id, localStorage.getItem("publicKeyArmored"))
+        let crypted_publickey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
         if (checkKey()) {
             socket.emit("message", crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_publickey)
         }
