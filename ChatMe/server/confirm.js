@@ -53,7 +53,7 @@ async function confirmUserViaLink(
                         nickname +
                         `","password": "` +
                         password +
-                        `","groups": [], "chats": [], "contacts": []}`
+                        `","groups": [], "chats": []}`
                     );
 
                     var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
@@ -63,7 +63,7 @@ async function confirmUserViaLink(
                         nickname +
                         `","password": "` +
                         password +
-                        `","groups": [], "chats": [], "contacts": []}`,
+                        `","groups": [], "chats": []}`,
                         publicKey
                     );
                     var c_aesKey = await crypto.encrypt(keyAES, publicKey);
@@ -614,7 +614,7 @@ async function confirmUserViaCode(
                             nickname +
                             `","password": "` +
                             password +
-                            `","groups": [], "chats": [], "contacts": []}`
+                            `","groups": [], "chats": []}`
                         );
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
@@ -623,7 +623,7 @@ async function confirmUserViaCode(
                             nickname +
                             `","password": "` +
                             password +
-                            `","groups": [], "chats": [], "contacts": []}`,
+                            `","groups": [], "chats": []}`,
                             publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);
@@ -842,7 +842,7 @@ async function confirmUserViaCode(
                             nickname +
                             `","password": "` +
                             password +
-                            `","groups": [], "chats": [], "contacts": []}`
+                            `","groups": [], "chats": []}`
                         );
 
                         var c_rememberMe = await crypto.encrypt(rememberMe, publicKey);
@@ -851,7 +851,7 @@ async function confirmUserViaCode(
                             nickname +
                             `","password": "` +
                             password +
-                            `","groups": [], "chats": [], "contacts": []}`,
+                            `","groups": [], "chats": []}`,
                             publicKey
                         );
                         var c_aesKey = await crypto.encrypt(keyAES, publicKey);

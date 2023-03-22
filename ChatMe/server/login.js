@@ -29,7 +29,7 @@ async function login(armored_email, armored_nickname, armored_password, armored_
                         nickname +
                         `","password": "` +
                         password +
-                        `","groups": [], "chats": [], "contacts": []}`,
+                        `","groups": [], "chats": []}`,
                         publicKey
                     );
                     var c_aesKey = await crypto.encrypt(await database.getKeys(nick), publicKey);
@@ -46,7 +46,7 @@ async function login(armored_email, armored_nickname, armored_password, armored_
                         nickname +
                         `","password": "` +
                         password +
-                        `","groups": [], "chats": [], "contacts": []}`,
+                        `","groups": [], "chats": []}`,
                         publicKey
                     );
                     var c_aesKey = await crypto.encrypt(await database.getKeys(nickname), publicKey);
