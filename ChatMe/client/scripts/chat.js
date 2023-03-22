@@ -469,6 +469,8 @@ async function creaChat() {
     }
 }
 
+
+
 /*Crea contatti*/
 function createChats() {
 
@@ -547,9 +549,9 @@ function createChats() {
             contactLastMessageTimeText.classList.add("user-select-none");
             contactLastMessageTimeText.classList.add("text-white");
             if (chats[i].nonVisualized.length > 0) {
-                contactLastMessageTimeText.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date.substring(11,16);
+                contactLastMessageTimeText.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date.substring(11, 16);
             } else if (chats[i].visualized.length > 0) {
-                contactLastMessageTimeText.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].date.substring(11,16);
+                contactLastMessageTimeText.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].date.substring(11, 16);
             }
 
             contactLastMessageTime.appendChild(contactLastMessageTimeText);
@@ -596,12 +598,12 @@ function closeChat() {
     document.getElementById("header-chat").classList.add("d-none");
     document.getElementById("typezone").classList.add("d-none");
     if (window.innerWidth < 901) {
-      $("#menu").show();
-      document.getElementById("close-chat").classList.add("d-none");
-      document.getElementById("conversation").classList.add("d-none");
-      document
-        .getElementById("contact-" + getSelectedChat())
-        .classList.remove("selected-chat");
+        $("#menu").show();
+        document.getElementById("close-chat").classList.add("d-none");
+        document.getElementById("conversation").classList.add("d-none");
+        document
+            .getElementById("contact-" + getSelectedChat())
+            .classList.remove("selected-chat");
     }
     selectChat(-1);
     showNewMessagesNumber();
@@ -615,15 +617,18 @@ function openChat(index) {
             if (window.innerWidth < 901) {
                 $("#menu").hide();
                 document
-                  .getElementById("close-chat")
-                  .classList.remove("d-none");
+                    .getElementById("close-chat")
+                    .classList.remove("d-none");
                 document.getElementById("conversation").classList.remove("d-none");
                 document.getElementById("contact-" + getSelectedChat()).classList.remove("selected-chat");
             } else {
                 document.getElementById("contact-" + index).classList.add("selected-chat");
-                document.getElementById("contact-" + getSelectedChat()).classList.remove("selected-chat");
+                if (getSelectedChat() != -1) {
+                    document.getElementById("contact-" + getSelectedChat()).classList.remove("selected-chat");
+                }
             }
             selectChat(index);
+            console.log(getSelectedChat())
             document.getElementById("messages").innerHTML = "";
             //createChat(index);//da fare
             var selectedChat = get(index);

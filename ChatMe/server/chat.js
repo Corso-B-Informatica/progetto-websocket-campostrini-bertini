@@ -88,7 +88,7 @@ async function getNewMessages(crypted_nickname, crypted_password, crypted_pubKey
     }
 }
 
-async function sendMessage(crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_pubKey, socket) {
+async function AddMessage(crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_pubKey, socket) {
 
     const message = await validator.UltimateValidator(crypted_message, 0, true);
     const id = await validator.UltimateValidator(crypted_id, 0, true);
@@ -276,7 +276,7 @@ module.exports = {
     newChat,
     newGroup,
     sendAesKey,
-    sendMessage,
+    AddMessage,
     sync,
     getNewMessages
 };

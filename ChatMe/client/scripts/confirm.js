@@ -81,12 +81,6 @@ setInterval(checkLocalstorage, 500);
 /*keyManager*/
 const kM = new keyManager();
 
-async function genKey() {
-    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-}
-
-genKey();
-
 /*Socket.io*/
 var socket = io();
 
@@ -141,11 +135,13 @@ async function tryConfirmViaLink(publicKeyArmored) {
     url = url.replace(password + "&code=", "");
     var verification_code = url;
     url = window.location.href;
-    
-    if (isUrlConfirmed(url, email, password, nickname, verification_code)) {
-        sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored);
-    } else {
-        checkLocalstorage();
+
+    if (await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!") != null) {
+        if (isUrlConfirmed(url, email, password, nickname, verification_code)) {
+            sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored);
+        } else {
+            checkLocalstorage();
+        }
     }
 }
 
@@ -160,7 +156,7 @@ function isUrlConfirmed(url, email, password, nickname, verification_code) {
     return url.includes("/confirm.html#") && email.trim().length > 0 && password.trim().length > 0 && nickname.trim().length > 0 && verification_code.trim().length > 0;
 }
 
-async function sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored, url) {
+async function sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored) {
     const crypted_nickname = await encrypt(nickname, publicKeyArmored);
     const crypted_email = await encrypt(email, publicKeyArmored);
     const crypted_password = await encrypt(password, publicKeyArmored);
@@ -640,7 +636,7 @@ async function manageConfirmDataError(crypted_check1, crypted_check2, crypted_ch
         clearLocalStorageWithoutKey();
     }
 
-    if((check1 || check2) && check3 && check4 && check5 && check6) {
+    if ((check1 || check2) && check3 && check4 && check5 && check6) {
         window.location.href = "../confirm.html";
     }
 }
@@ -794,7 +790,7 @@ async function manageConfirmSuccess(c_email, c_nickname, c_password, c_rememberM
         kM.getPrivateKey(),
         kM.getPassphrase()
     );
-    
+
     localStorage.setItem("email", email);
     localStorage.setItem("nickname", nickname);
     localStorage.setItem("password", password);
