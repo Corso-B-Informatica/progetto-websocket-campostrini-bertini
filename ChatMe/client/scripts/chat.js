@@ -667,17 +667,29 @@ async function searchContact() {
         for (let i = 0; i < chats["chats"].length; i++) {
             if (chats["chats"][i].name != contact) {
                 if (!chats["chats"][i].name.includes(contact)) {
-                    $("#contact-" + i).hide();
+                    document.getElementById("contact-" + i).classList.add("d-none");
+                } else {
+                    document.getElementById("contact-" + i).classList.remove("d-none");
                 }
+            } else {
+                document.getElementById("contact-" + i).classList.remove("d-none");
             }
         }
 
         for (let i = 0; i < chats["groups"].length; i++) {
             if (chats["groups"][i].name != contact) {
                 if (!chats["groups"][i].name.includes(contact)) {
-                    document.getElementById("contact-" + i).style.display = "none";
+                    document.getElementById("contact-" + i).classList.add("d-none");
+                } else {
+                    document.getElementById("contact-" + i).classList.remove("d-none");
                 }
+            } else {
+                document.getElementById("contact-" + i).classList.remove("d-none");
             }
+        }
+    } else {
+        for (let i = 0; i < size(); i++) {
+            document.getElementById("contact-" + i).classList.remove("d-none");
         }
     }
 }
