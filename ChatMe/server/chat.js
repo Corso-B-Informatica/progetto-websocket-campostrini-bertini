@@ -181,10 +181,10 @@ async function newChat(crypted_nickname, crypted_password, crypted_chatName, cry
                         if (await database.JsonUpdate(chatName, JSON.stringify(data2))) {
                             socket.join(id);
                             let socketDestination = socketList.getSocket(chatName);
-                            var newChat1 = await crypto.encrypt(JSON.stringify(JSON.parse({ "chats": [{ "id": id, "name": chatName, "visualized": [], "nonVisualized": [], "removed": [] }], "groups": [] })), pubKey);
+                            var newChat1 = await crypto.encrypt(JSON.stringify({ "chats": [{ "id": id, "name": chatName, "visualized": [], "nonVisualized": [], "removed": [] }], "groups": [] }), pubKey);
                             if (socketDestination != null) {
                                 socketDestination.join(id);
-                                var newChat2 = await crypto.encrypt(JSON.stringify(JSON.parse({ "chats": [{ "id": id, "name": nickname, "visualized": [], "nonVisualized": [], "removed": [] }], "groups": [] })), pubKey);
+                                var newChat2 = await crypto.encrypt(JSON.stringify({ "chats": [{ "id": id, "name": nickname, "visualized": [], "nonVisualized": [], "removed": [] }], "groups": [] }), pubKey);
                                 socketDestination.emit("newChatCreated", newChat2);
                             }
                             socket.emit("newChatCreated", newChat1);
@@ -198,7 +198,7 @@ async function newChat(crypted_nickname, crypted_password, crypted_chatName, cry
                     var data1 = JSON.parse(await database.GetChat(chatName));
                     for(let i = 0; i < data1["chats"].length; i++){
                         if (data1["chats"][i]["id"] == id || data1["chats"][i]["id"] == chatName + nickname) {
-                            var crypted_chat = await crypto.encrypt(JSON.stringify(JSON.parse({ "chats": data1["chats"][i], "groups": [] })), pubKey);
+                            var crypted_chat = await crypto.encrypt(JSON.stringify({ "chats": data1["chats"][i], "groups": [] }), pubKey);
                             socket.emit("errorChatAlreadyExist", crypted_chat);
                         }
                     }

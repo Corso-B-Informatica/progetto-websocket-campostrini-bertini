@@ -19,8 +19,64 @@ async function genKey() {
 
 genKey();
 
-/*sortedChats*/
-const sortedChats = new sortedChats();
+/*sortedChat*/
+var sortedChat = [];
+var selectedChat = -1;
+
+function addAll(chats) {
+    sortedChat = chats;
+    return sortedChat;
+}
+
+function add(chat) {
+    sortedChat.push(chat);
+    return sortedChat;
+}
+
+function remove(chatId) {
+    sortedChat = sortedChat.filter((chat) => chat._id !== chatId);
+}
+
+function get() {
+    return sortedChat;
+}
+
+function get(index) {
+    return sortedChat[index];
+}
+
+function clear() {
+    sortedChat = [];
+}
+
+function selectChat(index) {
+    selectedChat = index;
+}
+
+function getSelectedChat() {
+    return selectedChat;
+}
+
+function size() {
+    return sortedChat.length;
+}
+
+function sort() {
+    var scambio = true;
+    for (let i = 0; i < sortedChat.length - 1 && scambio; i++) {
+        scambio = false;
+        for (let j = 0; j < sortedChat.length - 1 - i; j++) {
+            if (sortedChat[j].nonVisualized[sortedChat[j].nonVisualized.length - 1] != undefined && sortedChat[j].nonVisualized[sortedChat[j].nonVisualized.length - 1] != undefined) {
+                if (new Date(sortedChat[j].nonVisualized[sortedChat[j].nonVisualized.length - 1].date) > new Date(sortedChat[j].nonVisualized[sortedChat[j + 1].nonVisualized.length - 1].date)) {
+                    var chat = sortedChat[j];
+                    sortedChat[j] = sortedChat[j + 1];
+                    sortedChat[j + 1] = chat;
+                    scambio = true;
+                }
+            }
+        }
+    }
+}
 
 /*Socket.io*/
 var socket = io();
@@ -220,14 +276,15 @@ async function manageSync(crypted_chat) {
     var chatsToupdate = JSON.parse(data).chats;
     var groupsToupdate = JSON.parse(data).groups;
 
-    sortedChats.clear();
+    clear();
 
     for (let i = 0; i < chatsToupdate.length; i++) {
-        sortedChats.add(chatsToupdate[i]);
+        add(chatsToupdate[i]);
     }
 
+    console.log(get())
     for (let i = 0; i < groupsToupdate.length; i++) {
-        sortedChats.add(groupsToupdate[i]);
+        add(groupsToupdate[i]);
     }
 
     $('#loadingModal').modal('hide');
@@ -237,7 +294,7 @@ async function manageSync(crypted_chat) {
         clearLocalStorageUser();
     }
 
-    sortedChats.sort();
+    sort();
     createChats();
     showNewMessagesNumber();
 
@@ -278,13 +335,12 @@ async function manageNewMessages(crypted_updates) {
         kM.getPassphrase()
     );
 
-    var data = decryptAES(localStorage.getItem("data"), kM.getAesKey());
+    var data = JSON.parse(decryptAES(localStorage.getItem("data"), kM.getAesKey()));
     var chats = data["chats"];
     var groups = data["groups"];
-    
-    var chatsToupdate = updates["chats"];
-    var groupsToupdate = updates["groups"];
 
+    var chatsToupdate = JSON.parse(updates)["chats"];
+    var groupsToupdate = JSON.parse(updates)["groups"];
     for (let i = 0; i < chatsToupdate.length; i++) {
         var chatToupdate = chatsToupdate[i];
         var chat = chats.find(x => x.id == chatToupdate.id);
@@ -294,10 +350,11 @@ async function manageNewMessages(crypted_updates) {
                 chat.nonVisualized.push(chatToupdate.nonVisualized[j]);
             }
             chats[index] = chat;
-            sortedChats.add(chat);
+            remove(chat.id);
+            add(chat);
         } else {
             chats.push(chatToupdate);
-            sortedChats.add(chatToupdate);
+            add(chatToupdate);
         }
     }
 
@@ -310,17 +367,18 @@ async function manageNewMessages(crypted_updates) {
                 group.nonVisualized.push(groupToupdate.nonVisualized[j]);
             }
             groups[index] = group;
-            sortedChats.add(group);
+            remove(group.id);
+            add(group);
         } else {
             groups.push(groupToupdate);
-            sortedChats.add(groupToupdate);
+            add(groupToupdate);
         }
     }
 
     data["chats"] = chats;
     data["groups"] = groups;
-    
-    localStorage.setItem("data", encryptAES(data, kM.getAesKey()));
+
+    localStorage.setItem("data", encryptAES(JSON.stringify(data), kM.getAesKey()));
 
     $('#loadingModal').modal('hide');
 
@@ -329,20 +387,20 @@ async function manageNewMessages(crypted_updates) {
         clearLocalStorageUser();
     }
 
-    sortedChats.sort();
+    sort();
     createChats();
     showNewMessagesNumber();
 
-    var storage = JSON.parse(decryptAES(localStorage.getItem("data"), kM.getAesKey()));
+    /*var storage = JSON.parse(decryptAES(localStorage.getItem("data"), kM.getAesKey()));
     var nickname = await encrypt(storage.nickname, localStorage.getItem("publicKeyArmored"));
     var password = await encrypt(storage.password, localStorage.getItem("publicKeyArmored"));
     var key = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
-    socket.emit("getOnlineUsers", nickname, password, key);
+    socket.emit("getOnlineUsers", nickname, password, key);*/
 }
 
 /*Show new messages number*/
 function showNewMessagesNumber() {
-    var data = decryptAES(localStorage.getItem("data"), kM.getAesKey());
+    var data = JSON.parse(decryptAES(localStorage.getItem("data"), kM.getAesKey()));
     var chats = data["chats"];
     var groups = data["groups"];
 
@@ -364,85 +422,152 @@ function showNewMessagesNumber() {
     }
 }
 
+async function creaChat() {
+    if (checkKey()) {
+        var chatName = document.getElementById("chatName").value;
+
+        if (document.getElementById("isGroup").checked) {
+            //nel caso di un gruppo lo gestiremo più avanti
+        } else {
+            if (chatName.trim().length > 0) {
+                if (chatName.trim().length <= 30) {
+                    if (!chatName.includes("@")) {
+                        if (/[a-zA-Z0-9]/.test(chatName)) {
+                            //se aesKey è valida posso decriptare i dati nel localstorage, vedo se sono presenti username e password, se ci sono chill, se no tento di vedere se ci sono con email password e nickname se no lo sloggo
+                            var aesKey = kM.getAesKey();
+                            if (aesKey != null && aesKey != undefined && aesKey != "") {
+                                var data = localStorage.getItem("data");
+                                var decrypted_data = decryptAES(data, aesKey);
+                                var chats = JSON.parse(decrypted_data);
+                                var nickname = chats.nickname;
+                                var password = chats.password;
+                                var crypted_nickname = await encrypt(nickname, localStorage.getItem("publicKeyArmored"));
+                                var crypted_password = await encrypt(password, localStorage.getItem("publicKeyArmored"));
+                                var crypted_chatName = await encrypt(chatName, localStorage.getItem("publicKeyArmored"));
+                                var crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
+
+                                socket.emit("newChat", crypted_nickname, crypted_password, crypted_chatName, crypted_pubKey);
+                            } else {
+                                //si dovrebbe controllare lo storage per vedere se è presente il nickname e la password in modo da richiedere nuovamente l'aesKey
+                                //ma non abbiamo tempo
+                                clearLocalStorageWithoutKey();
+                                window.location.href = "../signUp.html";
+                            }
+                        } else {
+                            chatName.classList.add("error");
+                            chatName.setAttribute("error-message", "Nickname must contain at least one letter or number");
+                        }
+                    } else {
+                        chatName.classList.add("error");
+                        chatName.setAttribute("error-message", "Nickname must not contain '@'");
+                    }
+                } else {
+                    chatName.classList.add("error");
+                    chatName.setAttribute("error-message", "Nickname must be at most 30 characters long");
+                }
+            } else {
+                chatName.classList.add("error");
+                chatName.setAttribute("error-message", "Nickname must be filled out");
+            }
+        }
+    } else {
+        socket.emit("getPublicKey", "3");
+    }
+}
+
 /*Crea contatti*/
 function createChats() {
-    
-    var chats = sortedChats.getChats();
 
-    for (let i = 0; i < chats.length; i++) {
-        var contacts = document.getElementById("contact-list");
-        var contact = document.createElement("button");
-        contact.setAttribute("id", "contact-" + i);
-        contact.setAttribute("onclick", "openChat(" + i + ")");
-        contact.classList.add("bg-transparent");
-        contact.classList.add("contact");
-        contact.classList.add("d-flex");
-        contact.classList.add("flex-wrap");
-        contact.classList.add("align-items-center");
-        contact.classList.add("justify-content-center");
-        contact.classList.add("p-t-10");
-        contact.classList.add("p-b-10");
-        contact.classList.add("p-r-20");
-        contact.classList.add("p-l-20");
-        contact.classList.add("w-95");
-        var contactDiv = document.createElement("div");
-        contactDiv.classList.add("d-flex");
-        contactDiv.classList.add("flex-wrap");
-        contactDiv.classList.add("align-items-center");
-        contactDiv.classList.add("justify-content-start");
-        contactDiv.classList.add("w-100");
-        var contactDiv2 = document.createElement("div");
-        contactDiv2.classList.add("d-flex");
-        contactDiv2.classList.add("flex-wrap");
-        contactDiv2.classList.add("align-items-center");
-        contactDiv2.classList.add("justify-content-start");
-        contactDiv2.classList.add("w-80");
-        var contactIcon = document.createElement("i");
-        contactIcon.setAttribute("id", "contact-icon");
-        contactIcon.classList.add("icon");
-        contactIcon.classList.add("fa");
-        contactIcon.classList.add("fa-user-o");
-        contactIcon.classList.add("text-white");
-        contactIcon.classList.add("p-r-15");
-        contactIcon.classList.add("p-l-15");
-        contactIcon.setAttribute("aria-hidden", "true");
-        var contactDiv3 = document.createElement("div");
-        contactDiv3.classList.add("d-flex");
-        contactDiv3.classList.add("flex-column");
-        var contactName = document.createElement("p");
-        contactName.setAttribute("id", "contact-name");
-        contactName.classList.add("user-select-none");
-        contactName.classList.add("text-white");
-        contactName.innerHTML = chats[i].name;
-        var contactLastMessage = document.createElement("p");
-        contactLastMessage.setAttribute("id", "contact-last-message");
-        contactLastMessage.classList.add("user-select-none");
-        contactLastMessage.classList.add("text-white");
-        contactLastMessage.style.color = "var(--last-status-transparent);"
-        contactLastMessage.innerHTML = chats[i].nonVisualized[chats[i].visualized.length - 1].message;
-        var contactLastMessageTime = document.createElement("div");
-        contactLastMessageTime.setAttribute("id", "contact-last-message-time");
-        contactLastMessageTime.classList.add("w-20");
-        contactLastMessageTime.classList.add("d-flex");
-        contactLastMessageTime.classList.add("flex-wrap");
-        contactLastMessageTime.classList.add("align-items-center");
-        contactLastMessageTime.classList.add("justify-content-end");
-        contactLastMessageTime.classList.add("p-r-15");
-        var contactLastMessageTimeText = document.createElement("p");
-        contactLastMessageTimeText.setAttribute("id", "contact-last-message-time-text");
-        contactLastMessageTimeText.classList.add("user-select-none");
-        contactLastMessageTimeText.classList.add("text-white");
-        contactLastMessageTimeText.innerHTML = chats[i].nonVisualized[chats[i].visualized.length - 1].date;
+    var chats = sortedChat;
+    if (chats != undefined && chats != null) {
+        for (let i = 0; i < chats.length; i++) {
+            var contacts = document.getElementById("contact-list");
+            var contact = document.createElement("button");
+            contact.setAttribute("id", "contact-" + i);
+            contact.setAttribute("onclick", "openChat(" + i + ");");
+            contact.classList.add("bg-transparent");
+            contact.classList.add("contact");
+            contact.classList.add("d-flex");
+            contact.classList.add("flex-wrap");
+            contact.classList.add("align-items-center");
+            contact.classList.add("justify-content-center");
+            contact.classList.add("p-t-10");
+            contact.classList.add("p-b-10");
+            contact.classList.add("p-r-20");
+            contact.classList.add("p-l-20");
+            contact.classList.add("w-100");
+            contact.classList.add("rounded");
 
-        contactLastMessageTime.appendChild(contactLastMessageTimeText);
-        contactDiv3.appendChild(contactName);
-        contactDiv3.appendChild(contactLastMessage);
-        contactDiv2.appendChild(contactIcon);
-        contactDiv2.appendChild(contactDiv3);
-        contactDiv.appendChild(contactDiv2);
-        contactDiv.appendChild(contactLastMessageTime);
-        contact.appendChild(contactDiv);
-        contacts.appendChild(contact);
+            var contactDiv = document.createElement("div");
+            contactDiv.classList.add("d-flex");
+            contactDiv.classList.add("flex-wrap");
+            contactDiv.classList.add("align-items-center");
+            contactDiv.classList.add("justify-content-start");
+            contactDiv.classList.add("w-100");
+            contactDiv.classList.add("p-t-2");
+            contactDiv.classList.add("p-b-2");
+            contactDiv.classList.add("contact-margin-div");
+            var contactDiv2 = document.createElement("div");
+            contactDiv2.classList.add("d-flex");
+            contactDiv2.classList.add("flex-wrap");
+            contactDiv2.classList.add("align-items-center");
+            contactDiv2.classList.add("justify-content-start");
+            contactDiv2.classList.add("w-80");
+            var contactIcon = document.createElement("i");
+            contactIcon.setAttribute("id", "contact-icon");
+            contactIcon.classList.add("icon");
+            contactIcon.classList.add("fa");
+            contactIcon.classList.add("fa-user-o");
+            contactIcon.classList.add("text-white");
+            contactIcon.classList.add("p-r-15");
+            contactIcon.classList.add("p-l-15");
+            contactIcon.setAttribute("aria-hidden", "true");
+            var contactDiv3 = document.createElement("div");
+            contactDiv3.classList.add("d-flex");
+            contactDiv3.classList.add("flex-column");
+            var contactName = document.createElement("p");
+            contactName.setAttribute("id", "contact-name");
+            contactName.classList.add("user-select-none");
+            contactName.classList.add("text-white");
+            contactName.innerHTML = chats[i].name;
+            var contactLastMessage = document.createElement("p");
+            contactLastMessage.setAttribute("id", "contact-last-message");
+            contactLastMessage.classList.add("user-select-none");
+            contactLastMessage.classList.add("text-white");
+            contactLastMessage.style.color = "var(--last-status-transparent);";
+            if (chats[i].nonVisualized.length > 0) {
+                contactLastMessage.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].message;
+            } else if (chats[i].visualized.length > 0) {
+                contactLastMessage.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].message;
+            }
+            var contactLastMessageTime = document.createElement("div");
+            contactLastMessageTime.setAttribute("id", "contact-last-message-time");
+            contactLastMessageTime.classList.add("w-20");
+            contactLastMessageTime.classList.add("d-flex");
+            contactLastMessageTime.classList.add("flex-wrap");
+            contactLastMessageTime.classList.add("align-items-center");
+            contactLastMessageTime.classList.add("justify-content-end");
+            contactLastMessageTime.classList.add("p-r-15");
+            var contactLastMessageTimeText = document.createElement("p");
+            contactLastMessageTimeText.setAttribute("id", "contact-last-message-time-text");
+            contactLastMessageTimeText.classList.add("user-select-none");
+            contactLastMessageTimeText.classList.add("text-white");
+            if (chats[i].nonVisualized.length > 0) {
+                contactLastMessageTimeText.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date;
+            } else if (chats[i].visualized.length > 0) {
+                contactLastMessageTimeText.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].date;
+            }
+
+            contactLastMessageTime.appendChild(contactLastMessageTimeText);
+            contactDiv3.appendChild(contactName);
+            contactDiv3.appendChild(contactLastMessage);
+            contactDiv2.appendChild(contactIcon);
+            contactDiv2.appendChild(contactDiv3);
+            contactDiv.appendChild(contactDiv2);
+            contactDiv.appendChild(contactLastMessageTime);
+            contact.appendChild(contactDiv);
+            contacts.appendChild(contact);
+        }
     }
 }
 
@@ -474,8 +599,8 @@ async function sendMessage() {
 
 
 function openChat(index) {
-    if (index >= 0 && index < sortedChats.size()) {
-        if (index != sortedChats.getSelectedChat()) {
+    if (index >= 0 && index < size()) {
+        if (index != getSelectedChat()) {
             $("#typezone").show();
             $("#header-chat").show();
             if (window.innerWidth < 901) {
@@ -483,19 +608,21 @@ function openChat(index) {
                 $("#conversation").show();
             } else {
                 document.getElementById("contact-" + index).classList.add("selected-chat");
-                document.getElementById("contact-" + sortedChats.getSelectedChat()).classList.remove("selected-chat");
+                if (getSelectedChat(index) >= 0) {
+                    document.getElementById("contact-" + getSelectedChat()).classList.remove("selected-chat");
+                }
             }
-            sortedChats.selectedChat(index);
+            selectChat(index);
             document.getElementById("messages").innerHTML = "";
-            createChat(index);//da fare
-            var selectedChat = sortedChats.get(index);
+            //createChat(index);//da fare
+            var selectedChat = get(index);
             if (selectedChat.nonVisualized.length > 0) {
                 for (let i = 0; i < selectedChat.nonVisualized.length; i++) {
                     selectedChat.visualized.push(selectedChat.nonVisualized[i]);
                 }
                 selectedChat.nonVisualized = [];
-                sortedChats.clear();
-                sortedChats.addAll(selectedChat);
+                clear();
+                addAll(selectedChat);
                 var data = localStorage.getItem("data");
                 var decrypted_data = decryptAES(data, kM.getAesKey());
                 var chats = JSON.parse(decrypted_data);
@@ -540,7 +667,7 @@ async function searchContact() {
         for (let i = 0; i < chats["chats"].length; i++) {
             if (chats["chats"][i].name != contact) {
                 if (!chats["chats"][i].name.includes(contact)) {
-                    document.getElementById("contact-" + i).style.display = "none";
+                    $("#contact-" + i).hide();
                 }
             }
         }

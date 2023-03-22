@@ -118,9 +118,11 @@
 }
 
 .selected-chat {
-  background-color: var(--dark-1);
+  background-color: var(--dark-1) !important;
 }
-
+.selected-chat > .contact-margin-div {
+  border-right: 3px solid var(--dark-violet-1) !important;
+}
 #sign-out-icon {
   color: var(--red-1);
   rotate: 180deg;
@@ -497,9 +499,17 @@ p {
 }
 
 .contact {
-  border-bottom: 1px solid #2c2c2c !important;
+  border-bottom: 2px solid var(--dark-4) !important;
 }
 
+.contact:hover {
+  border-bottom: 2px solid var(--dark-4) !important;
+  background-color: var(--dark-1) !important;
+}
+
+.contact:focus {
+  border-bottom: 2px solid var(--dark-4) !important;
+}
 /*Media sizes*/
 @media (min-width: 1400px) {
   #header-chat {
