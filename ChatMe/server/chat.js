@@ -107,24 +107,44 @@ async function sendMessage(crypted_message, crypted_nickname, crypted_password, 
     else {
         if (await database.checkDatabase(database.Users, nickname, "", password)) {
             if (await database.checkIdExist(nickname, id)) {
-                console.log('si')
                 if (id > 30) {
                     let chat = JSON.parse(await database.GetChat(nickname));
-                    chat.groups[id].members.forEach(element => {
-                        (async () => {
-                            let chat = JSON.parse(await database.GetChat(element));
-                            let json = { "message": message, "nickname": nickname, "date": new Date().toISOString() };
-                            chat.groups[id].nonVisualized.push(json);
-                        })
-                    });
+                    console.log(chat)
+                    for(let i = 0; i < chat.groups.length; i++){
+                        if(chat.groups[i].id == id){
+                            chat.groups[i].nonVisualized.push({ "message": message, "nickname": nickname, "date": new Date().toISOString() });
+                            chat.groups[i].members.forEach(element => {
+                                (async () => {
+                                    let chat = JSON.parse(await database.GetChat(element));
+                                    let json = { "message": message, "nickname": nickname, "date": new Date().toISOString() };
+                                    for(let i = 0; i < chat.groups.length; i++){
+                                        if(chat.groups[i].id == id){
+                                            chat.groups[i].nonVisualized.push(json);
+                                        }
+                                    }
+                                })
+                            });
+                        }
+                    }
 
                 } else {
-                    var chat1 = JSON.stringify(JSON.parse(await database.GetChat(nickname)));
+                    var chat1 = JSON.parse(await database.GetChat(nickname));
                     let json1 = { "message": message, "nickname": nickname, "date": new Date().toISOString() };
-                    chat1.chats[id].nonVisualized.push(json1);
-                    var chat2 = JSON.stringify(JSON.parse(await database.GetChat(id)))
+                    for (let i = 0; i < chat1.chats.length; i++) {
+                        if(chat1.chats[i].id == id){
+                            chat1.chats[i].nonVisualized.push(json1);
+                            database.JsonUpdate(nickname, JSON.stringify(chat1))
+                        } 
+                    }
+                    var nickname2 = id.replace(nickname, "");
+                    var chat2 = JSON.parse(await database.GetChat(nickname2))
                     let json2 = { "message": message, "nickname": nickname, "date": new Date().toISOString() };
-                    chat2.chats[id].nonVisualized.push(json2);
+                    for (let i = 0; i < chat2.chats.length; i++) {
+                        if(chat2.chats[i].id == id){
+                            chat2.chats[i].nonVisualized.push(json2);
+                            database.JsonUpdate(nickname2, JSON.stringify(chat1))
+                        } 
+                    }
                 }
             }
         }

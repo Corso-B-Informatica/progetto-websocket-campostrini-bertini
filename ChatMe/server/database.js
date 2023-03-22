@@ -686,14 +686,14 @@ async function checkIdExist(nickname, chatName) {
         reject(err);
       } else {
         if (rows.length > 0) {
-          var pchat = JSON.parse(rows[0].chat)
-          for(let i = 0; i < pchat[groups].length; i++){
-            if(pchat[groups][i].id == chatName){
+          var chat = JSON.parse(rows[0].chat)
+          for(let i = 0; i < chat.groups.length; i++){
+            if(chat.groups[i].id == chatName){
               g = true;
             }
           }
-          for (let i = 0; i < pchat[chats].length; i++) {
-            if (pchat[chats][i].id == chatName) {
+          for (let i = 0; i < chat.chats.length; i++) {
+            if (chat.chats[i].id == chatName) {
               c = true;
             }
           }
