@@ -239,7 +239,7 @@ async function manageAesKeySuccess(crypted_aes_key) {
 /*sync*/
 async function sync() {
     $('#loadingModal').modal('show');
-
+    //funziona solo se l'utente ha fatto il RememberMe
     if (checkData()) {
         if (checkKey()) {
             if (kM.getAesKey() == null || kM.getAesKey() == undefined || kM.getAesKey() == "") {
@@ -259,6 +259,7 @@ async function sync() {
             socket.emit("getPublicKey", "2");
         }
     } else {
+        console.log("si1")
         clearLocalStorageWithoutKey();
         window.location.href = "../signUp.html";
     }
@@ -579,6 +580,9 @@ async function sendMessage() {
         //mostra un errore
     }
     else {
+        let chat = decryptAES(localStorage.getItem("data"), kM.getAesKey())
+        let nickname = chat.nickname
+        console.log(nickname)
         let crypted_message = encrypt(message, localStorage.getItem("publicKeyArmored"))
         let crypted_nickname = encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored"))
         let crypted_password = encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored"))

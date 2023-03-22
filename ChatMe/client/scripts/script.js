@@ -152,6 +152,7 @@ function checkData() {
     var remeberMe = localStorage.getItem("rememberMe");
 
     if ((email == undefined && nickname == undefined) || password == undefined || remeberMe == undefined) {
+        console.log("no")
         return false;
     }
     if ((email == null && nickname == null) || password == null || remeberMe == null) {
@@ -160,7 +161,7 @@ function checkData() {
     if ((email.length == 0 && nickname.length == 0) || password.length == 0 || remeberMe.length == 0) {
         return false;
     }
-
+    
     return true;
 }
 
