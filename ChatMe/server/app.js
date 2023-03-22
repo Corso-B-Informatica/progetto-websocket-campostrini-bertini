@@ -8,6 +8,7 @@ const login = require('./login.js');
 const chat = require('./chat.js');
 const forgotPassword = require('./forgotPassword.js');
 const crypto = require('./crypto.js');
+const socketList = require('./socketList.js');
 
 /*Express*/
 const app = express();
@@ -74,6 +75,14 @@ io.on("connection", (socket) => {
   socket.on("newChat", (crypted_nickname, crypted_password, crypted_chatName, crypted_pubKey) => {
     chat.newChat(crypted_nickname, crypted_password, crypted_chatName, crypted_pubKey, socket);
   });
+  
+  socket.on("getNewMessages", (crypted_nickname, crypted_password, crypted_pubKey) => {
+    chat.getNewMessages(crypted_nickname, crypted_password, crypted_pubKey, socket);
+  });
+});
+
+io.on("disconnect", (socket) => {
+  socket.broadcast.emit("offline", socketList.getSocketId(socket));
 });
 
 setInterval(database.cleanDatabase, 60000);

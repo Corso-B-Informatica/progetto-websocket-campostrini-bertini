@@ -7,23 +7,8 @@
 //quindi da quel momento in poi dovremmo usare le informazioni di login contenute nella variabile data del localStrorage dentro la chat, la aesKey appena ci arriva la salviamo in una variabile
 //poi controlliamo che abbiamo una chat, se non la abbiamo dobbiamo crearla.
 /*contatto html*/
-/*
-                    <button class="bg-transparent contact d-flex flex-wrap align-items-center justify-content-center p-t-10 p-b-10 p-r-20 p-l-20 w-95">
-                        <div class="d-flex flex-wrap align-items-center justify-content-start w-100">
-                            <div class="d-flex flex-wrap align-items-center justify-content-start w-80">
-                                <i id="contact-icon" class="icon fa fa-user-o text-white p-r-15 p-l-15" aria-hidden="true"></i>
-                                <div class="d-flex flex-column">
-                                    <p id="contact-name" class="user-select-none text-white">Nome</p>
-                                    <p id="contact-last-message" class="user-select-none text-white">Ultimo messaggio</p>
-                                </div>
-                            </div>
-                            <div id="contact-last-message-time" class="w-20 d-flex flex-wrap justify-content-end align-items-center p-r-15">
-                                <p id="contact-last-message-time-text" class="user-select-none text-white">00:00</p>
-                            </div>
-                        </div>
-                    </button>
-*/
 //gestire le emoji non abbiamo ancora fatto la tabella emoji
+
 
 /*keyManager*/
 const kM = new keyManager();
@@ -33,6 +18,9 @@ async function genKey() {
 }
 
 genKey();
+
+/*sortedChats*/
+const sortedChats = new sortedChats();
 
 /*Socket.io*/
 var socket = io();
@@ -48,12 +36,15 @@ socket.on("publicKey", (publicKey, str) => {
     if (str == "2") {
         sync();
     }
-    if(str == "3"){
+    if (str == "3") {
         creaChat();
+    }
+    if (str == "4") {
+        getNewMessages();
     }
 });
 
-socket.on("sync", (crypted_chat) =>{
+socket.on("sync", (crypted_chat) => {
     manageSync(crypted_chat);
 });
 
@@ -61,7 +52,7 @@ socket.on("aesKey", (aesKey) => {
     manageAesKeySuccess(aesKey);
 });
 
-socket.on("errorAesKey", ()  => {
+socket.on("errorAesKey", () => {
     clearLocalStorageWithoutKey();
     window.location.href = "../signUp.html";
 });
@@ -71,10 +62,504 @@ socket.on("errorUserNotFound", () => {
     window.location.href = "../signUp.html";
 });
 
-socket.on("errorPubKeySync", () => {
-    alert("Error: public key sync");
+socket.on("errorPubKey", () => {
+    var prompt = document.getElementById("prompt");
+
+    // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
+    prompt.style.display = "block";
+
+    var noButton = document.getElementById("no-button");
+    noButton.style.display = "block";
+
+    document.getElementById("prompt-error").innerText =
+        "Invalid public key";
+
+    document.getElementById("prompt-text").innerText =
+        "Please, try again later";
+
+    document.getElementById("no-button").innerText = "Ok";
+    kM.generateNewKeyPair();
+    login();
 });
 
+socket.on("errorChatUserNotFound", () => {
+    var chatName = document.getElementById("container-chatName");
+    chatName.classList.add("error");
+    chatName.setAttribute("error-message", "User not found");
+});
+
+socket.on("errorChatAlreadyExist", (crypted_chat) => {
+    var chatName = document.getElementById("container-chatName");
+    chatName.classList.add("error");
+    chatName.setAttribute("error-message", "Chat already exist");
+
+    manageNewMessages(crypted_chat);
+});
+
+socket.on("errorNewChat", () => {
+    var prompt = document.getElementById("prompt");
+
+    // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
+    prompt.style.display = "block";
+
+    var noButton = document.getElementById("no-button");
+    noButton.style.display = "block";
+
+    document.getElementById("prompt-error").innerText =
+        "Unknown error";
+
+    document.getElementById("prompt-text").innerText =
+        "Please try again later";
+
+    document.getElementById("no-button").innerText = "Ok";
+});
+
+socket.on("newChatCreated", (crypted_newChat) => {
+    manageNewMessages(crypted_newChat)
+});
+
+socket.on("errorChatWithYourself", () => {
+    var chatName = document.getElementById("container-chatName");
+    chatName.classList.add("error");
+    chatName.setAttribute("error-message", "Invalid User");
+});
+
+socket.on("errorGetNewMessages", () => {
+    clearLocalStorageWithoutKey();
+    window.location.href = "../signUp.html";
+});
+
+socket.on("newMessages", (newMessages) => {
+    manageNewMessages(newMessages);
+});
+
+/*window load*/
+async function login() {
+    await genKey();
+
+    if (checkData()) {
+        if (checkKey()) {
+            $('#loadingModal').modal('show');
+
+            socket.emit(
+                "getAesKey",
+                await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
+                await encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored")),
+                await encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored")),
+                await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
+            );
+
+        } else {
+            socket.emit("getPublicKey", "0");
+        }
+    } else {
+        clearLocalStorageWithoutKey();
+        window.location.href = "../signUp.html";
+    }
+}
+
+window.onload = function () {
+    login();
+};
+
+async function manageAesKeySuccess(crypted_aes_key) {
+    var { data: aes_key } = await decrypt(
+        crypted_aes_key,
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
+
+    kM.setAesKey(aes_key);
+
+    var data = localStorage.getItem("data");
+    var chats = JSON.parse(decryptAES(data, aes_key));
+    if (chats["chats"].length == 0 && chats["groups"].length == 0) {
+        sync();
+    } else {
+        getNewMessages();
+    }
+}
+
+/*sync*/
+async function sync() {
+    $('#loadingModal').modal('show');
+
+    if (checkData()) {
+        if (checkKey()) {
+            if (kM.getAesKey() == null || kM.getAesKey() == undefined || kM.getAesKey() == "") {
+                setTimeout(sync, 100);
+            }
+            else {
+                var data = decryptAES(localStorage.getItem("data"), kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "");
+                var decrypted_data = JSON.parse(data);
+                var nickname = decrypted_data.nickname;
+                var password = decrypted_data.password;
+                var crypted_nickname = await encrypt(nickname, localStorage.getItem("publicKeyArmored"));
+                var crypted_password = await encrypt(password, localStorage.getItem("publicKeyArmored"));
+                var crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
+                socket.emit("sync", crypted_nickname, crypted_password, crypted_pubKey);
+            }
+        } else {
+            socket.emit("getPublicKey", "2");
+        }
+    } else {
+        clearLocalStorageWithoutKey();
+        window.location.href = "../signUp.html";
+    }
+}
+
+async function manageSync(crypted_chat) {
+    var { data: data } = await decrypt(
+        crypted_chat,
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
+
+    localStorage.setItem("data", encryptAES(data, kM.getAesKey()));
+
+    var chatsToupdate = JSON.parse(data).chats;
+    var groupsToupdate = JSON.parse(data).groups;
+
+    sortedChats.clear();
+
+    for (let i = 0; i < chatsToupdate.length; i++) {
+        sortedChats.add(chatsToupdate[i]);
+    }
+
+    for (let i = 0; i < groupsToupdate.length; i++) {
+        sortedChats.add(groupsToupdate[i]);
+    }
+
+    $('#loadingModal').modal('hide');
+
+    var rememberMe = localStorage.getItem("rememberMe");
+    if (rememberMe != "true") {
+        clearLocalStorageUser();
+    }
+
+    sortedChats.sort();
+    createChats();
+    showNewMessagesNumber();
+
+    var storage = JSON.parse(decryptAES(localStorage.getItem("data"), kM.getAesKey()));
+    var nickname = await encrypt(storage.nickname, localStorage.getItem("publicKeyArmored"));
+    var password = await encrypt(storage.password, localStorage.getItem("publicKeyArmored"));
+    var key = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
+    socket.emit("getOnlineUsers", nickname, password, key);
+}
+
+/*Get new memssages*/
+async function getNewMessages() {
+    $('#loadingModal').modal('show');
+
+    if (checkData()) {
+        if (checkKey()) {
+            var data = decryptAES(localStorage.getItem("data"), kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "");
+            var decrypted_data = JSON.parse(data);
+            var nickname = JSON.stringify(decrypted_data.nickname);
+            var password = JSON.stringify(decrypted_data.password);
+            var crypted_nickname = await encrypt(nickname.substring(1, nickname.length - 1), localStorage.getItem("publicKeyArmored"));
+            var crypted_password = await encrypt(password.substring(1, password.length - 1), localStorage.getItem("publicKeyArmored"));
+            var crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
+            socket.emit("getNewMessages", crypted_nickname, crypted_password, crypted_pubKey);
+        } else {
+            socket.emit("getPublicKey", "4");
+        }
+    } else {
+        clearLocalStorageWithoutKey();
+        window.location.href = "../signUp.html";
+    }
+}
+
+async function manageNewMessages(crypted_updates) {
+    var { data: updates } = await decrypt(
+        crypted_updates,
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
+
+    var data = decryptAES(localStorage.getItem("data"), kM.getAesKey());
+    var chats = data["chats"];
+    var groups = data["groups"];
+    
+    var chatsToupdate = updates["chats"];
+    var groupsToupdate = updates["groups"];
+
+    for (let i = 0; i < chatsToupdate.length; i++) {
+        var chatToupdate = chatsToupdate[i];
+        var chat = chats.find(x => x.id == chatToupdate.id);
+        var index = chats.indexOf(chat);
+        if (chat != undefined) {
+            for (let j = 0; j < chatToupdate.nonVisualized.length; j++) {
+                chat.nonVisualized.push(chatToupdate.nonVisualized[j]);
+            }
+            chats[index] = chat;
+            sortedChats.add(chat);
+        } else {
+            chats.push(chatToupdate);
+            sortedChats.add(chatToupdate);
+        }
+    }
+
+    for (let i = 0; i < groupsToupdate.length; i++) {
+        var groupToupdate = groupsToupdate[i];
+        var group = groups.find(x => x.id == groupToupdate.id);
+        var index = groups.indexOf(group);
+        if (group != undefined) {
+            for (let j = 0; j < groupToupdate.nonVisualized.length; j++) {
+                group.nonVisualized.push(groupToupdate.nonVisualized[j]);
+            }
+            groups[index] = group;
+            sortedChats.add(group);
+        } else {
+            groups.push(groupToupdate);
+            sortedChats.add(groupToupdate);
+        }
+    }
+
+    data["chats"] = chats;
+    data["groups"] = groups;
+    
+    localStorage.setItem("data", encryptAES(data, kM.getAesKey()));
+
+    $('#loadingModal').modal('hide');
+
+    var rememberMe = localStorage.getItem("rememberMe");
+    if (rememberMe != "true") {
+        clearLocalStorageUser();
+    }
+
+    sortedChats.sort();
+    createChats();
+    showNewMessagesNumber();
+
+    var storage = JSON.parse(decryptAES(localStorage.getItem("data"), kM.getAesKey()));
+    var nickname = await encrypt(storage.nickname, localStorage.getItem("publicKeyArmored"));
+    var password = await encrypt(storage.password, localStorage.getItem("publicKeyArmored"));
+    var key = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
+    socket.emit("getOnlineUsers", nickname, password, key);
+}
+
+/*Show new messages number*/
+function showNewMessagesNumber() {
+    var data = decryptAES(localStorage.getItem("data"), kM.getAesKey());
+    var chats = data["chats"];
+    var groups = data["groups"];
+
+    var newMessagesNumber = 0;
+
+    for (let i = 0; i < chats.length; i++) {
+        newMessagesNumber += chats[i].nonVisualized.length;
+    }
+
+    for (let i = 0; i < groups.length; i++) {
+        newMessagesNumber += groups[i].nonVisualized.length;
+    }
+
+    if (newMessagesNumber > 0) {
+        $("#new-messages-number").html(newMessagesNumber);
+        $("#new-messages-number").show();
+    } else {
+        $("#new-messages-number").hide();
+    }
+}
+
+/*Crea contatti*/
+function createChats() {
+    
+    var chats = sortedChats.getChats();
+
+    for (let i = 0; i < chats.length; i++) {
+        var contacts = document.getElementById("contact-list");
+        var contact = document.createElement("button");
+        contact.setAttribute("id", "contact-" + i);
+        contact.setAttribute("onclick", "openChat(" + i + ")");
+        contact.classList.add("bg-transparent");
+        contact.classList.add("contact");
+        contact.classList.add("d-flex");
+        contact.classList.add("flex-wrap");
+        contact.classList.add("align-items-center");
+        contact.classList.add("justify-content-center");
+        contact.classList.add("p-t-10");
+        contact.classList.add("p-b-10");
+        contact.classList.add("p-r-20");
+        contact.classList.add("p-l-20");
+        contact.classList.add("w-95");
+        var contactDiv = document.createElement("div");
+        contactDiv.classList.add("d-flex");
+        contactDiv.classList.add("flex-wrap");
+        contactDiv.classList.add("align-items-center");
+        contactDiv.classList.add("justify-content-start");
+        contactDiv.classList.add("w-100");
+        var contactDiv2 = document.createElement("div");
+        contactDiv2.classList.add("d-flex");
+        contactDiv2.classList.add("flex-wrap");
+        contactDiv2.classList.add("align-items-center");
+        contactDiv2.classList.add("justify-content-start");
+        contactDiv2.classList.add("w-80");
+        var contactIcon = document.createElement("i");
+        contactIcon.setAttribute("id", "contact-icon");
+        contactIcon.classList.add("icon");
+        contactIcon.classList.add("fa");
+        contactIcon.classList.add("fa-user-o");
+        contactIcon.classList.add("text-white");
+        contactIcon.classList.add("p-r-15");
+        contactIcon.classList.add("p-l-15");
+        contactIcon.setAttribute("aria-hidden", "true");
+        var contactDiv3 = document.createElement("div");
+        contactDiv3.classList.add("d-flex");
+        contactDiv3.classList.add("flex-column");
+        var contactName = document.createElement("p");
+        contactName.setAttribute("id", "contact-name");
+        contactName.classList.add("user-select-none");
+        contactName.classList.add("text-white");
+        contactName.innerHTML = chats[i].name;
+        var contactLastMessage = document.createElement("p");
+        contactLastMessage.setAttribute("id", "contact-last-message");
+        contactLastMessage.classList.add("user-select-none");
+        contactLastMessage.classList.add("text-white");
+        contactLastMessage.style.color = "var(--last-status-transparent);"
+        contactLastMessage.innerHTML = chats[i].nonVisualized[chats[i].visualized.length - 1].message;
+        var contactLastMessageTime = document.createElement("div");
+        contactLastMessageTime.setAttribute("id", "contact-last-message-time");
+        contactLastMessageTime.classList.add("w-20");
+        contactLastMessageTime.classList.add("d-flex");
+        contactLastMessageTime.classList.add("flex-wrap");
+        contactLastMessageTime.classList.add("align-items-center");
+        contactLastMessageTime.classList.add("justify-content-end");
+        contactLastMessageTime.classList.add("p-r-15");
+        var contactLastMessageTimeText = document.createElement("p");
+        contactLastMessageTimeText.setAttribute("id", "contact-last-message-time-text");
+        contactLastMessageTimeText.classList.add("user-select-none");
+        contactLastMessageTimeText.classList.add("text-white");
+        contactLastMessageTimeText.innerHTML = chats[i].nonVisualized[chats[i].visualized.length - 1].date;
+
+        contactLastMessageTime.appendChild(contactLastMessageTimeText);
+        contactDiv3.appendChild(contactName);
+        contactDiv3.appendChild(contactLastMessage);
+        contactDiv2.appendChild(contactIcon);
+        contactDiv2.appendChild(contactDiv3);
+        contactDiv.appendChild(contactDiv2);
+        contactDiv.appendChild(contactLastMessageTime);
+        contact.appendChild(contactDiv);
+        contacts.appendChild(contact);
+    }
+}
+
+async function sendMessage() {
+    //da continuare
+    var message = document.getElementById("message-input").value
+    console.log(message)
+    if (message.length > 2000) {
+        //mostra un errore
+    }
+    else {
+        let crypted_message = encrypt(message, localStorage.getItem("publicKeyArmored"))
+        let crypted_nickname = encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored"))
+        let crypted_password = encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored"))
+        let crypted_id = encrypt("sos", localStorage.getItem("publicKeyArmored"))
+        let crypted_publickey = encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
+        if (checkKey()) {
+            socket.emit("message", crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_publickey)
+        }
+        else {
+            socket.emit("getPublicKey", "1")
+        }
+    }
+    //pulsante che prende il testo da "message-input" incluse le emoji e poi prende i file che l'utente ha caricato
+    //(max 20 file per un massimo di 100mB a file
+    //controlla se i file sono meno di 20 e pesano il giusto
+    //sul server fare il check chi è online in quella chat, se è una chat singola controllare solo che la persona sia online (mandare nella stanza con l'id della chat il messaggio e inserire nel database degli utenti le robe)
+}
+
+
+function openChat(index) {
+    if (index >= 0 && index < sortedChats.size()) {
+        if (index != sortedChats.getSelectedChat()) {
+            $("#typezone").show();
+            $("#header-chat").show();
+            if (window.innerWidth < 901) {
+                $("#menu").hide();
+                $("#conversation").show();
+            } else {
+                document.getElementById("contact-" + index).classList.add("selected");
+                document.getElementById("contact-" + sortedChats.getSelectedChat()).classList.remove("selected-chat");
+            }
+            sortedChats.selectedChat(index);
+            document.getElementById("messages").innerHTML = "";
+            createChat(index);//da fare
+            var selectedChat = sortedChats.get(index);
+            if (selectedChat.nonVisualized.length > 0) {
+                for (let i = 0; i < selectedChat.nonVisualized.length; i++) {
+                    selectedChat.visualized.push(selectedChat.nonVisualized[i]);
+                }
+                selectedChat.nonVisualized = [];
+                sortedChats.clear();
+                sortedChats.addAll(selectedChat);
+                var data = localStorage.getItem("data");
+                var decrypted_data = decryptAES(data, kM.getAesKey());
+                var chats = JSON.parse(decrypted_data);
+                for (let i = 0; i < chats.length; i++) {
+                    if (chats[i].id == selectedChat.id) {
+                        chats[i].visualized = selectedChat.visualized;
+                        chats[i].nonVisualized = selectedChat.nonVisualized;
+                    }
+                }
+                var encrypted_data = encryptAES(JSON.stringify(chats), kM.getAesKey());
+                localStorage.setItem("data", encrypted_data);
+            }
+        }
+
+    } else {
+        var prompt = document.getElementById("prompt");
+
+        // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
+        prompt.style.display = "block";
+
+        var noButton = document.getElementById("no-button");
+        noButton.style.display = "block";
+
+        document.getElementById("prompt-error").innerText =
+            "An error occurred";
+
+        document.getElementById("prompt-text").innerText =
+            "Please try again later";
+
+        document.getElementById("no-button").innerText = "Ok";
+    }
+}
+
+async function searchContact() {
+    var contact = document.getElementById("contact-input").value;
+
+    if (contact.trim().length > 0) {
+        var data = localStorage.getItem("data");
+        var decrypted_data = decryptAES(data, kM.getAesKey());
+        var chats = JSON.parse(decrypted_data);
+        for (let i = 0; i < chats["chats"].length; i++) {
+            if (chats["chats"][i].name != contact) {
+                if (!chats["chats"][i].name.includes(contact)) {
+                    document.getElementById("contact-" + i).style.display = "none";
+                }
+            }
+        }
+
+        for (let i = 0; i < chats["groups"].length; i++) {
+            if (chats["groups"][i].name != contact) {
+                if (!chats["groups"][i].name.includes(contact)) {
+                    document.getElementById("contact-" + i).style.display = "none";
+                }
+            }
+        }
+    }
+}
+
+function attachFile() {
+    var fileInput = document.getElementById("myFile");
+    fileInput.click();
+}
+
+//emoji-button e attach button da gestire (bottoni per attaccare file e emoji)
 function changeNewChatType() {
     var checkbox = document.getElementById("isGroup");
 
@@ -88,193 +573,6 @@ function changeNewChatType() {
 function signOut() {
     clearLocalStorageWithoutKey();
     window.location.href = "../signUp.html";
-}
-
-/*Check if the user is logged in*/
-async function login() {
-    await genKey();
-    if (checkData()) {
-        if (checkKey()) {
-            socket.emit(
-                "getAesKey",
-                await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
-                await encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored")),
-                await encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored")),
-                await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
-            );
-        } else {
-            socket.emit("getPublicKey", "0");
-        }
-    } else {
-        clearLocalStorageWithoutKey();
-        window.location.href = "../signUp.html";
-    }
-}
-
-login();
-
-async function sendMessage() {
-        //da continuare
-        var message = document.getElementById("message-input").value
-        console.log(message)
-        if(message.length > 2000) {
-            //mostra un errore
-        }
-        else{
-            let crypted_message = encrypt(message, localStorage.getItem("publicKeyArmored"))
-            let crypted_nickname = encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored"))
-            let crypted_password = encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored"))
-            let crypted_id = encrypt("sos", localStorage.getItem("publicKeyArmored"))
-            let crypted_publickey = encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
-            if(checkKey()){
-                socket.emit("message", crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_publickey)
-            }
-            else{
-                socket.emit("getPublicKey", "1")
-            }
-        }
-    //pulsante che prende il testo da "message-input" incluse le emoji e poi prende i file che l'utente ha caricato
-    //(max 100 file per un massimo di 100mB a file e un massimo di un totale di 5gB si potrebbe anche fare 10gB ma andrebbe a ridurre le prestazioni 50% di maxPotenziale)
-    //controlla se i file sono meno di 100 e pesano il giusto
-    //sul server fare il check chi è online in quella chat, se è una chat singola controllare solo che la persona sia online (mandare nella stanza con l'id della chat il messaggio e inserire nel database degli utenti le robe)
-}
-async function searchContact() {
-    var contact = document.getElementById("contact-input").value;
-
-    if (contact.trim().length > 0) {
-        var data = localStorage.getItem("data");
-        var decrypted_data = decryptAES(data, kM.getAesKey());
-        var chats = JSON.parse(decrypted_data);
-        for(let i = 0; i < chats.chat.length; i++){
-            if(chats.chat[i].nickname != contact){
-                if (!chats.group[i].nickname.includes(contact)) {
-                    document.getElementById("chat-" + i).style.display = "none";
-                }
-            }
-        }
-
-        for (let i = 0; i < chats.group.length; i++) {
-            if (chats.group[i].name != contact) {
-                if(!chats.group[i].nickname.includes(contact)){
-                    document.getElementById("group-" + i).style.display = "none";
-                }
-            }
-        }
-    }
-}
-
-async function addContact() {
-}
-
-
-async function manageSync(crypted_chat) {
-    var { data: chat } = await decrypt(
-        crypted_chat,
-        kM.getPrivateKey(),
-        kM.getPassphrase()
-    );
-    localStorage.setItem("data", encryptAES(chat, kM.getAesKey()));
-    //la pagina deve essere ricaricata
-}
-
-function attachFile() {
-    var fileInput = document.getElementById("myFile");
-    fileInput.click();
-}
-async function creaChat() {
-    if (checkKey()) {
-        var chatName = document.getElementById("chatName").value;
-
-        if (document.getElementById("isGroup").checked) {
-            //nel caso di un gruppo lo gestiremo più avanti
-        } else {
-            if (chatName.trim().length > 0) {
-                if (chatName.trim().length <= 30) {
-                    if (!chatName.includes("@")) {
-                        if (/[a-zA-Z0-9]/.test(chatName)) {
-                            //se aesKey è valida posso decriptare i dati nel localstorage, vedo se sono presenti username e password, se ci sono chill, se no tento di vedere se ci sono con email password e nickname se no lo sloggo
-                            var aesKey = kM.getAesKey();
-                            if (aesKey != null && aesKey != undefined && aesKey != "") {
-                                var data = localStorage.getItem("data");
-                                var decrypted_data = decryptAES(data, aesKey);
-                                var chats = JSON.parse(decrypted_data);
-                                var nickname = chats.nickname;
-                                var password = chats.password;
-                                var crypted_nickname = await encrypt(nickname, localStorage.getItem("publicKeyArmored"));
-                                var crypted_password = await encrypt(password, localStorage.getItem("publicKeyArmored"));
-                                var crypted_chatName = await encrypt(chatName, localStorage.getItem("publicKeyArmored"));
-                                var crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
-
-                                socket.emit("newChat", crypted_nickname, crypted_password, crypted_chatName, crypted_pubKey);
-                            } else {
-                                //si dovrebbe controllare lo storage per vedere se è presente il nickname e la password in modo da richiedere nuovamente l'aesKey
-                                //ma non abbiamo tempo
-                                clearLocalStorageWithoutKey();
-                                window.location.href = "../signUp.html";
-                            }
-                        } else {
-                            chatName.classList.add("error");
-                            chatName.setAttribute("error-message", "Nickname must contain at least one letter or number");
-                        }
-                    } else {
-                        chatName.classList.add("error");
-                        chatName.setAttribute("error-message", "Nickname must not contain '@'");
-                    }
-                } else {
-                    chatName.classList.add("error");
-                    chatName.setAttribute("error-message", "Nickname must be at most 30 characters long");
-                }
-            } else {
-                chatName.classList.add("error");
-                chatName.setAttribute("error-message", "Nickname must be filled out");
-            }
-        }
-    } else {
-        socket.emit("getPublicKey", "3");
-    }
-}
-
-//emoji-button e attach button da gestire (bottoni per attaccare file e emoji)
-
-async function manageAesKeySuccess(crypted_aes_key) {
-    var { data: aes_key } = await decrypt(
-        crypted_aes_key,
-        kM.getPrivateKey(),
-        kM.getPassphrase()
-    );
-
-    kM.setAesKey(aes_key);
-    //readLocalStorage();//da fare
-    //getNewMessages();//da fare
-}
-
-async function readLocalStorage() {
-    var aes_key = kM.getAesKey();
-    var data = localStorage.getItem("data");
-    var { data: decrypted_data } = decryptAES(data, aes_key);
-    //costruiamo le chat
-}
-
-async function sync() {
-    if(!checkKey()){
-        socket.emit("getPublicKey", "2");
-    }
-    else{
-        if(kM.getAesKey() == null || kM.getAesKey() == undefined || kM.getAesKey() == ""){
-            alert('Wait for page to load');
-        }
-        else {
-            var data = decryptAES(localStorage.getItem("data"), kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "");
-            var decrypted_data = JSON.parse(data);
-            var nickname = JSON.stringify(decrypted_data.nickname);
-            var password = JSON.stringify(decrypted_data.password);
-            crypted_nickname = await encrypt(nickname.substring(1, nickname.length - 1), localStorage.getItem("publicKeyArmored"));
-            crypted_password = await encrypt(password.substring(1, password.length - 1), localStorage.getItem("publicKeyArmored"));
-            crypted_pubKey = await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"));
-            socket.emit("sync", crypted_nickname, crypted_password, crypted_pubKey )
-        }
-    }
-    //il sync deve far apparire sulla pagina un caricamento
 }
 
 /*Input limit*/
@@ -338,7 +636,7 @@ document.getElementById("yes-button").addEventListener("click", () => {
 //se la key è invio premo il bottone
 document.onkeydown = function (e) {
     if (e.keyCode == 13) {
-        if(document.getElementById("message-input").value != ""){
+        if (document.getElementById("message-input").value != "") {
             sendMessage();
         }
     }
@@ -351,3 +649,25 @@ document.getElementById("contact-input").addEventListener("input", function () {
         document.getElementById("contact-input").value = text.substring(0, 30);
     }
 });
+
+/*Reset error message*/
+document.getElementById("chatName").oninput = function () {
+    if (document.getElementById("isGroup").checked) {
+        var containerEmail = document.getElementById("container-chatName");
+        containerEmail.setAttribute("error-message", "Invalid Group");
+    } else {
+        var containerEmail = document.getElementById("container-chatName");
+        containerEmail.setAttribute("error-message", "Invalid User");
+    }
+};
+
+/*Reset errori*/
+document.getElementById("chatName").onclick = function () {
+    var containerEmail = document.getElementById("container-chatName");
+    containerEmail.classList.remove("error");
+};
+
+document.getElementById("chatNameLabel").onclick = function () {
+    var containerEmail = document.getElementById("container-chatName");
+    containerEmail.classList.remove("error");
+};

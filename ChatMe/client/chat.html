@@ -16,12 +16,25 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
         crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://kit.fontawesome.com/bbf7a86a8c.js" crossorigin="anonymous"></script>
     <script src="/socket.io/socket.io.js"></script>
 </head>
 
 <body>
-    <!-- HTML -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="loadingModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <h5 class="mt-2">Please wait while we sync chats...</h5>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade" id="createChatModal" tabindex="-1" aria-labelledby="createChatModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -34,9 +47,8 @@
                 </div>
                 <div class="modal-body w-90">
                     <form>
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="chatName" placeholder="" required
-                                error-message="Invalid Username">
+                        <div id="container-chatName" class="form-floating mb-3" error-message="Invalid Username">
+                            <input type="text" class="form-control" id="chatName" required>
                             <label for="chatName" id="chatNameLabel">Nickname</label>
                         </div>
                         <div class="form-check form-switch mb-3">
@@ -46,7 +58,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    <button type="button" id="closeModal" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Chiudi</button>
                     <button type="button" class="btn btn-primary" id="createChatButton"
                         onclick="creaChat()">Crea</button>
                 </div>
@@ -89,12 +102,16 @@
                         <i id="search-icon" class="fas fa-search"></i>
                     </button>
                 </div>
-                <div id="contact-list" class="w-100 d-flex flex-col align-items-center justify-content-start p-t-10 p-b-10">
+                <div id="contact-list"
+                    class="w-100 d-flex flex-col align-items-center justify-content-start p-t-10 p-b-10">
                 </div>
             </div>
         </div>
         <div id="conversation" class="h-100 w-80 d-none">
             <div id="header-chat" class="d-flex flex-wrap align-items-center w-100 position-fixed d-none">
+                <div class="d-flex flex-wrap align-items-center justify-content-start">
+                    <i id="back-chat-arrow" class="fas fa-arrow-left d-none"></i>
+                </div>
                 <i id="chat-icon" class="icon fa fa-user-o" aria-hidden="true"></i>
                 <div class="d-flex flex-column">
                     <p id="header-chat-name" class="user-select-none"></p>
@@ -105,9 +122,9 @@
             <div id="messages" class="w-100 h-100 d-flex flex-col align-items-center justify-content-start">
 
             </div>
-            <div id="typezone" class="d-flex flex-wrap align-items-center justify-content-center position-fixed w-80">
-                <div id="typezone-section"
-                    class="w-98 d-flex align-items-center justify-content-between h-100">
+            <div id="typezone"
+                class="d-flex flex-wrap align-items-center justify-content-center position-fixed w-80 d-none">
+                <div id="typezone-section" class="w-98 d-flex align-items-center justify-content-between h-100">
                     <button id="attach-button" class="btn" type="button" onclick="attachFile()">
                         <input type="file" id="myFile" name="filename" class="d-none">
                         <i id="file-icon" class="fas fa-paperclip"></i>

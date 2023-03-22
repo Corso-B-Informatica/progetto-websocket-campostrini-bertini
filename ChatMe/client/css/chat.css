@@ -61,6 +61,14 @@
   padding: 0px 30px;
   color: var(--white-transparent);
 }
+
+#back-chat-arrow {
+  font-size: 20px;
+  font-weight: lighter;
+  padding: 0px 30px;
+  color: var(--white-transparent);
+}
+
 #new-messages {
   color: var(--white-transparent);
   margin: 0px;
@@ -618,6 +626,9 @@ p {
   }
   #header-logo {
     box-shadow: none;
+  }
+  #back-chat-arrow {
+    display: block !important;
   }
 }
 

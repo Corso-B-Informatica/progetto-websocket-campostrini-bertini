@@ -651,7 +651,8 @@ async function existNickname(nickname) {
     });
   });
 }
-async function checkChatExist(nickname, chatName, chat) {
+
+async function checkChatExist(nickname, chatId, chatType) {
   return new Promise((resolve, reject) => {
     Chat.all("SELECT * FROM chat WHERE nickname = ?", [nickname], (err, rows) => {
       if (err) {
@@ -659,9 +660,9 @@ async function checkChatExist(nickname, chatName, chat) {
         reject(err);
       } else {
         if (rows.length > 0) {
-          var pchat = JSON.parse(rows[0].chat)
-          for (let i = 0; i < pchat[chat].length; i++) {
-            if (pchat[chat][i].name == chatName) {
+          var pchat = JSON.parse(rows[0].chat);
+          for (let i = 0; i < pchat[chatType].length; i++) {
+            if (pchat[chatType][i].id == chatId) {
               resolve(true);
             }
           }
@@ -673,6 +674,7 @@ async function checkChatExist(nickname, chatName, chat) {
     });
   });
 }
+
 async function checkIdExist(nickname, chatName) {
   return new Promise((resolve, reject) => {
 

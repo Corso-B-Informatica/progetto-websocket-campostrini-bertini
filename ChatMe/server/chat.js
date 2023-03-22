@@ -15,11 +15,6 @@ async function sendAesKey(
     const nickname = await validator.UltimateValidator(crypted_nickname, 1, true);
     const publicKey = await validator.UltimateValidator(crypted_pubKey, 0, false);
 
-    var check1 = validator.checkEmail(email);
-    var check2 = validator.checkPassword(password);
-    var check3 = validator.checkUsername(nickname);
-    var check4 = await crypto.isValid(publicKey);
-
     const aesKey = await database.getAesKey(email, nickname, password);
 
     if (aesKey == null || aesKey == undefined) {
@@ -27,30 +22,71 @@ async function sendAesKey(
     } else if (aesKey.trim().length == 0 || aesKey == "false") {
         socket.emit("errorAesKey");
     }
-    else if ((check1 || check2) && check3 && check4) {
+    else if (await database.checkDatabase(database.Users, nickname, email, password)) {
         var chat = await JSON.parse(await database.GetChat(nickname));
 
-        for (let i = 0; i < Object.keys(chat.chats).length; i++) {
-            socket.join(JSON.stringify(chat.chats[i].Id));
+        for (let i = 0; i < Object.keys(chat["chats"]).length; i++) {
+            socket.join(chat["chats"][i].id);
         }
-        for (let i = 0; i < Object.keys(chat.groups).length; i++) {
-            socket.join(JSON.stringify(chat.groups[i].Id));
+        for (let i = 0; i < Object.keys(chat["groups"]).length; i++) {
+            socket.join(chat["groups"][i].id);
         }
 
         socketList.pushSocket(nickname, socket);
+
+        socket.broadcast.emit("online", nickname);
 
         var message = await crypto.encrypt(
             aesKey,
             publicKey
         );
-        
+
         socket.emit(
             "aesKey",
             message
         );
+    } else {
+        socket.emit("errorAesKey");
     }
 }
 
+async function getNewMessages(crypted_nickname, crypted_password, crypted_pubKey, socket) {
+    const password = await validator.UltimateValidator(crypted_password, 0, true);
+    const nickname = await validator.UltimateValidator(crypted_nickname, 0, true);
+    const pubKey = await validator.UltimateValidator(crypted_pubKey, 0, false);
+
+    let check = await crypto.isValid(pubKey);
+
+    if (!check) {
+        socket.emit("errorPubKey");
+    } else if (await database.checkDatabase(database.Users, nickname, "", password)) {
+        var chat = JSON.parse(await database.GetChat(nickname));
+        var chats = chat["chats"];
+        var groups = chat["groups"];
+
+        var chatsToSend = { "chats": [], "groups": [] };
+
+        for (let i = 0; i < chats.length; i++) {
+            var chatToPush = { "id": chats[i].id, "name": chats[i].name, "visualized": [], "nonVisualized": [], "removed": [] };
+            chatToPush["nonVisualized"] = chats[i].nonVisualized;
+            chatsToSend["chats"].push(chatToPush);
+        }
+        for (let i = 0; i < groups.length; i++) {
+            var groupToPush = { "id": groups[i].id, "name": groups[i].name, "visualized": [], "nonVisualized": [], "removed": [], "members": [] };
+            groupToPush["nonVisualized"] = groups[i].nonVisualized;
+            chatsToSend["groups"].push(groupToPush);
+        }
+
+        var crypted_chats = await crypto.encrypt(
+            JSON.stringify(chatsToSend),
+            pubKey
+        );
+
+        socket.emit("newMessages", crypted_chats);
+    } else {
+        socket.emit("errorGetNewMessages");
+    }
+}
 
 async function sendMessage(crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_pubKey, socket) {
 
@@ -66,30 +102,30 @@ async function sendMessage(crypted_message, crypted_nickname, crypted_password, 
         socket.emit("errorSendMessage");
     }
     else if (!check) {
-        socket.emit("errorPubKeySendMessage");
+        socket.emit("errorPubKey");
     }
     else {
         if (await database.checkDatabase(database.Users, nickname, "", password)) {
             if (await database.checkIdExist(nickname, id)) {
                 console.log('si')
-                if(id > 30){
-                let chat = JSON.parse(await database.GetChat(nickname));
-                chat.groups[id].members.forEach(element => {
-                    (async () => {
-                        let chat = JSON.parse(await database.GetChat(element));
-                        let json = {"message": message, "nickname": nickname, "date": new Date().toISOString()};
-                        chat.groups[id].nonVisualized.push(json);
-                        }) 
-                });
+                if (id > 30) {
+                    let chat = JSON.parse(await database.GetChat(nickname));
+                    chat.groups[id].members.forEach(element => {
+                        (async () => {
+                            let chat = JSON.parse(await database.GetChat(element));
+                            let json = { "message": message, "nickname": nickname, "date": new Date().toISOString() };
+                            chat.groups[id].nonVisualized.push(json);
+                        })
+                    });
 
-            }else{
-                var chat1 = JSON.stringify(JSON.parse(await database.GetChat(nickname)));
-                let json1 = {"message": message, "nickname": nickname, "date": new Date().toISOString()};
-                chat1.chats[id].nonVisualized.push(json1);
-                var chat2 = JSON.stringify(JSON.parse(await database.GetChat(id)))
-                let json2 = {"message": message, "nickname": nickname, "date": new Date().toISOString()};
-                chat2.chats[id].nonVisualized.push(json2);
-            }
+                } else {
+                    var chat1 = JSON.stringify(JSON.parse(await database.GetChat(nickname)));
+                    let json1 = { "message": message, "nickname": nickname, "date": new Date().toISOString() };
+                    chat1.chats[id].nonVisualized.push(json1);
+                    var chat2 = JSON.stringify(JSON.parse(await database.GetChat(id)))
+                    let json2 = { "message": message, "nickname": nickname, "date": new Date().toISOString() };
+                    chat2.chats[id].nonVisualized.push(json2);
+                }
             }
         }
         else {
@@ -108,7 +144,7 @@ async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) 
     let check = await crypto.isValid(pubKey);
 
     if (!check) {
-        socket.emit("errorPubKeySync");
+        socket.emit("errorPubKey");
     }
     else if (await database.checkDatabase(database.Users, nickname, "", password)) {
         var chat = JSON.stringify(JSON.parse(await database.GetChat(nickname)));
@@ -120,36 +156,58 @@ async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) 
     }
 }
 
-async function newChat(crypted_nickname, crypted_password, crypted_id, crypted_pubKey, socket) {
+async function newChat(crypted_nickname, crypted_password, crypted_chatName, crypted_pubKey, socket) {
 
     const password = await validator.UltimateValidator(crypted_password, 0, true);
     const nickname = await validator.UltimateValidator(crypted_nickname, 0, true);
-    const id = await validator.UltimateValidator(crypted_id, 0, true);
+    const chatName = await validator.UltimateValidator(crypted_chatName, 0, true);
     const pubKey = await validator.UltimateValidator(crypted_pubKey, 0, false);
 
     let check = await crypto.isValid(pubKey);
 
     if (!check) {
-        socket.emit("errorPubKeySync");
+        socket.emit("errorPubKey");
     }
-
     else if (await database.checkDatabase(database.Users, nickname, "", password)) {
-        if (await database.existNickname(id)) {
-            if (await database.checkChatExist(nickname, id, "chat")) {
-                var chat = JSON.parse(await database.GetChat(nickname));
-                let json = { "id": id, "visualized": {},"nonVisualized": {},"removed": {} }
-                chat.chats.push(json);
-                if (await database.JsonUpdate(nickname, chat)) {
-                    socket.join(id);
-                    console.log("Cinesello Balsamo")
+        if (await database.existNickname(chatName)) {
+            const id = nickname + chatName;
+            if (chatName != nickname) {
+                if (!await database.checkChatExist(nickname, id, "chats") && !await database.checkChatExist(nickname, chatName + nickname, "groups")) {
+                    var data1 = JSON.parse(await database.GetChat(nickname));
+                    data1["chats"].push({ "id": id, "name": chatName, "visualized": [], "nonVisualized": [], "removed": [] });
+                    if (await database.JsonUpdate(nickname, JSON.stringify(data1))) {
+                        var data2 = JSON.parse(await database.GetChat(chatName));
+                        data2["chats"].push({ "id": id, "name": nickname, "visualized": [], "nonVisualized": [], "removed": [] });
+                        if (await database.JsonUpdate(chatName, JSON.stringify(data2))) {
+                            socket.join(id);
+                            let socketDestination = socketList.getSocket(chatName);
+                            var newChat1 = await crypto.encrypt(JSON.stringify(JSON.parse({ "chats": [{ "id": id, "name": chatName, "visualized": [], "nonVisualized": [], "removed": [] }], "groups": [] })), pubKey);
+                            if (socketDestination != null) {
+                                socketDestination.join(id);
+                                var newChat2 = await crypto.encrypt(JSON.stringify(JSON.parse({ "chats": [{ "id": id, "name": nickname, "visualized": [], "nonVisualized": [], "removed": [] }], "groups": [] })), pubKey);
+                                socketDestination.emit("newChatCreated", newChat2);
+                            }
+                            socket.emit("newChatCreated", newChat1);
+                        } else {
+                            socket.emit("errorNewChat");
+                        }
+                    } else {
+                        socket.emit("errorNewChat");
+                    }
                 } else {
-                    socket.emit("errorNewChat");
+                    var data1 = JSON.parse(await database.GetChat(chatName));
+                    for(let i = 0; i < data1["chats"].length; i++){
+                        if (data1["chats"][i]["id"] == id || data1["chats"][i]["id"] == chatName + nickname) {
+                            var crypted_chat = await crypto.encrypt(JSON.stringify(JSON.parse({ "chats": data1["chats"][i], "groups": [] })), pubKey);
+                            socket.emit("errorChatAlreadyExist", crypted_chat);
+                        }
+                    }
                 }
             } else {
-                socket.emit("errorChatAlreadyExist");
+                socket.emit("errorChatWithYourself");
             }
         } else {
-            socket.emit("errorChatName");
+            socket.emit("errorChatUserNotFound");
         }
     }
     else {
@@ -169,14 +227,14 @@ async function newGroup(crypted_nickname, crypted_password, crypted_members, cry
     let check = await crypto.isValid(pubKey);
 
     if (!check) {
-        socket.emit("errorPubKeySync");
+        socket.emit("errorPubKey");
     }
     else if (await database.checkDatabase(database.Users, nickname, "", password)) {
 
         let id = crypto.encryptAES(groupname) + new Date().toISOString() + crypto.generateRandomKey(10)
         console.log(id)
         let chat = JSON.parse(await database.GetChat(nickname));
-        let json = { "id": id, "nome": groupname, "members": {}, "visualized": {},"nonVisualized": {},"removed": {} }
+        let json = { "id": id, "nome": groupname, "members": {}, "visualized": {}, "nonVisualized": {}, "removed": {} }
         chat.chats.push(json);
         members.forEach(member => {
             //penso che il path sia sbagliato
@@ -200,5 +258,5 @@ module.exports = {
     sendAesKey,
     sendMessage,
     sync,
-    newChat
+    getNewMessages
 };
