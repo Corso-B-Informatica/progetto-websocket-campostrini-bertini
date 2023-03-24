@@ -26,12 +26,6 @@ if (checkLocalstorageForLogin()) {
 /*keyManager*/
 const kM = new keyManager();
 
-async function genKey() {
-    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-}
-
-genKey();
-
 /*Socket.io*/
 var socket = io();
 
@@ -53,8 +47,11 @@ socket.on("loginDataError", (crypted_check1, crypted_check2, crypted_check3, cry
     manageLoginDataError(crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_check5, crypted_data1, crypted_data2, crypted_data3, crypted_data4, crypted_data5);
 });
 
-function Login() {
-    socket.emit("getPublicKey", "0");
+async function Login() {
+    var key = await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+    if (key != undefined && key != null) {
+        socket.emit("getPublicKey", "0");
+    }
 }
 
 async function sendLogin(publicKeyArmored) {

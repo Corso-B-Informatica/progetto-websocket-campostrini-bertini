@@ -136,7 +136,8 @@ async function tryConfirmViaLink(publicKeyArmored) {
     var verification_code = url;
     url = window.location.href;
 
-    if (await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!") != null) {
+    var key = await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+    if (key != undefined && key != null) {
         if (isUrlConfirmed(url, email, password, nickname, verification_code)) {
             sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored);
         } else {

@@ -13,12 +13,6 @@
 /*keyManager*/
 const kM = new keyManager();
 
-async function genKey() {
-    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-}
-
-genKey();
-
 /*sortedChat*/
 var sortedChat = [];
 var selectedChat = -1;
@@ -191,26 +185,27 @@ socket.on("newMessages", (newMessages) => {
 
 /*window load*/
 async function login() {
-    await genKey();
+    var key = await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+    if (key != undefined && key != null) {
+        if (checkData()) {
+            if (checkKey()) {
+                $('#loadingModal').modal('show');
 
-    if (checkData()) {
-        if (checkKey()) {
-            $('#loadingModal').modal('show');
+                socket.emit(
+                    "getAesKey",
+                    await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
+                    await encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored")),
+                    await encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored")),
+                    await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
+                );
 
-            socket.emit(
-                "getAesKey",
-                await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
-                await encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored")),
-                await encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored")),
-                await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
-            );
-
+            } else {
+                socket.emit("getPublicKey", "0");
+            }
         } else {
-            socket.emit("getPublicKey", "0");
+            clearLocalStorageWithoutKey();
+            window.location.href = "../signUp.html";
         }
-    } else {
-        clearLocalStorageWithoutKey();
-        window.location.href = "../signUp.html";
     }
 }
 

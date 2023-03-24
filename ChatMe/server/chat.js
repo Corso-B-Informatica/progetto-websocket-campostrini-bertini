@@ -16,7 +16,6 @@ async function sendAesKey(
     const publicKey = await validator.UltimateValidator(crypted_pubKey, 0, false);
 
     const aesKey = await database.getAesKey(email, nickname, password);
-
     if (aesKey == null || aesKey == undefined) {
         socket.emit("errorAesKey");
     } else if (aesKey.trim().length == 0 || aesKey == "false") {
@@ -35,7 +34,7 @@ async function sendAesKey(
         socketList.pushSocket(nickname, socket);
 
         socket.broadcast.emit("online", nickname);
-
+        
         var message = await crypto.encrypt(
             aesKey,
             publicKey

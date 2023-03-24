@@ -25,12 +25,6 @@ if (checkLocalstorageForLogin()) {
 /*keyManager*/
 const kM = new keyManager();
 
-async function genKey() {
-    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-}
-
-genKey();
-
 /*Socket.io*/
 var socket = io();
 
@@ -57,20 +51,23 @@ socket.on("forgotPasswordSuccess", () => {
 
 /*Send forgot password request*/
 async function forgotPassword() {
-    if (checkKey()) {
-        if (checkUsernameOrEmail()) {
-            var ue = document.getElementById("username").value;
-            var crypted_ue = await encrypt(ue, localStorage.getItem("publicKeyArmored"));
+    var key = await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+    if (key != undefined && key != null) {
+        if (checkKey()) {
+            if (checkUsernameOrEmail()) {
+                var ue = document.getElementById("username").value;
+                var crypted_ue = await encrypt(ue, localStorage.getItem("publicKeyArmored"));
 
-            if (ue.toString().includes('@')) {
-                socket.emit("forgotPassword", crypted_ue, "");
-            } else {
-                socket.emit("forgotPassword", "", crypted_ue);
+                if (ue.toString().includes('@')) {
+                    socket.emit("forgotPassword", crypted_ue, "");
+                } else {
+                    socket.emit("forgotPassword", "", crypted_ue);
+                }
             }
+        } else {
+            localStorage.removeItem("publicKeyArmored");
+            socket.emit("getPublicKey", "0");
         }
-    } else {
-        localStorage.removeItem("publicKeyArmored");
-        socket.emit("getPublicKey", "0");
     }
 }
 

@@ -68,9 +68,11 @@ socket.on("registerSuccess", (email, password, nickname) => {
 
 /*Register*/
 async function register() {
-  if (checkUsername() && checkEmail() && checkPassword()) {
-    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-    socket.emit("getPublicKey", "");
+  var key = await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+  if (key != undefined && key != null) {
+    if (checkUsername() && checkEmail() && checkPassword()) {
+      socket.emit("getPublicKey", "");
+    }
   }
 }
 
