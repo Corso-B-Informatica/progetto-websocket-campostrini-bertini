@@ -68,12 +68,12 @@ socket.on("registerSuccess", (email, password, nickname) => {
 
 /*Register*/
 async function register() {
-  var key = await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-  if (key != undefined && key != null) {
+  await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!").then(
+    setTimeout(function () {
     if (checkUsername() && checkEmail() && checkPassword()) {
       socket.emit("getPublicKey", "");
     }
-  }
+  }, 100)).catch(err => console.log(err));
 }
 
 async function sendRegister(publicKeyArmored) {

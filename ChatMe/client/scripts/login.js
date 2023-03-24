@@ -48,17 +48,16 @@ socket.on("loginDataError", (crypted_check1, crypted_check2, crypted_check3, cry
 });
 
 async function Login() {
-    var key = await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-    if (key != undefined && key != null) {
+    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!").then(setTimeout(function () {
         socket.emit("getPublicKey", "0");
-    }
+    }, 100)).catch(err => console.log(err));
 }
 
 async function sendLogin(publicKeyArmored) {
     if (checkUsernameOrEmail() && checkPassword()) {
-        var ue = document.getElementById('username').value.toString();
-        var c_password = await encrypt(document.getElementById('password').value.toString(), publicKeyArmored);
-        var c_rememberMe = await encrypt(document.getElementById("checkbox").checked.toString(), publicKeyArmored);
+        var ue = document.getElementById('username').value;
+        var c_password = await encrypt(document.getElementById('password').value, publicKeyArmored);
+        var c_rememberMe = await encrypt(document.getElementById("checkbox").checked, publicKeyArmored);
         var c_publicKey = await encrypt(kM.getPublicKey(), publicKeyArmored);
         var c_email = "";
         var c_nickname = "";

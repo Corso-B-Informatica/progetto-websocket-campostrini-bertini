@@ -145,14 +145,27 @@ function restoreStorageData() {
     }
 }
 
+function resolveRememberMe() {
+    var rememberMe = localStorage.getItem("rememberMe");
+    if(rememberMe == null) {
+        localStorage.setItem("rememberMe", "false");
+    }
+    if (rememberMe == undefined) {
+        localStorage.setItem("rememberMe", "false");
+    }
+    if(rememberMe != "true" && rememberMe != "false") {
+        localStorage.setItem("rememberMe", "false");
+    }
+}
+
 function checkData() {
+    resolveRememberMe();
     var email = localStorage.getItem("email");
     var password = localStorage.getItem("password");
     var nickname = localStorage.getItem("nickname");
     var remeberMe = localStorage.getItem("rememberMe");
 
     if ((email == undefined && nickname == undefined) || password == undefined || remeberMe == undefined) {
-        console.log("no")
         return false;
     }
     if ((email == null && nickname == null) || password == null || remeberMe == null) {
@@ -161,7 +174,6 @@ function checkData() {
     if ((email.length == 0 && nickname.length == 0) || password.length == 0 || remeberMe.length == 0) {
         return false;
     }
-    
     return true;
 }
 

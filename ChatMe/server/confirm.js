@@ -235,20 +235,28 @@ async function sendCode(
 
     if (method == "input") {
 
-        const e_mail = await validator.UltimateValidator(armored_email, 0, true);
+        var email = await validator.UltimateValidator(armored_email, 0, true);
         const password = await validator.UltimateValidator(armored_password, 0, true);
-        const nickname = await validator.UltimateValidator(armored_nickname, 0, true);
+        var nickname = await validator.UltimateValidator(armored_nickname, 0, true);
 
         var check1 = validator.checkUsername(nickname);
-        var check2 = validator.checkEmail(e_mail);
+        var check2 = validator.checkEmail(email);
         var check3 = validator.checkPassword(password);
         var check4 = await crypto.isValid(publicKey);
-        var check5 = isUrlConfirmed(link, e_mail, password, nickname);
+        var check5 = isUrlConfirmed(link, email, password, nickname);
 
         if ((check1 || check2) && check3 && check4 && check5) {
-            var email = e_mail;
-            if (e_mail.length == 0) {
-                email = await database.getEmail(database.Users, nickname);
+            if (email == undefined || email == null) {
+                email = await database.getEmail(database.tempUsers, nickname);
+            }
+            if (email.length == 0) {
+                email = await database.getEmail(database.tempUsers, nickname);
+            }
+            if (nickname == undefined || nickname == null) {
+                nickname = await database.getNickname(database.tempUsers, email);
+            }
+            if (nickname.length == 0) {
+                nickname = await database.getNickname(database.tempUsers, email);
             }
 
             if (
@@ -392,23 +400,31 @@ async function sendCode(
         }
     } else {
 
-        const e_mail =
+        var email =
             await validator.UltimateValidator(armored_email, 1, true)
         const password =
             await validator.UltimateValidator(armored_password, 1, true)
-        const nickname =
+        var nickname =
             await validator.UltimateValidator(armored_nickname, 1, true)
 
         var check1 = validator.checkUsername(nickname);
-        var check2 = validator.checkEmail(e_mail);
+        var check2 = validator.checkEmail(email);
         var check3 = validator.checkPassword(password);
         var check4 = await crypto.isValid(publicKey);
-        var check5 = isUrlConfirmed(link, e_mail, password, nickname);
+        var check5 = isUrlConfirmed(link, email, password, nickname);
 
         if ((check1 || check2) && check3 && check4 && check5) {
-            var email = e_mail;
-            if (e_mail.length == 0) {
+            if (email == undefined || email == null) {
                 email = await database.getEmail(database.tempUsers, nickname);
+            }
+            if (email.length == 0) {
+                email = await database.getEmail(database.tempUsers, nickname);
+            }
+            if (nickname == undefined || nickname == null) {
+                nickname = await database.getNickname(database.tempUsers, email);
+            }
+            if (nickname.length == 0) {
+                nickname = await database.getNickname(database.tempUsers, email);
             }
 
             if (
@@ -571,9 +587,9 @@ async function confirmUserViaCode(
 
     if (method == "input") {
 
-        const email = await validator.UltimateValidator(armored_email, 0, true);
+        var email = await validator.UltimateValidator(armored_email, 0, true);
         const password = await validator.UltimateValidator(armored_password, 0, true);
-        const nickname = await validator.UltimateValidator(armored_nickname, 0, true);
+        var nickname = await validator.UltimateValidator(armored_nickname, 0, true);
         const rememberMe = await validator.UltimateValidator(armored_rememberMe, 0, true);
 
         var check1 = validator.checkUsername(nickname);
@@ -592,6 +608,18 @@ async function confirmUserViaCode(
                     "or"
                 )
             ) {
+                if (email == undefined || email == null) {
+                    email = await database.getEmail(database.tempUsers, nickname);
+                }
+                if (email.length == 0) {
+                    email = await database.getEmail(database.tempUsers, nickname);
+                }
+                if (nickname == undefined || nickname == null) {
+                    nickname = await database.getNickname(database.tempUsers, email);
+                }
+                if (nickname.length == 0) {
+                    nickname = await database.getNickname(database.tempUsers, email);
+                }
                 if (
                     (await database.hasAttempts(email, password)) &&
                     (await database.getWaitTime(email, password)) == 0
@@ -820,6 +848,19 @@ async function confirmUserViaCode(
                     "or"
                 )
             ) {
+                if (email == undefined || email == null) {
+                    email = await database.getEmail(database.Users, nickname);
+                }
+                if (email.length == 0) {
+                    email = await database.getEmail(database.tempUsers, nickname);
+                }
+                if (nickname == undefined || nickname == null) {
+                    nickname = await database.getNickname(database.Users, email);
+                }
+                if (nickname.length == 0) {
+                    nickname = await database.getNickname(database.tempUsers, email);
+                }
+
                 if (
                     (await database.hasAttempts(email, password)) &&
                     (await database.getWaitTime(email, password)) == 0
