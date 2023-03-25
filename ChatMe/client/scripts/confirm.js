@@ -136,13 +136,17 @@ async function tryConfirmViaLink(publicKeyArmored) {
     var verification_code = url;
     url = window.location.href;
 
-    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!").then(setTimeout(function () {
+    try {
+        await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+
         if (isUrlConfirmed(url, email, password, nickname, verification_code)) {
             sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored);
         } else {
             checkLocalstorage();
         }
-    }, 100)).catch(err => console.log(err));
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 function isUrlConfirmed(url, email, password, nickname, verification_code) {

@@ -48,9 +48,13 @@ socket.on("loginDataError", (crypted_check1, crypted_check2, crypted_check3, cry
 });
 
 async function Login() {
-    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!").then(setTimeout(function () {
+    try {
+        await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+        
         socket.emit("getPublicKey", "0");
-    }, 100)).catch(err => console.log(err));
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 async function sendLogin(publicKeyArmored) {

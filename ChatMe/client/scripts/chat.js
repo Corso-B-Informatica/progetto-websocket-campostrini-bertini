@@ -185,7 +185,9 @@ socket.on("newMessages", (newMessages) => {
 
 /*window load*/
 async function login() {
-    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!").then(setTimeout(async function () {
+    try {
+        await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+
         if (checkData()) {
             if (checkKey()) {
                 $('#loadingModal').modal('show');
@@ -205,7 +207,10 @@ async function login() {
             clearLocalStorageWithoutKey();
             window.location.href = "../signUp.html";
         }
-    }, 100)).catch(err => console.log(err));
+        
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 window.onload = function () {

@@ -51,7 +51,9 @@ socket.on("forgotPasswordSuccess", () => {
 
 /*Send forgot password request*/
 async function forgotPassword() {
-    await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!").then(setTimeout(async function () {
+    try {
+        await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+
         if (checkKey()) {
             if (checkUsernameOrEmail()) {
                 var ue = document.getElementById("username").value;
@@ -67,7 +69,9 @@ async function forgotPassword() {
             localStorage.removeItem("publicKeyArmored");
             socket.emit("getPublicKey", "0");
         }
-    }, 100)).catch(err => console.log(err));
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 /*Manage response*/
