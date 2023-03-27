@@ -119,6 +119,8 @@ async function AddMessage(crypted_message, crypted_nickname, crypted_password, c
                                     for(let i = 0; i < chat.groups.length; i++){
                                         if(chat.groups[i].id == id){
                                             chat.groups[i].nonVisualized.push(json);
+                                            database.JsonUpdate(element, JSON.stringify(chat));
+                                            //da finire
                                         }
                                     }
                                 })
@@ -131,8 +133,9 @@ async function AddMessage(crypted_message, crypted_nickname, crypted_password, c
                     let json1 = { "message": message, "nickname": nickname, "date": new Date().toISOString() };
                     for (let i = 0; i < chat1.chats.length; i++) {
                         if(chat1.chats[i].id == id){
-                            chat1.chats[i].nonVisualized.push(json1);
+                            chat1.chats[i].visualized.push(json1);
                             database.JsonUpdate(nickname, JSON.stringify(chat1))
+                            socket.emit("newMessages", crypto.encrypt(JSON.stringify({ "chats": [{"id": chat1.chats[i].id, "name" : chat1.chats[i].name, "visualized": [json1], "nonVisualized": [], "removed": []}], "groups": [] }), pubKey))
                         } 
                     }
                     var nickname2 = id.replace(nickname, "");
@@ -141,7 +144,11 @@ async function AddMessage(crypted_message, crypted_nickname, crypted_password, c
                     for (let i = 0; i < chat2.chats.length; i++) {
                         if(chat2.chats[i].id == id){
                             chat2.chats[i].nonVisualized.push(json2);
-                            database.JsonUpdate(nickname2, JSON.stringify(chat1))
+                            database.JsonUpdate(nickname2, JSON.stringify(chat2))
+                            let bigsocket = socketList.getSocket(nickname2)
+                            if(bigsocket != undefined && bigsocket != null){
+                                bigsocket.emit("newMessages", crypto.encrypt(JSON.stringify({ "chats": [{"id": chat2.chats[i].id, "name" : chat2.chats[i].name, "visualized": [], "nonVisualized": [json2], "removed": []}], "groups": [] }), pubKey))
+                            }
                         } 
                     }
                 }

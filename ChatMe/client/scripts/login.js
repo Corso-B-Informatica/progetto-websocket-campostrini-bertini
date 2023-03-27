@@ -61,7 +61,7 @@ async function sendLogin(publicKeyArmored) {
     if (checkUsernameOrEmail() && checkPassword()) {
         var ue = document.getElementById('username').value;
         var c_password = await encrypt(document.getElementById('password').value, publicKeyArmored);
-        var c_rememberMe = await encrypt(document.getElementById("checkbox").checked, publicKeyArmored);
+        var c_rememberMe = await encrypt(document.getElementById("checkbox").checked.toString(), publicKeyArmored);
         var c_publicKey = await encrypt(kM.getPublicKey(), publicKeyArmored);
         var c_email = "";
         var c_nickname = "";

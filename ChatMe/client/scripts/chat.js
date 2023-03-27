@@ -228,6 +228,7 @@ async function manageAesKeySuccess(crypted_aes_key) {
 
     var data = localStorage.getItem("data");
     var chats = JSON.parse(decryptAES(data, aes_key));
+    //controllare aes key durante sign up
     if (chats["chats"].length == 0 && chats["groups"].length == 0) {
         sync();
     } else {
