@@ -28,7 +28,9 @@ function add(chat) {
 }
 
 function remove(chatId) {
-    sortedChat = sortedChat.filter((chat) => chat._id !== chatId);
+    var chat = sortedChat.find(x => x.id == chatId);
+    var index = sortedChat.indexOf(chat);
+    return sortedChat.splice(index, 1);
 }
 
 function get() {
@@ -70,6 +72,10 @@ function sort() {
             }
         }
     }
+}
+
+function isGroup(index) {
+    return sortedChat[index].members != undefined && sortedChat[index].members != null;
 }
 
 /*Socket.io*/
@@ -207,7 +213,7 @@ async function login() {
             clearLocalStorageWithoutKey();
             window.location.href = "../signUp.html";
         }
-        
+
     } catch (err) {
         console.log(err);
     }
@@ -343,8 +349,16 @@ async function manageNewMessages(crypted_updates) {
             for (let j = 0; j < chatToupdate.nonVisualized.length; j++) {
                 chat.nonVisualized.push(chatToupdate.nonVisualized[j]);
             }
+            for (let k = 0; k < chatToupdate.visualized.length; k++) {
+                chat.visualized.push(chatToupdate.visualized[k]);
+            }
+            for (let l = 0; l < chatToupdate.removed.length; l++) {
+                chat.removed.push(chatToupdate.removed[l]);
+            }
             chats[index] = chat;
             remove(chat.id);
+            var list = document.getElementById("contact-list");
+            list.removeChild(list.childNodes[index]);
             add(chat);
         } else {
             chats.push(chatToupdate);
@@ -360,8 +374,20 @@ async function manageNewMessages(crypted_updates) {
             for (let j = 0; j < groupToupdate.nonVisualized.length; j++) {
                 group.nonVisualized.push(groupToupdate.nonVisualized[j]);
             }
+            for (let k = 0; k < chatToupdate.visualized.length; k++) {
+                chat.visualized.push(chatToupdate.visualized[k]);
+            }
+            for (let l = 0; l < chatToupdate.removed.length; l++) {
+                chat.removed.push(chatToupdate.removed[l]);
+            }
+            for (let m = 0; m < chatToupdate.members.length; m++) {
+                chat.members.push(chatToupdate.members[m]);
+            }
             groups[index] = group;
             remove(group.id);
+            var list = document.getElementById("contact-list");
+            const nthChild = list.children[i];
+            list.removeChild(nthChild);
             add(group);
         } else {
             groups.push(groupToupdate);
@@ -521,10 +547,11 @@ function createChats() {
             var contactDiv3 = document.createElement("div");
             contactDiv3.classList.add("d-flex");
             contactDiv3.classList.add("flex-column");
-            var contactName = document.createElement("p");
+            var contactName = document.createElement("b");
             contactName.setAttribute("id", "contact-name");
             contactName.classList.add("user-select-none");
             contactName.classList.add("text-white");
+            contactName.style.fontSize = "20px";
             contactName.innerHTML = chats[i].name;
             var contactLastMessage = document.createElement("p");
             contactLastMessage.setAttribute("id", "contact-last-message");
@@ -575,6 +602,7 @@ async function sendMessage() {
         //mostra un errore
     }
     else {
+        document.getElementById("message-input").value = "";
         let chat = JSON.parse(decryptAES(localStorage.getItem("data"), kM.getAesKey()))
         let crypted_message = await encrypt(message, localStorage.getItem("publicKeyArmored"))
         let crypted_nickname = await encrypt(chat.nickname, localStorage.getItem("publicKeyArmored"))
@@ -628,17 +656,17 @@ function openChat(index) {
                 }
             }
             selectChat(index);
-            console.log(getSelectedChat())
-            document.getElementById("messages").innerHTML = "";
-            //createChat(index);//da fare
+            changeHeight();
+            document.getElementById("lista-messaggi").innerHTML = "";
+            createChat(index);
             var selectedChat = get(index);
             if (selectedChat.nonVisualized.length > 0) {
                 for (let i = 0; i < selectedChat.nonVisualized.length; i++) {
                     selectedChat.visualized.push(selectedChat.nonVisualized[i]);
                 }
                 selectedChat.nonVisualized = [];
-                clear();
-                addAll(selectedChat);
+                remove(selectedChat.id);
+                add(selectedChat);
                 var data = localStorage.getItem("data");
                 var decrypted_data = decryptAES(data, kM.getAesKey());
                 var chats = JSON.parse(decrypted_data);
@@ -670,6 +698,94 @@ function openChat(index) {
             "Please try again later";
 
         document.getElementById("no-button").innerText = "Ok";
+    }
+}
+
+function createChat(index) {
+    var myNick = JSON.parse(decryptAES(localStorage.getItem("data"), kM.getAesKey())).nickname;
+    /*
+    <div class="sender-message"><div class="sent-message">
+                                    <div class="message">
+                                        Ciao! Come stai? 🚀
+                                    </div>
+                                    <div class="time">
+                                        12:45 <i class="fa fa-check"></i>
+                                    </div>
+                                </div>
+                                <div class="received-message">
+                                    <div class="message">
+                                        Sto bene, grazie! E tu?
+                                    </div>
+                                    <div class="time">
+                                        12:46
+                                    </div>
+                                </div>*/
+
+    var chat = document.getElementById("lista-messaggi");
+    console.log(chat)
+    var selectedChat = get(index);
+    if(isGroup(index)) {
+    /*for (let i = 0; i < selectedChat.visualized.length; i++) {
+        var div = document.createElement("div");
+        div.classList.add("chat-message");
+        var div1 = document.createElement("div");
+        div1.classList.add("sender-message");
+        var div2 = document.createElement("div");
+        div2.classList.add("message");
+        div2.innerText = selectedChat.visualized[i].message;
+    }*/
+    } else {
+        for (let i = 0; i < selectedChat.visualized.length; i++) {
+            var div1 = document.createElement("div");
+            if(selectedChat.visualized[i].nickname == myNick) {
+                div1.classList.add("sent-message");
+            } else {
+                div1.classList.add("received-message");
+            }
+            var div2 = document.createElement("div");
+            div2.classList.add("message");
+            div2.innerText = selectedChat.visualized[i].message;
+            var div3 = document.createElement("div");
+            div3.classList.add("time");
+            div3.classList.add("text-white");
+            var date = new Date(selectedChat.visualized[i].date);
+            div3.innerText = date.toLocaleString('en-us', { weekday: 'long' }) + ", " + date.getDate() + " " + date.toLocaleString('en-us', { month: 'long' }) + " " + selectedChat.visualized[i].date.substring(11, 16);
+            var check = document.createElement("i");
+            check.classList.add("fa");
+            check.classList.add("fa-check");
+            check.style.color = "var( --dark-violet-1);";
+            check.style.marginLeft = "5px";
+            div3.appendChild(check);
+            div1.appendChild(div2);
+            div1.appendChild(div3);
+            chat.appendChild(div1);
+        }
+        //non visualized
+        for (let i = 0; i < selectedChat.nonVisualized.length; i++) {
+            var div1 = document.createElement("div");
+            if(selectedChat.nonVisualized[i].nickname == myNick) {
+                div1.classList.add("sent-message");
+            } else {
+                div1.classList.add("received-message");
+            }
+            var div2 = document.createElement("div");
+            div2.classList.add("message");
+            div2.innerText = selectedChat.nonVisualized[i].message;
+            var div3 = document.createElement("div");
+            div3.classList.add("time");
+            div3.classList.add("text-white");
+            var date = new Date(selectedChat.nonVisualized[i].date);
+            div3.innerText = date.toLocaleString('en-us', { weekday: 'long' }) + ", " + date.getDate() + " " + date.toLocaleString('en-us', { month: 'long' }) + " " + selectedChat.nonVisualized[i].date.substring(11, 16);
+            var check = document.createElement("i");
+            check.classList.add("fa");
+            check.classList.add("fa-check");
+            check.classList.add("text-white");
+            check.style.marginLeft = "5px";
+            div3.appendChild(check);
+            div1.appendChild(div2);
+            div1.appendChild(div3);
+            chat.appendChild(div1);
+        }
     }
 }
 
@@ -827,3 +943,9 @@ document.getElementById("chatNameLabel").onclick = function () {
     var containerEmail = document.getElementById("container-chatName");
     containerEmail.classList.remove("error");
 };
+
+function changeHeight() {
+    document.getElementById("messages").style.height = "calc(100% - " + (document.getElementById("typezone").offsetHeight + document.getElementById("header-chat").offsetHeight) + "px)";
+}
+
+changeHeight();
