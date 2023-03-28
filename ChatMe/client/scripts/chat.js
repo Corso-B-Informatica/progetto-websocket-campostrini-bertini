@@ -742,6 +742,9 @@ function createChat(index) {
             } else {
                 div1.classList.add("received-message");
             }
+            if(i == 0) {
+                div1.style.paddingTop = "10px";
+            }
             var div2 = document.createElement("div");
             div2.classList.add("message");
             div2.innerText = selectedChat.visualized[i].message;
@@ -767,6 +770,9 @@ function createChat(index) {
                 div1.classList.add("sent-message");
             } else {
                 div1.classList.add("received-message");
+            }
+            if(i == 0) {
+                div1.style.paddingTop = "10px";
             }
             var div2 = document.createElement("div");
             div2.classList.add("message");

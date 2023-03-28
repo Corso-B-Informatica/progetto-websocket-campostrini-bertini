@@ -88,6 +88,35 @@
   margin: 0px;
 }
 
+
+#messages ::-webkit-scrollbar {
+  transition: all .5s;
+  width: 5px;
+  height: 1px;
+  z-index: 10;
+}
+
+#messages ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#messages ::-webkit-scrollbar-thumb {
+  background: #b3ada7;
+}
+
+#messages #lista-messaggi {
+  box-shadow: inset 0 10px 10px -10px #000000;
+  overflow-x: hidden;
+  padding: 0 16px;
+  margin-bottom: 5px;
+}
+
+#messages #lista-messaggi:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
 /*Menu*/
 #menu {
   background-color: var(--dark-2);
@@ -100,7 +129,7 @@
 }
 
 .chat-container {
-  max-height: 95%;
+  max-height: 100%;
   overflow-y: auto;
 }
 
