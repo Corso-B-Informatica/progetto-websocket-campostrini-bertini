@@ -31,7 +31,8 @@ async function sendAesKey(
             socket.join(chat["groups"][i].id);
         }
 
-        socketList.pushSocket(nickname, socket);
+        socketList.pushSocket(nickname, socket.id);
+        console.log(socketList.getSocketList());
 
         socket.broadcast.emit("online", nickname);
         
@@ -87,8 +88,7 @@ async function getNewMessages(crypted_nickname, crypted_password, crypted_pubKey
     }
 }
 
-async function AddMessage(crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_pubKey, socket) {
-
+async function AddMessage(crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_pubKey, socket, io) {
     const message = await validator.UltimateValidator(crypted_message, 0, true);
     const id = await validator.UltimateValidator(crypted_id, 0, true);
     const password = await validator.UltimateValidator(crypted_password, 0, true);
@@ -144,11 +144,16 @@ async function AddMessage(crypted_message, crypted_nickname, crypted_password, c
                     for (let i = 0; i < chat2.chats.length; i++) {
                         if(chat2.chats[i].id == id){
                             chat2.chats[i].nonVisualized.push(json2);
-                            database.JsonUpdate(nickname2, JSON.stringify(chat2))
-                            let bigsocket = socketList.getSocket(nickname2)
-                            if(bigsocket != undefined && bigsocket != null){
-                                bigsocket.emit("newMessages", await crypto.encrypt(JSON.stringify({ "chats": [{"id": chat2.chats[i].id, "name" : chat2.chats[i].name, "visualized": [], "nonVisualized": [json2], "removed": []}], "groups": [] }), pubKey))
+                            database.JsonUpdate(nickname2, JSON.stringify(chat2));
+                            var socketDestinations = socketList.getSocketList();
+                            var socketDestination = null;
+                            for(let i = 0; i < socketDestinations.length; i++){
+                                if(socketDestinations[i].nickname == nickname2){
+                                    socketDestination = socketDestinations[i].socket;
+                                    console.log(socketDestinations[i])
+                                }
                             }
+                            io.to(socketDestination).emit("newMessages", await crypto.encrypt(JSON.stringify({ "chats": [{"id": chat2.chats[i].id, "name" : chat2.chats[i].name, "visualized": [], "nonVisualized": [json2], "removed": []}], "groups": [] }), pubKey));
                         } 
                     }
                 }

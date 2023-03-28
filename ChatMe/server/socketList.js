@@ -1,16 +1,23 @@
 var sockets = {};
 
-function pushSocket(id, socket) {
-    sockets[id] = socket;
+function pushSocket(nickname, socketID) {
+    sockets[nickname] = socketID;
 }
 
-function getSocket(id) {
-    return sockets[id];
+function popSocket(nickname) {
+    delete sockets[nickname];
 }
 
-function getSocketId(socket) {
+function find(nickname) {
+    return sockets[nickname];
+}
+function getSocket(nickname) {
+    return sockets[nickname];
+}
+
+function getSocketId(socketID) {
     for (let sock in sockets) {
-        if (sockets[sock] == socket) {
+        if (sockets[sock.nickname] == socketID) {
             return sock;
         }
     }
@@ -20,4 +27,4 @@ function getSocketList() {
     return sockets;
 }
 
-module.exports = { pushSocket, getSocket, getSocketList, getSocketId };
+module.exports = { pushSocket, getSocket, getSocketList, getSocketId, popSocket, find };

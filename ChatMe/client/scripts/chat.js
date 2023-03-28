@@ -74,6 +74,24 @@ function sort() {
     }
 }
 
+function sortChat(messages) {
+    var scambio = true;
+
+    for (let i = 0; i < messages.length - 1 && scambio; i++) {
+        scambio = false;
+        for (let j = 0; j < messages.length - 1 - i; j++) {
+            if (new Date(messages[j].date) > new Date(messages[j + 1].date)) {
+                var message = messages[j];
+                messages[j] = messages[j + 1];
+                messages[j + 1] = message;
+                scambio = true;
+            }
+        }
+    }
+
+    return messages;
+}
+
 function isGroup(index) {
     return sortedChat[index].members != undefined && sortedChat[index].members != null;
 }
@@ -295,6 +313,7 @@ async function manageSync(crypted_chat) {
     }
 
     sort();
+    document.getElementById("contact-list").innerHTML = "";
     createChats();
     showNewMessagesNumber();
 
@@ -357,8 +376,6 @@ async function manageNewMessages(crypted_updates) {
             }
             chats[index] = chat;
             remove(chat.id);
-            var list = document.getElementById("contact-list");
-            list.removeChild(list.childNodes[index]);
             add(chat);
         } else {
             chats.push(chatToupdate);
@@ -385,9 +402,6 @@ async function manageNewMessages(crypted_updates) {
             }
             groups[index] = group;
             remove(group.id);
-            var list = document.getElementById("contact-list");
-            const nthChild = list.children[i];
-            list.removeChild(nthChild);
             add(group);
         } else {
             groups.push(groupToupdate);
@@ -408,8 +422,16 @@ async function manageNewMessages(crypted_updates) {
     }
 
     sort();
+    document.getElementById("contact-list").innerHTML = "";
     createChats();
     showNewMessagesNumber();
+
+    if(getSelectedChat() >= 0) {
+        document.getElementById("lista-messaggi").innerHTML = "";
+        createChat(getSelectedChat());
+        var objDiv = document.getElementById("lista-messaggi");
+        objDiv.scrollTop = objDiv.scrollHeight;
+    }
 
     /*var storage = JSON.parse(decryptAES(localStorage.getItem("data"), kM.getAesKey()));
     var nickname = await encrypt(storage.nickname, localStorage.getItem("publicKeyArmored"));
@@ -558,9 +580,9 @@ function createChats() {
             contactLastMessage.classList.add("user-select-none");
             contactLastMessage.classList.add("text-white");
             contactLastMessage.style.color = "var(--last-status-transparent);";
-            if (chats[i].nonVisualized.length > 0) {
+            if(new Date(chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date) > new Date(chats[i].visualized[chats[i].visualized.length - 1].date)){
                 contactLastMessage.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].message;
-            } else if (chats[i].visualized.length > 0) {
+            } else {
                 contactLastMessage.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].message;
             }
             var contactLastMessageTime = document.createElement("div");
@@ -641,6 +663,7 @@ function openChat(index) {
     if (index >= 0 && index < size()) {
         if (index != getSelectedChat()) {
             document.getElementById("header-chat").classList.remove("d-none");
+            document.getElementById("header-chat-name").innerText = get(index).name;
             document.getElementById("typezone").classList.remove("d-none");
             if (window.innerWidth < 901) {
                 $("#menu").hide();
@@ -699,6 +722,9 @@ function openChat(index) {
 
         document.getElementById("no-button").innerText = "Ok";
     }
+    //scroll to buttom
+    var objDiv = document.getElementById("lista-messaggi");
+    objDiv.scrollTop = objDiv.scrollHeight;
 }
 
 function createChat(index) {
@@ -722,8 +748,17 @@ function createChat(index) {
                                 </div>*/
 
     var chat = document.getElementById("lista-messaggi");
-    console.log(chat)
     var selectedChat = get(index);
+    var messages = [];
+
+    for(let i = 0; i < selectedChat.nonVisualized.length; i++) {
+        messages.push(selectedChat.nonVisualized[i]);
+    }
+    for(let i = 0; i < selectedChat.visualized.length; i++) {
+        messages.push(selectedChat.visualized[i]);
+    }
+    var chatOrdinata = sortChat(messages);
+
     if(isGroup(index)) {
     /*for (let i = 0; i < selectedChat.visualized.length; i++) {
         var div = document.createElement("div");
@@ -735,9 +770,9 @@ function createChat(index) {
         div2.innerText = selectedChat.visualized[i].message;
     }*/
     } else {
-        for (let i = 0; i < selectedChat.visualized.length; i++) {
+        for (let i = 0; i <  chatOrdinata.length; i++) {
             var div1 = document.createElement("div");
-            if(selectedChat.visualized[i].nickname == myNick) {
+            if(chatOrdinata[i].nickname == myNick) {
                 div1.classList.add("sent-message");
             } else {
                 div1.classList.add("received-message");
@@ -747,41 +782,13 @@ function createChat(index) {
             }
             var div2 = document.createElement("div");
             div2.classList.add("message");
-            div2.innerText = selectedChat.visualized[i].message;
+            div2.innerText = chatOrdinata[i].message;
             var div3 = document.createElement("div");
             div3.classList.add("time");
             div3.classList.add("text-white");
-            var date = new Date(selectedChat.visualized[i].date);
-            div3.innerText = date.toLocaleString('en-us', { weekday: 'long' }) + ", " + date.getDate() + " " + date.toLocaleString('en-us', { month: 'long' }) + " " + selectedChat.visualized[i].date.substring(11, 16);
-            var check = document.createElement("i");
-            check.classList.add("fa");
-            check.classList.add("fa-check");
-            check.style.color = "var( --dark-violet-1);";
-            check.style.marginLeft = "5px";
-            div3.appendChild(check);
-            div1.appendChild(div2);
-            div1.appendChild(div3);
-            chat.appendChild(div1);
-        }
-        //non visualized
-        for (let i = 0; i < selectedChat.nonVisualized.length; i++) {
-            var div1 = document.createElement("div");
-            if(selectedChat.nonVisualized[i].nickname == myNick) {
-                div1.classList.add("sent-message");
-            } else {
-                div1.classList.add("received-message");
-            }
-            if(i == 0) {
-                div1.style.paddingTop = "10px";
-            }
-            var div2 = document.createElement("div");
-            div2.classList.add("message");
-            div2.innerText = selectedChat.nonVisualized[i].message;
-            var div3 = document.createElement("div");
-            div3.classList.add("time");
-            div3.classList.add("text-white");
-            var date = new Date(selectedChat.nonVisualized[i].date);
-            div3.innerText = date.toLocaleString('en-us', { weekday: 'long' }) + ", " + date.getDate() + " " + date.toLocaleString('en-us', { month: 'long' }) + " " + selectedChat.nonVisualized[i].date.substring(11, 16);
+            var date = new Date(chatOrdinata[i].date);
+            div3.innerText = date.toLocaleString('en-us', { weekday: 'long' }) + ", " + date.getDate() + " " + date.toLocaleString('en-us', { month: 'long' }) + " " + chatOrdinata[i].date.substring(11, 16);
+            //la visualizzazione va fatta, facendo una richiesta al server per vedere che messaggi ha visualizzato l'altra persona
             var check = document.createElement("i");
             check.classList.add("fa");
             check.classList.add("fa-check");
@@ -804,7 +811,7 @@ async function searchContact() {
         var chats = JSON.parse(decrypted_data);
         for (let i = 0; i < chats["chats"].length; i++) {
             if (chats["chats"][i].name != contact) {
-                if (!chats["chats"][i].name.includes(contact)) {
+                if (!contains(chats["chats"][i].name, contact)) {
                     document.getElementById("contact-" + i).classList.add("d-none");
                 } else {
                     document.getElementById("contact-" + i).classList.remove("d-none");
@@ -816,7 +823,7 @@ async function searchContact() {
 
         for (let i = 0; i < chats["groups"].length; i++) {
             if (chats["groups"][i].name != contact) {
-                if (!chats["groups"][i].name.includes(contact)) {
+                if (!contains(chats["groups"][i].name, contact)) {
                     document.getElementById("contact-" + i).classList.add("d-none");
                 } else {
                     document.getElementById("contact-" + i).classList.remove("d-none");
@@ -830,6 +837,21 @@ async function searchContact() {
             document.getElementById("contact-" + i).classList.remove("d-none");
         }
     }
+}
+
+function contains(str, text) {
+    if(str.length < text.length) {
+        return false;
+    }
+    for(let i = 0; i < str.length; i++) {
+        if(text.length == i) {
+            return true;
+        }
+        if(str[i] != text[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 function attachFile() {

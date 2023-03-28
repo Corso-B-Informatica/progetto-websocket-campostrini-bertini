@@ -65,7 +65,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("message", (crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_pubKey) => {
-    chat.AddMessage(crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_pubKey, socket);
+    chat.AddMessage(crypted_message, crypted_nickname, crypted_password, crypted_id, crypted_pubKey, socket, io);
   });
 
   socket.on("sync", (crypted_nickname, crypted_password, crypted_pubKey) => {
@@ -82,6 +82,7 @@ io.on("connection", (socket) => {
 });
 
 io.on("disconnect", (socket) => {
+  socketList.popSocket(socketList.getSocketId(socket));
   socket.broadcast.emit("offline", socketList.getSocketId(socket));
 });
 
