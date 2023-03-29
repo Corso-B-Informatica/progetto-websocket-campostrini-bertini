@@ -204,6 +204,7 @@ socket.on("errorGetNewMessages", () => {
 });
 
 socket.on("newMessages", (newMessages) => {
+    console.log("c")
     manageNewMessages(newMessages);
 });
 
@@ -211,26 +212,28 @@ socket.on("newMessages", (newMessages) => {
 async function login() {
     try {
         await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+        
+        setTimeout(async function () {
+            if (checkData()) {
+                if (checkKey()) {
+                    $('#loadingModal').modal('show');
 
-        if (checkData()) {
-            if (checkKey()) {
-                $('#loadingModal').modal('show');
+                    socket.emit(
+                        "getAesKey",
+                        await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
+                        await encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored")),
+                        await encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored")),
+                        await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
+                    );
 
-                socket.emit(
-                    "getAesKey",
-                    await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
-                    await encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored")),
-                    await encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored")),
-                    await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
-                );
-
+                } else {
+                    socket.emit("getPublicKey", "0");
+                }
             } else {
-                socket.emit("getPublicKey", "0");
+                clearLocalStorageWithoutKey();
+                window.location.href = "../signUp.html";
             }
-        } else {
-            clearLocalStorageWithoutKey();
-            window.location.href = "../signUp.html";
-        }
+        }, 1000);
 
     } catch (err) {
         console.log(err);
@@ -426,7 +429,7 @@ async function manageNewMessages(crypted_updates) {
     createChats();
     showNewMessagesNumber();
 
-    if(getSelectedChat() >= 0) {
+    if (getSelectedChat() >= 0) {
         document.getElementById("lista-messaggi").innerHTML = "";
         createChat(getSelectedChat());
         var objDiv = document.getElementById("lista-messaggi");
@@ -580,7 +583,7 @@ function createChats() {
             contactLastMessage.classList.add("user-select-none");
             contactLastMessage.classList.add("text-white");
             contactLastMessage.style.color = "var(--last-status-transparent);";
-            if(new Date(chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date) > new Date(chats[i].visualized[chats[i].visualized.length - 1].date)){
+            if (new Date(chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date) > new Date(chats[i].visualized[chats[i].visualized.length - 1].date)) {
                 contactLastMessage.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].message;
             } else {
                 contactLastMessage.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].message;
@@ -703,6 +706,9 @@ function openChat(index) {
                 localStorage.setItem("data", encrypted_data);
                 showNewMessagesNumber();
             }
+            //scroll to buttom
+            var objDiv = document.getElementById("lista-messaggi");
+            objDiv.scrollTop = objDiv.scrollHeight;
         }
 
     } else {
@@ -722,9 +728,6 @@ function openChat(index) {
 
         document.getElementById("no-button").innerText = "Ok";
     }
-    //scroll to buttom
-    var objDiv = document.getElementById("lista-messaggi");
-    objDiv.scrollTop = objDiv.scrollHeight;
 }
 
 function createChat(index) {
@@ -751,33 +754,33 @@ function createChat(index) {
     var selectedChat = get(index);
     var messages = [];
 
-    for(let i = 0; i < selectedChat.nonVisualized.length; i++) {
+    for (let i = 0; i < selectedChat.nonVisualized.length; i++) {
         messages.push(selectedChat.nonVisualized[i]);
     }
-    for(let i = 0; i < selectedChat.visualized.length; i++) {
+    for (let i = 0; i < selectedChat.visualized.length; i++) {
         messages.push(selectedChat.visualized[i]);
     }
     var chatOrdinata = sortChat(messages);
 
-    if(isGroup(index)) {
-    /*for (let i = 0; i < selectedChat.visualized.length; i++) {
-        var div = document.createElement("div");
-        div.classList.add("chat-message");
-        var div1 = document.createElement("div");
-        div1.classList.add("sender-message");
-        var div2 = document.createElement("div");
-        div2.classList.add("message");
-        div2.innerText = selectedChat.visualized[i].message;
-    }*/
-    } else {
-        for (let i = 0; i <  chatOrdinata.length; i++) {
+    if (isGroup(index)) {
+        /*for (let i = 0; i < selectedChat.visualized.length; i++) {
+            var div = document.createElement("div");
+            div.classList.add("chat-message");
             var div1 = document.createElement("div");
-            if(chatOrdinata[i].nickname == myNick) {
+            div1.classList.add("sender-message");
+            var div2 = document.createElement("div");
+            div2.classList.add("message");
+            div2.innerText = selectedChat.visualized[i].message;
+        }*/
+    } else {
+        for (let i = 0; i < chatOrdinata.length; i++) {
+            var div1 = document.createElement("div");
+            if (chatOrdinata[i].nickname == myNick) {
                 div1.classList.add("sent-message");
             } else {
                 div1.classList.add("received-message");
             }
-            if(i == 0) {
+            if (i == 0) {
                 div1.style.paddingTop = "10px";
             }
             var div2 = document.createElement("div");
@@ -840,14 +843,14 @@ async function searchContact() {
 }
 
 function contains(str, text) {
-    if(str.length < text.length) {
+    if (str.length < text.length) {
         return false;
     }
-    for(let i = 0; i < str.length; i++) {
-        if(text.length == i) {
+    for (let i = 0; i < str.length; i++) {
+        if (text.length == i) {
             return true;
         }
-        if(str[i] != text[i]) {
+        if (str[i] != text[i]) {
             return false;
         }
     }

@@ -82,7 +82,12 @@ io.on("connection", (socket) => {
 });
 
 io.on("disconnect", (socket) => {
-  socketList.popSocket(socketList.getSocketId(socket));
+  for (const [nickname, userSocket] of Object.entries(socketList.sockets)) {
+    if (userSocket === socket) {
+      delete socketList.sockets[nickname];
+      break;
+    }
+  }
   socket.broadcast.emit("offline", socketList.getSocketId(socket));
 });
 
