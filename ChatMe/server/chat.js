@@ -32,13 +32,13 @@ async function sendAesKey(
         }
 
         socketList.sockets[nickname] = socket;
-        socket.broadcast.emit("online", nickname);
+        //socket.broadcast.emit("online", nickname);
         console.log("s")
         var message = await crypto.encrypt(
             aesKey,
             publicKey
         );
-
+        
         socket.emit(
             "aesKey",
             message

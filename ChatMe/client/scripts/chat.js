@@ -250,6 +250,7 @@ async function manageAesKeySuccess(crypted_aes_key) {
         kM.getPrivateKey(),
         kM.getPassphrase()
     );
+    console.log(aes_key)
 
     kM.setAesKey(aes_key);
 
