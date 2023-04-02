@@ -32,13 +32,13 @@ async function sendAesKey(
         }
 
         socketList.sockets[nickname] = socket;
-        socket.broadcast.emit("online", nickname);
-        
+        socket.broadcast.emit("online", nickname);// da fare
+
         var message = await crypto.encrypt(
             aesKey,
             publicKey
         );
-        
+
         socket.emit(
             "aesKey",
             message
@@ -107,15 +107,15 @@ async function AddMessage(crypted_message, crypted_nickname, crypted_password, c
                 if (id > 30) {
                     let chat = JSON.parse(await database.GetChat(nickname));
                     console.log(chat)
-                    for(let i = 0; i < chat.groups.length; i++){
-                        if(chat.groups[i].id == id){
+                    for (let i = 0; i < chat.groups.length; i++) {
+                        if (chat.groups[i].id == id) {
                             chat.groups[i].nonVisualized.push({ "message": message, "nickname": nickname, "date": new Date().toISOString() });
                             chat.groups[i].members.forEach(element => {
                                 (async () => {
                                     let chat = JSON.parse(await database.GetChat(element));
                                     let json = { "message": message, "nickname": nickname, "date": new Date().toISOString() };
-                                    for(let i = 0; i < chat.groups.length; i++){
-                                        if(chat.groups[i].id == id){
+                                    for (let i = 0; i < chat.groups.length; i++) {
+                                        if (chat.groups[i].id == id) {
                                             chat.groups[i].nonVisualized.push(json);
                                             database.JsonUpdate(element, JSON.stringify(chat));
                                             //da finire
@@ -130,21 +130,21 @@ async function AddMessage(crypted_message, crypted_nickname, crypted_password, c
                     var chat1 = JSON.parse(await database.GetChat(nickname));
                     let json1 = { "message": message, "nickname": nickname, "date": new Date().toISOString() };
                     for (let i = 0; i < chat1.chats.length; i++) {
-                        if(chat1.chats[i].id == id){
+                        if (chat1.chats[i].id == id) {
                             chat1.chats[i].visualized.push(json1);
                             database.JsonUpdate(nickname, JSON.stringify(chat1))
-                            socket.emit("newMessages", await crypto.encrypt(JSON.stringify({ "chats": [{"id": chat1.chats[i].id, "name" : chat1.chats[i].name, "visualized": [json1], "nonVisualized": [], "removed": []}], "groups": [] }), pubKey))
-                        } 
+                            socket.emit("newMessages", await crypto.encrypt(JSON.stringify({ "chats": [{ "id": chat1.chats[i].id, "name": chat1.chats[i].name, "visualized": [json1], "nonVisualized": [], "removed": [] }], "groups": [] }), pubKey))
+                        }
                     }
                     var nickname2 = id.replace(nickname, "");
                     var chat2 = JSON.parse(await database.GetChat(nickname2))
                     let json2 = { "message": message, "nickname": nickname, "date": new Date().toISOString() };
                     for (let i = 0; i < chat2.chats.length; i++) {
-                        if(chat2.chats[i].id == id){
+                        if (chat2.chats[i].id == id) {
                             chat2.chats[i].nonVisualized.push(json2);
                             database.JsonUpdate(nickname2, JSON.stringify(chat2));
-                            socketList.sockets[nickname2].emit("newMessages", await crypto.encrypt(JSON.stringify({ "chats": [{"id": chat2.chats[i].id, "name" : chat2.chats[i].name, "visualized": [], "nonVisualized": [json2], "removed": []}], "groups": [] }), pubKey));
-                        } 
+                            socketList.sockets[nickname2].emit("newMessages", await crypto.encrypt(JSON.stringify({ "chats": [{ "id": chat2.chats[i].id, "name": chat2.chats[i].name, "visualized": [], "nonVisualized": [json2], "removed": [] }], "groups": [] }), pubKey));
+                        }
                     }
                 }
             }
@@ -175,6 +175,7 @@ async function sync(crypted_nickname, crypted_password, crypted_pubKey, socket) 
     else {
         socket.emit("errorUserNotFound");
     }
+    //in futuro restituire anche immagini e file
 }
 
 async function newChat(crypted_nickname, crypted_password, crypted_chatName, crypted_pubKey, socket) {
@@ -201,10 +202,10 @@ async function newChat(crypted_nickname, crypted_password, crypted_chatName, cry
                         data2["chats"].push({ "id": id, "name": nickname, "visualized": [], "nonVisualized": [], "removed": [] });
                         if (await database.JsonUpdate(chatName, JSON.stringify(data2))) {
                             socket.join(id);
-                            let socketDestination = socketList[chatName];
-                            socketDestination.emit("getPublicKey", "0", chatName);
-                            var newChat1 = await crypto.encrypt(JSON.stringify({ "chats": [{ "id": id, "name": chatName, "visualized": [], "nonVisualized": [], "removed": [] }], "groups": [] }), pubKey);
-                            socket.emit("newChatCreated", newChat1);
+                            let socketDestination = socketList.sockets[chatName];
+                            socketDestination.emit("getPublicKey", "0", await crypto.encrypt(id, pubKey));
+                            //emittiamo all'altro socket un messaggio per ottenere la chiave pubblica
+                            //e una volta ottenuta possiamo mandargli i messaggi
                         } else {
                             socket.emit("errorNewChat");
                         }
@@ -213,7 +214,7 @@ async function newChat(crypted_nickname, crypted_password, crypted_chatName, cry
                     }
                 } else {
                     var data1 = JSON.parse(await database.GetChat(chatName));
-                    for(let i = 0; i < data1["chats"].length; i++){
+                    for (let i = 0; i < data1["chats"].length; i++) {
                         if (data1["chats"][i]["id"] == id || data1["chats"][i]["id"] == chatName + nickname) {
                             var crypted_chat = await crypto.encrypt(JSON.stringify({ "chats": data1["chats"][i], "groups": [] }), pubKey);
                             socket.emit("errorChatAlreadyExist", crypted_chat);
@@ -269,20 +270,25 @@ async function newGroup(crypted_nickname, crypted_password, crypted_members, cry
 
 }
 
-async function sencChat(publicKey, nickname, chatName, socket) {
+/**
+ * Quando viene creata una nuova chat, viene chiesta la aes key al destinatario e poi una volta che ce la manda gli mandiamo la nuova chat.
+ */
+async function sendNewChat(publicKey, nickname, password, id, socket) {
     var pubKey = await validator.UltimateValidator(publicKey, 0, false);
     var nick = await validator.UltimateValidator(nickname, 0, true);
-    var chat = await validator.UltimateValidator(chatName, 0, true);
+    var pass = await validator.UltimateValidator(password, 0, true);
+    var chat = await validator.UltimateValidator(id, 0, true);
 
     let check = await crypto.isValid(pubKey);
 
     if (!check) {
         socket.emit("errorPubKey");
-    } else if(await database.existNickname(nick)){
-        let socketDestination = socketList[nick];
-        socketDestination.emit("getPublicKey", "0", id, chatName);
+    } else if (await database.checkDatabase(database.Users, nick, "", pass)) {
+        socket.join(chat);
+        var newChat2 = await crypto.encrypt(JSON.stringify({ "chats": [{ "id": id, "name": nickname, "visualized": [], "nonVisualized": [], "removed": [] }], "groups": [] }), pubKey);
+        socket.emit("newChatCreated", newChat2);
     } else {
-        socket.emit("error");
+        socket.emit("errorUserNotFound");
     }
 }
 
@@ -293,4 +299,5 @@ module.exports = {
     AddMessage,
     sync,
     getNewMessages
+    ,sendNewChat
 };

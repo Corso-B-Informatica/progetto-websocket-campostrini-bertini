@@ -9,9 +9,6 @@
 /*contatto html*/
 //gestire le emoji non abbiamo ancora fatto la tabella emoji
 
-const { encrypt } = require("../../server/crypto");
-
-
 /*keyManager*/
 const kM = new keyManager();
 
@@ -64,12 +61,14 @@ function sort() {
     for (let i = 0; i < sortedChat.length - 1 && scambio; i++) {
         scambio = false;
         for (let j = 0; j < sortedChat.length - 1 - i; j++) {
-            if (sortedChat[j].nonVisualized[sortedChat[j].nonVisualized.length - 1] != undefined && sortedChat[j].nonVisualized[sortedChat[j].nonVisualized.length - 1] != undefined) {
-                if (new Date(sortedChat[j].nonVisualized[sortedChat[j].nonVisualized.length - 1].date) > new Date(sortedChat[j].nonVisualized[sortedChat[j + 1].nonVisualized.length - 1].date)) {
-                    var chat = sortedChat[j];
-                    sortedChat[j] = sortedChat[j + 1];
-                    sortedChat[j + 1] = chat;
-                    scambio = true;
+            if (sortedChat[j].nonVisualized[sortedChat[j].nonVisualized.length - 1] != undefined && sortedChat[j].nonVisualized[sortedChat[j + 1].nonVisualized.length - 1] != undefined) {
+                if (sortedChat[j].nonVisualized[sortedChat[j].nonVisualized.length - 1].length != 0 && sortedChat[j].nonVisualized[sortedChat[j + 1].nonVisualized.length - 1].length != 0) {
+                    if (new Date(sortedChat[j].nonVisualized[sortedChat[j].nonVisualized.length - 1].date) > new Date(sortedChat[j].nonVisualized[sortedChat[j + 1].nonVisualized.length - 1].date)) {
+                        var chat = sortedChat[j];
+                        sortedChat[j] = sortedChat[j + 1];
+                        sortedChat[j + 1] = chat;
+                        scambio = true;
+                    }
                 }
             }
         }
@@ -82,11 +81,15 @@ function sortChat(messages) {
     for (let i = 0; i < messages.length - 1 && scambio; i++) {
         scambio = false;
         for (let j = 0; j < messages.length - 1 - i; j++) {
-            if (new Date(messages[j].date) > new Date(messages[j + 1].date)) {
-                var message = messages[j];
-                messages[j] = messages[j + 1];
-                messages[j + 1] = message;
-                scambio = true;
+            try {
+                if (new Date(messages[j].date) > new Date(messages[j + 1].date)) {
+                    var message = messages[j];
+                    messages[j] = messages[j + 1];
+                    messages[j + 1] = message;
+                    scambio = true;
+                }
+            } catch (error) {
+                console.log(error);
             }
         }
     }
@@ -191,6 +194,7 @@ socket.on("errorNewChat", () => {
 });
 
 socket.on("newChatCreated", (crypted_newChat) => {
+    console.log("è stata creata una nuova chat");
     manageNewMessages(crypted_newChat)
 });
 
@@ -218,16 +222,19 @@ socket.on("error", (error) => {
 });
 
 async function sendPublicKey(type, chatName) {
-    var nickname = await encrypt(kM.getNickname(), localStorage.getItem("publicKeyArmored"));
-    var password = await encrypt(kM.getPassphrase(), localStorage.getItem("publicKeyArmored"));
-    
+    var data = decryptAES(localStorage.getItem("data"), kM.getAesKey()).replaceAll("\\n", "").replaceAll("\r", "").replaceAll("\t", "").replaceAll(" ", "").replaceAll("\\", "");
+    var decrypted_data = JSON.parse(data);
+    var nickname = decrypted_data.nickname;
+    var password = decrypted_data.password;
+    var chat = await encrypt(await decrypt(chatName, kM.getPrivateKey()), localStorage.getItem("publicKeyArmored"));
+
     if (type == "0") {
-        socket.emit("publicKey", type, await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored")), nickname, password, chatName);
+        socket.emit("publicKey", type, await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored")), nickname, password, chat);
     }
 }
 
 async function manageError(error) {
-    var { data : message } = await decrypt(error, 
+    var { data: message } = await decrypt(error,
         kM.getPrivateKey(),
         kM.getPassphrase()
     );
@@ -629,7 +636,7 @@ function createChats() {
             contactLastMessage.classList.add("user-select-none");
             contactLastMessage.classList.add("text-white");
             contactLastMessage.style.color = "var(--last-status-transparent);";
-            
+
             if (chats[i].nonVisualized.length != 0 && chats[i].visualized.length != 0) {
                 if (new Date(chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date) > new Date(chats[i].visualized[chats[i].visualized.length - 1].date)) {
                     contactLastMessage.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].message;

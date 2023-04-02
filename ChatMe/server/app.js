@@ -80,11 +80,15 @@ io.on("connection", (socket) => {
     chat.getNewMessages(crypted_nickname, crypted_password, crypted_pubKey, socket);
   });
 
-  socket.on("publicKey", (type, publicKey, nickname, chatName) => {
+  socket.on("publicKey", (type, publicKey, nickname, password, id) => {
     if(type == "0") {
-      chat.sendChat(publicKey, nickname, chatName, socket);
-    } else if(type == "1") {
-      chat.sendGroupt(publicKey, nickname, chatName, socket);
+      chat.sendNewChat(publicKey, nickname, password, id, socket);
+    } else if (type == "1") {
+      //per il gruppo
+    } else if (type == "2") {
+      chat.sendNewMessageChat
+    } else if (type == "3") {
+      //per i nuovi messaggi dei gruppi
     } else {
       socket.emit("error", "Errore: tipo di chat non valido")
     }
