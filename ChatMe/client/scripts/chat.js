@@ -9,6 +9,8 @@
 /*contatto html*/
 //gestire le emoji non abbiamo ancora fatto la tabella emoji
 
+const { encrypt } = require("../../server/crypto");
+
 
 /*keyManager*/
 const kM = new keyManager();
@@ -204,15 +206,54 @@ socket.on("errorGetNewMessages", () => {
 });
 
 socket.on("newMessages", (newMessages) => {
-    console.log("c")
     manageNewMessages(newMessages);
 });
+
+socket.on("getPublicKey", (type, chatName) => {
+    sendPublicKey(type, chatName);
+});
+
+socket.on("error", (error) => {
+    manageError(error);
+});
+
+async function sendPublicKey(type, chatName) {
+    var nickname = await encrypt(kM.getNickname(), localStorage.getItem("publicKeyArmored"));
+    var password = await encrypt(kM.getPassphrase(), localStorage.getItem("publicKeyArmored"));
+    
+    if (type == "0") {
+        socket.emit("publicKey", type, await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored")), nickname, password, chatName);
+    }
+}
+
+async function manageError(error) {
+    var { data : message } = await decrypt(error, 
+        kM.getPrivateKey(),
+        kM.getPassphrase()
+    );
+
+    var prompt = document.getElementById("prompt");
+
+    // Mostra la sezione di sfondo bianco con la scritta e i due bottoni
+    prompt.style.display = "block";
+
+    var noButton = document.getElementById("no-button");
+    noButton.style.display = "block";
+
+    document.getElementById("prompt-error").innerText =
+        "Unknown error";
+
+    document.getElementById("prompt-text").innerText =
+        message;
+
+    document.getElementById("no-button").innerText = "Ok";
+}
 
 /*window load*/
 async function login() {
     try {
         await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-        
+
         setTimeout(async function () {
             if (checkData()) {
                 if (checkKey()) {
@@ -257,7 +298,7 @@ async function manageAesKeySuccess(crypted_aes_key) {
     var data = localStorage.getItem("data");
 
     console.log(data)
-    
+
     var chats = JSON.parse(decryptAES(data, aes_key));
     //controllare aes key durante sign up
     if (chats["chats"].length == 0 && chats["groups"].length == 0) {
@@ -355,6 +396,7 @@ async function getNewMessages() {
 }
 
 async function manageNewMessages(crypted_updates) {
+    console.log(kM.getPrivateKey())
     var { data: updates } = await decrypt(
         crypted_updates,
         kM.getPrivateKey(),
@@ -420,7 +462,7 @@ async function manageNewMessages(crypted_updates) {
     data["groups"] = groups;
 
     localStorage.setItem("data", encryptAES(JSON.stringify(data), kM.getAesKey()));
-
+    console.log("qua va")
     $('#loadingModal').modal('hide');
 
     var rememberMe = localStorage.getItem("rememberMe");
@@ -587,10 +629,13 @@ function createChats() {
             contactLastMessage.classList.add("user-select-none");
             contactLastMessage.classList.add("text-white");
             contactLastMessage.style.color = "var(--last-status-transparent);";
-            if (new Date(chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date) > new Date(chats[i].visualized[chats[i].visualized.length - 1].date)) {
-                contactLastMessage.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].message;
-            } else {
-                contactLastMessage.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].message;
+            
+            if (chats[i].nonVisualized.length != 0 && chats[i].visualized.length != 0) {
+                if (new Date(chats[i].nonVisualized[chats[i].nonVisualized.length - 1].date) > new Date(chats[i].visualized[chats[i].visualized.length - 1].date)) {
+                    contactLastMessage.innerHTML = chats[i].nonVisualized[chats[i].nonVisualized.length - 1].message;
+                } else {
+                    contactLastMessage.innerHTML = chats[i].visualized[chats[i].visualized.length - 1].message;
+                }
             }
             var contactLastMessageTime = document.createElement("div");
             contactLastMessageTime.setAttribute("id", "contact-last-message-time");

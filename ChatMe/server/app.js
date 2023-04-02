@@ -79,6 +79,16 @@ io.on("connection", (socket) => {
   socket.on("getNewMessages", (crypted_nickname, crypted_password, crypted_pubKey) => {
     chat.getNewMessages(crypted_nickname, crypted_password, crypted_pubKey, socket);
   });
+
+  socket.on("publicKey", (type, publicKey, nickname, chatName) => {
+    if(type == "0") {
+      chat.sendChat(publicKey, nickname, chatName, socket);
+    } else if(type == "1") {
+      chat.sendGroupt(publicKey, nickname, chatName, socket);
+    } else {
+      socket.emit("error", "Errore: tipo di chat non valido")
+    }
+  });
 });
 
 io.on("disconnect", (socket) => {

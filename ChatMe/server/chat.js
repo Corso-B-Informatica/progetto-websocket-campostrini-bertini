@@ -32,8 +32,8 @@ async function sendAesKey(
         }
 
         socketList.sockets[nickname] = socket;
-        //socket.broadcast.emit("online", nickname);
-        console.log("s")
+        socket.broadcast.emit("online", nickname);
+        
         var message = await crypto.encrypt(
             aesKey,
             publicKey
@@ -143,7 +143,6 @@ async function AddMessage(crypted_message, crypted_nickname, crypted_password, c
                         if(chat2.chats[i].id == id){
                             chat2.chats[i].nonVisualized.push(json2);
                             database.JsonUpdate(nickname2, JSON.stringify(chat2));
-                            console.log(socketList.sockets[nickname2])
                             socketList.sockets[nickname2].emit("newMessages", await crypto.encrypt(JSON.stringify({ "chats": [{"id": chat2.chats[i].id, "name" : chat2.chats[i].name, "visualized": [], "nonVisualized": [json2], "removed": []}], "groups": [] }), pubKey));
                         } 
                     }
@@ -202,13 +201,9 @@ async function newChat(crypted_nickname, crypted_password, crypted_chatName, cry
                         data2["chats"].push({ "id": id, "name": nickname, "visualized": [], "nonVisualized": [], "removed": [] });
                         if (await database.JsonUpdate(chatName, JSON.stringify(data2))) {
                             socket.join(id);
-                            let socketDestination = socketList.getSocket(chatName);
+                            let socketDestination = socketList[chatName];
+                            socketDestination.emit("getPublicKey", "0", chatName);
                             var newChat1 = await crypto.encrypt(JSON.stringify({ "chats": [{ "id": id, "name": chatName, "visualized": [], "nonVisualized": [], "removed": [] }], "groups": [] }), pubKey);
-                            if (socketDestination != null) {
-                                socketDestination.join(id);
-                                var newChat2 = await crypto.encrypt(JSON.stringify({ "chats": [{ "id": id, "name": nickname, "visualized": [], "nonVisualized": [], "removed": [] }], "groups": [] }), pubKey);
-                                socketDestination.emit("newChatCreated", newChat2);
-                            }
                             socket.emit("newChatCreated", newChat1);
                         } else {
                             socket.emit("errorNewChat");
@@ -272,6 +267,23 @@ async function newGroup(crypted_nickname, crypted_password, crypted_members, cry
         socket.emit("errorNewGroupCredentials");
     }
 
+}
+
+async function sencChat(publicKey, nickname, chatName, socket) {
+    var pubKey = await validator.UltimateValidator(publicKey, 0, false);
+    var nick = await validator.UltimateValidator(nickname, 0, true);
+    var chat = await validator.UltimateValidator(chatName, 0, true);
+
+    let check = await crypto.isValid(pubKey);
+
+    if (!check) {
+        socket.emit("errorPubKey");
+    } else if(await database.existNickname(nick)){
+        let socketDestination = socketList[nick];
+        socketDestination.emit("getPublicKey", "0", id, chatName);
+    } else {
+        socket.emit("error");
+    }
 }
 
 module.exports = {

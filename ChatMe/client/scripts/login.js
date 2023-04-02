@@ -50,7 +50,7 @@ socket.on("loginDataError", (crypted_check1, crypted_check2, crypted_check3, cry
 async function Login() {
     try {
         await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-        
+
         socket.emit("getPublicKey", "0");
     } catch (err) {
         console.log(err);
@@ -65,14 +65,16 @@ async function sendLogin(publicKeyArmored) {
         var c_publicKey = await encrypt(kM.getPublicKey(), publicKeyArmored);
         var c_email = "";
         var c_nickname = "";
+        
+        setTimeout(async function () {
+            if (ue.includes("@")) {
+                c_email = await encrypt(ue, publicKeyArmored);
+            } else {
+                c_nickname = await encrypt(ue, publicKeyArmored);
+            }
 
-        if (ue.includes("@")) {
-            c_email = await encrypt(ue, publicKeyArmored);
-        } else {
-            c_nickname = await encrypt(ue, publicKeyArmored);
-        }
-
-        socket.emit("login", c_email, c_nickname, c_password, c_rememberMe, c_publicKey);
+            socket.emit("login", c_email, c_nickname, c_password, c_rememberMe, c_publicKey);
+        }, 1000);
     }
 }
 
@@ -107,7 +109,7 @@ async function manageLoginSuccess(c_nickname, c_email, c_password, c_rememberMe,
         kM.getPrivateKey(),
         kM.getPassphrase()
     );
-    
+
     localStorage.setItem("nickname", nickname);
     localStorage.setItem("email", email);
     localStorage.setItem("password", password);
@@ -125,7 +127,7 @@ async function manageLoginError(message) {
         kM.getPrivateKey(),
         kM.getPassphrase()
     );
-    
+
     if (msg == "Wrong password") {
         var containerPassword = document.getElementById("container-password");
         containerPassword.classList.add("error");
@@ -151,7 +153,7 @@ async function manageLoginError(message) {
         document.getElementById("yes-button").addEventListener("click", () => {
             window.location.href = "../confirm.html";
         });
-    } else if(msg == "User not registered") {
+    } else if (msg == "User not registered") {
         var prompt = document.getElementById("prompt");
 
         // Mostra la sezione di sfondo bianco con la scritta e i due bottoni

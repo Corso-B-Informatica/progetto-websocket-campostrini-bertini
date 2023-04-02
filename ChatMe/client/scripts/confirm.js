@@ -804,7 +804,7 @@ async function manageConfirmSuccess(c_email, c_nickname, c_password, c_rememberM
     console.log(data);
     localStorage.setItem("data", data);
 
-    //window.location.href = "../chat.html";
+    window.location.href = "../chat.html";
 }
 
 async function manageRequestCodeDataError(crypted_check1, crypted_check2, crypted_check3, crypted_check4, crypted_data1, crypted_data2, crypted_data3, crypted_data4) {
