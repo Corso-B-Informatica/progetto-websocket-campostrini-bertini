@@ -49,9 +49,11 @@ socket.on("loginDataError", (crypted_check1, crypted_check2, crypted_check3, cry
 
 async function Login() {
     try {
-        await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-
-        socket.emit("getPublicKey", "0");
+        kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!").then(
+            (keyPair) => {
+                console.log(keyPair);
+                socket.emit("getPublicKey", "0");
+            });
     } catch (err) {
         console.log(err);
     }
@@ -65,16 +67,12 @@ async function sendLogin(publicKeyArmored) {
         var c_publicKey = await encrypt(kM.getPublicKey(), publicKeyArmored);
         var c_email = "";
         var c_nickname = "";
-        
-        setTimeout(async function () {
-            if (ue.includes("@")) {
-                c_email = await encrypt(ue, publicKeyArmored);
-            } else {
-                c_nickname = await encrypt(ue, publicKeyArmored);
-            }
-
-            socket.emit("login", c_email, c_nickname, c_password, c_rememberMe, c_publicKey);
-        }, 1000);
+        if (ue.includes("@")) {
+            c_email = await encrypt(ue, publicKeyArmored);
+        } else {
+            c_nickname = await encrypt(ue, publicKeyArmored);
+        }
+        setTimeout(socket.emit("login", c_email, c_nickname, c_password, c_rememberMe, c_publicKey), 2000);
     }
 }
 

@@ -259,29 +259,30 @@ async function manageError(error) {
 /*window load*/
 async function login() {
     try {
-        await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+        kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!").then(
+            async (keyPair) => {
+                console.log(keyPair);
+                
+                if (checkData()) {
+                    if (checkKey()) {
+                        $('#loadingModal').modal('show');
 
-        setTimeout(async function () {
-            if (checkData()) {
-                if (checkKey()) {
-                    $('#loadingModal').modal('show');
-
-                    socket.emit(
-                        "getAesKey",
-                        await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
-                        await encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored")),
-                        await encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored")),
-                        await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
-                    );
-
+                        setTimeout(
+                            socket.emit(
+                                "getAesKey",
+                                await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
+                                await encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored")),
+                                await encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored")),
+                                await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
+                            ), 2000);
+                    } else {
+                        socket.emit("getPublicKey", "0");
+                    }
                 } else {
-                    socket.emit("getPublicKey", "0");
+                    clearLocalStorageWithoutKey();
+                    window.location.href = "../signUp.html";
                 }
-            } else {
-                clearLocalStorageWithoutKey();
-                window.location.href = "../signUp.html";
-            }
-        }, 1000);
+            });
 
     } catch (err) {
         console.log(err);

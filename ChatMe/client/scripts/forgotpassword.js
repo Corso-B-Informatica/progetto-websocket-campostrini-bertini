@@ -60,11 +60,13 @@ async function forgotPassword() {
                     var ue = document.getElementById("username").value;
                     var crypted_ue = await encrypt(ue, localStorage.getItem("publicKeyArmored"));
 
-                    if (ue.toString().includes('@')) {
-                        socket.emit("forgotPassword", crypted_ue, "");
-                    } else {
-                        socket.emit("forgotPassword", "", crypted_ue);
-                    }
+                    setTimeout(function () {
+                        if (ue.toString().includes('@')) {
+                            socket.emit("forgotPassword", crypted_ue, "");
+                        } else {
+                            socket.emit("forgotPassword", "", crypted_ue);
+                        }
+                    }, 2000);
                 }
             } else {
                 localStorage.removeItem("publicKeyArmored");

@@ -137,15 +137,15 @@ async function tryConfirmViaLink(publicKeyArmored) {
     url = window.location.href;
 
     try {
-        await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-        
-        setTimeout(async function () {
-            if (isUrlConfirmed(url, email, password, nickname, verification_code)) {
-                sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored);
-            } else {
-                checkLocalstorage();
-            }
-        }, 1000);
+        kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!").then(
+            (keyPair) => {
+                console.log(keyPair);
+                if (isUrlConfirmed(url, email, password, nickname, verification_code)) {
+                    sendConfirmViaLink(email, password, nickname, verification_code, publicKeyArmored);
+                } else {
+                    checkLocalstorage();
+                }
+            });
     } catch (err) {
         console.log(err);
     }
@@ -171,7 +171,7 @@ async function sendConfirmViaLink(email, password, nickname, verification_code, 
     var pubKey = await encrypt(kM.getPublicKey(), publicKeyArmored);
     var aesKey = await encrypt(generateRandomKey(10), publicKeyArmored);
 
-    socket.emit("confirmViaLink", crypted_email, crypted_password, crypted_nickname, crypted_verification_code, crypted_rememberMe, pubKey, aesKey);
+    setTimeout(socket.emit("confirmViaLink", crypted_email, crypted_password, crypted_nickname, crypted_verification_code, crypted_rememberMe, pubKey, aesKey), 2000);
 }
 
 /*Page format*/
