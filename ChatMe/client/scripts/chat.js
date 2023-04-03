@@ -259,30 +259,29 @@ async function manageError(error) {
 /*window load*/
 async function login() {
     try {
-        kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!").then(
-            async (keyPair) => {
-                console.log(keyPair);
-                
-                if (checkData()) {
-                    if (checkKey()) {
-                        $('#loadingModal').modal('show');
+        await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
 
-                        setTimeout(
-                            socket.emit(
-                                "getAesKey",
-                                await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
-                                await encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored")),
-                                await encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored")),
-                                await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
-                            ), 2000);
-                    } else {
-                        socket.emit("getPublicKey", "0");
-                    }
-                } else {
-                    clearLocalStorageWithoutKey();
-                    window.location.href = "../signUp.html";
-                }
-            });
+        if (checkData()) {
+            if (checkKey()) {
+                $('#loadingModal').modal('show');
+
+                setTimeout(async function () {
+                    socket.emit(
+                        "getAesKey",
+                        await encrypt(localStorage.getItem("email"), localStorage.getItem("publicKeyArmored")),
+                        await encrypt(localStorage.getItem("nickname"), localStorage.getItem("publicKeyArmored")),
+                        await encrypt(localStorage.getItem("password"), localStorage.getItem("publicKeyArmored")),
+                        await encrypt(kM.getPublicKey(), localStorage.getItem("publicKeyArmored"))
+                    )
+                }, 3000);
+            } else {
+                socket.emit("getPublicKey", "0");
+            }
+        } else {
+            clearLocalStorageWithoutKey();
+            window.location.href = "../signUp.html";
+        }
+
 
     } catch (err) {
         console.log(err);

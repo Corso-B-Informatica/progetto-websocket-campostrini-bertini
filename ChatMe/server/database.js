@@ -632,7 +632,7 @@ function GetChat(nickname) {
           console.log(err);
           reject(err);
         } else {
-          if(rows == undefined || rows == null) {
+          if(rows != undefined && rows != null) {
             resolve(rows[0].chat);
           } else {
             resolve(false);

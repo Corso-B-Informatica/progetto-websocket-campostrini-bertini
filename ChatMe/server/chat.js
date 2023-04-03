@@ -23,11 +23,11 @@ async function sendAesKey(
     }
     else if (await database.checkDatabase(database.Users, nickname, email, password)) {
         var chat = await JSON.parse(await database.GetChat(nickname));
-
-        for (let i = 0; i < Object.keys(chat["chats"]).length; i++) {
+        
+        for (let i = 0; i < chat["chats"].length; i++) {
             socket.join(chat["chats"][i].id);
         }
-        for (let i = 0; i < Object.keys(chat["groups"]).length; i++) {
+        for (let i = 0; i < chat["groups"].length; i++) {
             socket.join(chat["groups"][i].id);
         }
 
