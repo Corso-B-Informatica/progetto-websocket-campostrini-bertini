@@ -53,22 +53,24 @@ socket.on("forgotPasswordSuccess", () => {
 async function forgotPassword() {
     try {
         await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
+        
+        setTimeout(async function () {
+            if (checkKey()) {
+                if (checkUsernameOrEmail()) {
+                    var ue = document.getElementById("username").value;
+                    var crypted_ue = await encrypt(ue, localStorage.getItem("publicKeyArmored"));
 
-        if (checkKey()) {
-            if (checkUsernameOrEmail()) {
-                var ue = document.getElementById("username").value;
-                var crypted_ue = await encrypt(ue, localStorage.getItem("publicKeyArmored"));
-
-                if (ue.toString().includes('@')) {
-                    socket.emit("forgotPassword", crypted_ue, "");
-                } else {
-                    socket.emit("forgotPassword", "", crypted_ue);
+                    if (ue.toString().includes('@')) {
+                        socket.emit("forgotPassword", crypted_ue, "");
+                    } else {
+                        socket.emit("forgotPassword", "", crypted_ue);
+                    }
                 }
+            } else {
+                localStorage.removeItem("publicKeyArmored");
+                socket.emit("getPublicKey", "0");
             }
-        } else {
-            localStorage.removeItem("publicKeyArmored");
-            socket.emit("getPublicKey", "0");
-        }
+        }, 1000);
     } catch (err) {
         console.log(err);
     }

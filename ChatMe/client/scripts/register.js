@@ -69,8 +69,9 @@ socket.on("registerSuccess", (email, password, nickname) => {
 /*Register*/
 async function register() {
   try {
+
     await kM.generateNewKeyPair("nickname", "email@gmail.com", "P4ssw0rd!");
-    
+
     if (checkUsername() && checkEmail() && checkPassword()) {
       socket.emit("getPublicKey", "");
     }
@@ -95,22 +96,24 @@ async function sendRegister(publicKeyArmored) {
     document.getElementById("password").value.toString(),
     publicKeyArmored
   );
+  
+  setTimeout(async function () {
+    const crypted_publicKeyArmored = await encrypt(
+      kM.getPublicKey(),
+      publicKeyArmored
+    );
 
-  const crypted_publicKeyArmored = await encrypt(
-    kM.getPublicKey(),
-    publicKeyArmored
-  );
+    const link = await encrypt(window.location.href, publicKeyArmored);
 
-  const link = await encrypt(window.location.href, publicKeyArmored);
-
-  socket.emit(
-    "register",
-    crypted_email,
-    crypted_password,
-    crypted_nickname,
-    crypted_publicKeyArmored,
-    link
-  );
+    socket.emit(
+      "register",
+      crypted_email,
+      crypted_password,
+      crypted_nickname,
+      crypted_publicKeyArmored,
+      link
+    );
+  }, 1000);
 }
 
 /*Manage errors*/
